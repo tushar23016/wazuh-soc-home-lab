@@ -1,0 +1,2936 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="description"
+        content="Wazuh SOC Home Lab log analysis workspace for Windows Event Logs, Sysmon, Linux authentication, and security event investigation.">
+
+    <meta name="theme-color" content="#080d18">
+
+    <title>Log Analysis | Wazuh SOC Home Lab</title>
+
+    <!-- Shared CSS -->
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/responsive.css">
+    <link rel="stylesheet" href="../assets/css/animations.css">
+
+    <!-- Page-specific CSS -->
+    <style>
+
+        /* =========================================
+           LOG ANALYSIS PAGE
+        ========================================= */
+
+        .log-page {
+            --log-accent: #00e599;
+            --log-accent-soft: rgba(0, 229, 153, 0.09);
+            --log-border: rgba(148, 163, 184, 0.14);
+            --log-muted: #8492a6;
+            --log-panel: rgba(15, 23, 42, 0.78);
+
+            padding: 30px;
+            color: #e2e8f0;
+        }
+
+        .log-page * {
+            box-sizing: border-box;
+        }
+
+        .log-container {
+            max-width: 1500px;
+            margin: 0 auto;
+        }
+
+        /* Breadcrumb */
+
+        .log-breadcrumb {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 9px;
+            margin-bottom: 25px;
+            color: var(--log-muted);
+            font-size: 13px;
+        }
+
+        .log-breadcrumb a {
+            color: var(--log-muted);
+            text-decoration: none;
+        }
+
+        .log-breadcrumb a:hover,
+        .log-breadcrumb .current {
+            color: var(--log-accent);
+        }
+
+        /* Header */
+
+        .log-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .log-header-content {
+            max-width: 800px;
+        }
+
+        .log-eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+            padding: 7px 12px;
+            border: 1px solid rgba(0, 229, 153, 0.22);
+            border-radius: 30px;
+            background: var(--log-accent-soft);
+            color: var(--log-accent);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .log-live-dot {
+            width: 7px;
+            height: 7px;
+            flex-shrink: 0;
+            border-radius: 50%;
+            background: var(--log-accent);
+            box-shadow: 0 0 10px rgba(0, 229, 153, 0.6);
+        }
+
+        .log-title {
+            margin: 0 0 16px;
+            color: #f8fafc;
+            font-size: clamp(30px, 4vw, 46px);
+            font-weight: 800;
+            line-height: 1.15;
+            letter-spacing: -1.4px;
+        }
+
+        .log-title span {
+            color: var(--log-accent);
+        }
+
+        .log-description {
+            max-width: 760px;
+            margin: 0;
+            color: #94a3b8;
+            font-size: 15px;
+            line-height: 1.85;
+        }
+
+        .log-header-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .log-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 9px;
+            min-height: 43px;
+            padding: 11px 17px;
+            border: 1px solid var(--log-border);
+            border-radius: 10px;
+            background: rgba(15, 23, 42, 0.75);
+            color: #cbd5e1;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .log-btn:hover {
+            transform: translateY(-2px);
+            border-color: rgba(0, 229, 153, 0.4);
+            color: var(--log-accent);
+        }
+
+        .log-btn-primary {
+            border-color: rgba(0, 229, 153, 0.3);
+            background: var(--log-accent-soft);
+            color: var(--log-accent);
+        }
+
+        /* Statistics */
+
+        .log-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 18px;
+            margin-bottom: 35px;
+        }
+
+        .log-stat-card {
+            padding: 22px;
+            border: 1px solid var(--log-border);
+            border-radius: 15px;
+            background: var(--log-panel);
+            transition: transform 0.25s ease,
+                border-color 0.25s ease;
+        }
+
+        .log-stat-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(0, 229, 153, 0.3);
+        }
+
+        .log-stat-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .log-stat-label {
+            color: var(--log-muted);
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .log-stat-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 43px;
+            height: 43px;
+            border: 1px solid rgba(0, 229, 153, 0.16);
+            border-radius: 12px;
+            background: var(--log-accent-soft);
+            color: var(--log-accent);
+            font-size: 20px;
+        }
+
+        .log-stat-value {
+            margin-bottom: 7px;
+            color: #f8fafc;
+            font-size: 28px;
+            font-weight: 800;
+        }
+
+        .log-stat-description {
+            color: #64748b;
+            font-size: 12px;
+            line-height: 1.7;
+        }
+
+        /* Sections */
+
+        .log-section {
+            margin-bottom: 35px;
+            scroll-margin-top: 100px;
+        }
+
+        .log-section-header {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 18px;
+            margin-bottom: 20px;
+        }
+
+        .log-section-heading {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+        }
+
+        .log-section-number {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            width: 39px;
+            height: 39px;
+            border: 1px solid rgba(0, 229, 153, 0.2);
+            border-radius: 11px;
+            background: var(--log-accent-soft);
+            color: var(--log-accent);
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .log-section-title {
+            margin: 0 0 7px;
+            color: #f1f5f9;
+            font-size: 21px;
+            font-weight: 750;
+        }
+
+        .log-section-subtitle {
+            margin: 0;
+            color: var(--log-muted);
+            font-size: 13px;
+            line-height: 1.7;
+        }
+
+        .log-panel {
+            padding: 25px;
+            border: 1px solid var(--log-border);
+            border-radius: 16px;
+            background: var(--log-panel);
+        }
+
+        /* Log source cards */
+
+        .log-sources-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .log-source-card {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            padding: 24px;
+            border: 1px solid var(--log-border);
+            border-radius: 15px;
+            background: var(--log-panel);
+            transition: transform 0.25s ease,
+                border-color 0.25s ease;
+        }
+
+        .log-source-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(0, 229, 153, 0.3);
+        }
+
+        .log-source-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .log-source-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 46px;
+            height: 46px;
+            flex-shrink: 0;
+            border: 1px solid rgba(0, 229, 153, 0.16);
+            border-radius: 12px;
+            background: var(--log-accent-soft);
+            color: var(--log-accent);
+            font-size: 21px;
+        }
+
+        .log-source-badge {
+            padding: 6px 10px;
+            border: 1px solid var(--log-border);
+            border-radius: 7px;
+            color: #94a3b8;
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        .log-source-card h3 {
+            margin: 0 0 10px;
+            color: #e2e8f0;
+            font-size: 16px;
+            font-weight: 750;
+        }
+
+        .log-source-description {
+            flex: 1;
+            margin: 0 0 20px;
+            color: var(--log-muted);
+            font-size: 13px;
+            line-height: 1.8;
+        }
+
+        .log-source-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .log-tag {
+            padding: 6px 9px;
+            border: 1px solid var(--log-border);
+            border-radius: 6px;
+            color: #94a3b8;
+            font-size: 10px;
+        }
+
+        .log-source-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding-top: 16px;
+            border-top: 1px solid var(--log-border);
+        }
+
+        .log-source-id {
+            color: #64748b;
+            font-family: monospace;
+            font-size: 12px;
+        }
+
+        .log-source-link {
+            color: var(--log-accent);
+            font-size: 12px;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .log-source-link:hover {
+            color: #6ee7b7;
+        }
+
+        /* Event ID table */
+
+        .log-table-wrapper {
+            overflow-x: auto;
+            border: 1px solid var(--log-border);
+            border-radius: 13px;
+        }
+
+        .log-table {
+            width: 100%;
+            min-width: 750px;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        .log-table thead {
+            background: rgba(2, 6, 23, 0.55);
+        }
+
+        .log-table th {
+            padding: 16px 18px;
+            border-bottom: 1px solid var(--log-border);
+            color: #94a3b8;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .log-table td {
+            padding: 17px 18px;
+            border-bottom: 1px solid var(--log-border);
+            color: #94a3b8;
+            font-size: 13px;
+            line-height: 1.7;
+            vertical-align: top;
+        }
+
+        .log-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .log-table tbody tr {
+            transition: background 0.2s ease;
+        }
+
+        .log-table tbody tr:hover {
+            background: rgba(0, 229, 153, 0.025);
+        }
+
+        .log-event-id {
+            color: var(--log-accent);
+            font-family: monospace;
+            font-weight: 700;
+        }
+
+        .log-event-name {
+            color: #e2e8f0;
+            font-weight: 650;
+        }
+
+        .log-event-badge {
+            display: inline-block;
+            padding: 5px 9px;
+            border: 1px solid rgba(0, 229, 153, 0.2);
+            border-radius: 6px;
+            background: var(--log-accent-soft);
+            color: var(--log-accent);
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        /* Search and filters */
+
+        .log-search-box {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            min-height: 56px;
+            padding: 0 18px;
+            border: 1px solid var(--log-border);
+            border-radius: 12px;
+            background: rgba(2, 6, 23, 0.4);
+            transition: border-color 0.25s ease;
+        }
+
+        .log-search-box:focus-within {
+            border-color: rgba(0, 229, 153, 0.5);
+            box-shadow: 0 0 0 3px rgba(0, 229, 153, 0.05);
+        }
+
+        .log-search-icon {
+            color: var(--log-accent);
+            font-size: 21px;
+        }
+
+        .log-search-input {
+            width: 100%;
+            min-width: 0;
+            border: none;
+            outline: none;
+            background: transparent;
+            color: #f1f5f9;
+            font-family: inherit;
+            font-size: 14px;
+        }
+
+        .log-search-input::placeholder {
+            color: #64748b;
+        }
+
+        .log-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 18px;
+        }
+
+        .log-filter-btn {
+            padding: 9px 15px;
+            border: 1px solid var(--log-border);
+            border-radius: 9px;
+            background: rgba(15, 23, 42, 0.5);
+            color: #94a3b8;
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .log-filter-btn:hover,
+        .log-filter-btn.active {
+            border-color: rgba(0, 229, 153, 0.35);
+            background: var(--log-accent-soft);
+            color: var(--log-accent);
+        }
+
+        .log-results-count {
+            margin-top: 15px;
+            color: #64748b;
+            font-size: 12px;
+        }
+
+        .log-event-card[hidden] {
+            display: none !important;
+        }
+
+        .log-empty-state {
+            display: none;
+            padding: 40px 20px;
+            border: 1px dashed var(--log-border);
+            border-radius: 14px;
+            color: #64748b;
+            text-align: center;
+        }
+
+        .log-empty-state h3 {
+            margin: 0 0 10px;
+            color: #cbd5e1;
+        }
+
+        .log-empty-state p {
+            margin: 0;
+            font-size: 13px;
+        }
+
+        /* Investigation workflow */
+
+        .log-workflow {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 15px;
+        }
+
+        .log-workflow-card {
+            padding: 21px;
+            border: 1px solid var(--log-border);
+            border-radius: 13px;
+            background: var(--log-panel);
+        }
+
+        .log-workflow-number {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 35px;
+            height: 35px;
+            margin-bottom: 17px;
+            border: 1px solid rgba(0, 229, 153, 0.2);
+            border-radius: 10px;
+            background: var(--log-accent-soft);
+            color: var(--log-accent);
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .log-workflow-card h3 {
+            margin: 0 0 10px;
+            color: #e2e8f0;
+            font-size: 14px;
+        }
+
+        .log-workflow-card p {
+            margin: 0;
+            color: var(--log-muted);
+            font-size: 12px;
+            line-height: 1.8;
+        }
+
+        /* Query examples */
+
+        .log-query-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .log-query-card {
+            overflow: hidden;
+            border: 1px solid var(--log-border);
+            border-radius: 13px;
+            background: rgba(2, 6, 23, 0.35);
+        }
+
+        .log-query-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            padding: 17px 20px;
+            border-bottom: 1px solid var(--log-border);
+        }
+
+        .log-query-header h3 {
+            margin: 0;
+            color: #e2e8f0;
+            font-size: 14px;
+        }
+
+        .log-query-header span {
+            color: #64748b;
+            font-size: 11px;
+        }
+
+        .log-query-code {
+            overflow-x: auto;
+            padding: 20px;
+        }
+
+        .log-query-code pre {
+            margin: 0;
+            color: #a5f3fc;
+            font-family: "Consolas", "Courier New", monospace;
+            font-size: 12px;
+            line-height: 1.9;
+            white-space: pre;
+        }
+
+        .log-query-note {
+            padding: 14px 20px;
+            border-top: 1px solid var(--log-border);
+            color: #64748b;
+            font-size: 12px;
+            line-height: 1.7;
+        }
+
+        /* Resources */
+
+        .log-resource-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .log-resource-card {
+            padding: 22px;
+            border: 1px solid var(--log-border);
+            border-radius: 14px;
+            background: var(--log-panel);
+        }
+
+        .log-resource-card h3 {
+            margin: 0 0 10px;
+            color: #e2e8f0;
+            font-size: 15px;
+        }
+
+        .log-resource-card p {
+            margin: 0 0 20px;
+            color: var(--log-muted);
+            font-size: 12px;
+            line-height: 1.8;
+        }
+
+        .log-resource-card a {
+            color: var(--log-accent);
+            font-size: 12px;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .log-resource-card a:hover {
+            text-decoration: underline;
+        }
+
+        /* Footer */
+
+        .log-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 45px;
+            padding: 25px 0 10px;
+            border-top: 1px solid var(--log-border);
+            color: #64748b;
+            font-size: 12px;
+        }
+
+        .log-footer a {
+            color: var(--log-accent);
+            text-decoration: none;
+        }
+
+        .log-footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive */
+
+        @media (max-width: 1200px) {
+            .log-stats-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .log-workflow {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .log-resource-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .log-page {
+                padding: 22px 16px;
+            }
+
+            .log-title {
+                font-size: 32px;
+                letter-spacing: -0.8px;
+            }
+
+            .log-description {
+                font-size: 14px;
+            }
+
+            .log-header-actions {
+                width: 100%;
+            }
+
+            .log-header-actions .log-btn {
+                flex: 1;
+            }
+
+            .log-sources-grid,
+            .log-query-grid,
+            .log-resource-grid,
+            .log-workflow {
+                grid-template-columns: 1fr;
+            }
+
+            .log-panel {
+                padding: 18px;
+            }
+
+            .log-section-title {
+                font-size: 19px;
+            }
+
+            .log-footer {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .log-stats-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .log-stat-card {
+                padding: 19px;
+            }
+
+            .log-stat-value {
+                font-size: 25px;
+            }
+
+            .log-filter-btn {
+                padding: 8px 11px;
+            }
+
+            .log-query-code {
+                padding: 16px;
+            }
+
+            .log-query-code pre {
+                font-size: 11px;
+            }
+
+            .log-section-header {
+                align-items: flex-start;
+            }
+        }
+
+    </style>
+</head>
+
+<body>
+
+    <!-- =========================================
+         NAVBAR
+    ========================================== -->
+
+    <header class="navbar" id="navbar">
+
+        <div class="navbar-left">
+
+            <button
+                class="menu-toggle"
+                id="menuToggle"
+                type="button"
+                aria-label="Toggle sidebar"
+                aria-expanded="false"
+                aria-controls="sidebar">
+
+                <span></span>
+                <span></span>
+                <span></span>
+
+            </button>
+
+            <a href="../index.html" class="navbar-brand">
+
+                <img
+                    src="../assets/images/logo.svg"
+                    alt="Wazuh SOC Lab Logo"
+                    class="navbar-logo">
+
+                <span class="brand-text">
+                    WAZUH <span class="brand-highlight">SOC LAB</span>
+                </span>
+
+            </a>
+
+        </div>
+
+        <div class="navbar-right">
+
+            <div class="navbar-status">
+
+                <span class="status-dot"></span>
+
+                <span>Home Lab</span>
+
+            </div>
+
+            <a href="../index.html"
+                class="navbar-home"
+                aria-label="Return to homepage">
+
+                <span>Home</span>
+
+            </a>
+
+        </div>
+
+    </header>
+
+
+    <!-- =========================================
+         SIDEBAR
+    ========================================== -->
+
+    <aside class="sidebar" id="sidebar">
+
+        <div class="sidebar-header">
+
+            <span class="sidebar-section-label">
+                MAIN MENU
+            </span>
+
+        </div>
+
+        <nav class="sidebar-nav" aria-label="Main navigation">
+
+            <a href="../index.html" class="nav-link">
+
+                <span class="nav-icon">⌂</span>
+
+                <span class="nav-text">Overview</span>
+
+            </a>
+
+            <div class="sidebar-divider"></div>
+
+            <span class="sidebar-section-label">
+                SOC LAB
+            </span>
+
+            <a href="architecture.html" class="nav-link">
+
+                <span class="nav-icon">⌘</span>
+
+                <span class="nav-text">Architecture</span>
+
+            </a>
+
+            <a href="documentation.html" class="nav-link">
+
+                <span class="nav-icon">▤</span>
+
+                <span class="nav-text">Documentation</span>
+
+            </a>
+
+            <a href="detection-rules.html" class="nav-link">
+
+                <span class="nav-icon">⚙</span>
+
+                <span class="nav-text">Detection Rules</span>
+
+            </a>
+
+            <a href="log-analysis.html"
+                class="nav-link active"
+                aria-current="page">
+
+                <span class="nav-icon">⌕</span>
+
+                <span class="nav-text">Log Analysis</span>
+
+            </a>
+
+            <a href="threat-detection.html" class="nav-link">
+
+                <span class="nav-icon">⚠</span>
+
+                <span class="nav-text">Threat Detection</span>
+
+            </a>
+
+            <a href="incident-response.html" class="nav-link">
+
+                <span class="nav-icon">◎</span>
+
+                <span class="nav-text">Incident Response</span>
+
+            </a>
+
+            <div class="sidebar-divider"></div>
+
+            <span class="sidebar-section-label">
+                RESOURCES
+            </span>
+
+            <a href="dashboards.html" class="nav-link">
+
+                <span class="nav-icon">▦</span>
+
+                <span class="nav-text">Dashboards</span>
+
+            </a>
+
+            <a href="scripts.html" class="nav-link">
+
+                <span class="nav-icon">⌘</span>
+
+                <span class="nav-text">Scripts</span>
+
+            </a>
+
+            <a href="reports.html" class="nav-link">
+
+                <span class="nav-icon">▧</span>
+
+                <span class="nav-text">Reports</span>
+
+            </a>
+
+        </nav>
+
+        <div class="sidebar-footer">
+
+            <div class="sidebar-footer-indicator">
+
+                <span class="status-dot"></span>
+
+                <span>Personal Lab Environment</span>
+
+            </div>
+
+            <p>Wazuh SOC Home Lab</p>
+
+        </div>
+
+    </aside>
+
+
+    <!-- =========================================
+         MAIN CONTENT
+    ========================================== -->
+
+    <main class="main-content log-page">
+
+        <div class="log-container">
+
+            <!-- Breadcrumb -->
+
+            <nav class="log-breadcrumb" aria-label="Breadcrumb">
+
+                <a href="../index.html">Home</a>
+
+                <span>/</span>
+
+                <span class="current">Log Analysis</span>
+
+            </nav>
+
+
+            <!-- =====================================
+                 PAGE HEADER
+            ====================================== -->
+
+            <section class="log-header">
+
+                <div class="log-header-content">
+
+                    <div class="log-eyebrow">
+
+                        <span class="log-live-dot"></span>
+
+                        Security Event Investigation
+
+                    </div>
+
+                    <h1 class="log-title">
+
+                        Log <span>Analysis</span>
+
+                    </h1>
+
+                    <p class="log-description">
+
+                        Centralized log investigation workspace
+                        for the Wazuh SOC Home Lab. Analyze
+                        Windows Security Events, Sysmon telemetry,
+                        Linux authentication logs, and Windows
+                        Server events to understand security
+                        activity and investigate suspicious behavior.
+
+                    </p>
+
+                </div>
+
+                <div class="log-header-actions">
+
+                    <a
+                        href="#event-library"
+                        class="log-btn log-btn-primary">
+
+                        <span>⌕</span>
+                        Explore Events
+
+                    </a>
+
+                    <a
+                        href="#investigation-workflow"
+                        class="log-btn">
+
+                        <span>▤</span>
+                        Investigation Guide
+
+                    </a>
+
+                </div>
+
+            </section>
+
+
+            <!-- =====================================
+                 STATISTICS
+            ====================================== -->
+
+            <section class="log-stats-grid"
+                aria-label="Log analysis overview">
+
+                <article class="log-stat-card">
+
+                    <div class="log-stat-top">
+
+                        <span class="log-stat-label">
+                            Log Sources
+                        </span>
+
+                        <div class="log-stat-icon">▤</div>
+
+                    </div>
+
+                    <div class="log-stat-value">04</div>
+
+                    <div class="log-stat-description">
+                        Windows, Sysmon, Linux, and Windows Server
+                    </div>
+
+                </article>
+
+                <article class="log-stat-card">
+
+                    <div class="log-stat-top">
+
+                        <span class="log-stat-label">
+                            Event Categories
+                        </span>
+
+                        <div class="log-stat-icon">⌘</div>
+
+                    </div>
+
+                    <div class="log-stat-value">06</div>
+
+                    <div class="log-stat-description">
+                        Authentication, processes, and system events
+                    </div>
+
+                </article>
+
+                <article class="log-stat-card">
+
+                    <div class="log-stat-top">
+
+                        <span class="log-stat-label">
+                            Analysis Platform
+                        </span>
+
+                        <div class="log-stat-icon">◎</div>
+
+                    </div>
+
+                    <div class="log-stat-value">Wazuh</div>
+
+                    <div class="log-stat-description">
+                        Centralized event collection and alert analysis
+                    </div>
+
+                </article>
+
+                <article class="log-stat-card">
+
+                    <div class="log-stat-top">
+
+                        <span class="log-stat-label">
+                            Investigation
+                        </span>
+
+                        <div class="log-stat-icon">⌕</div>
+
+                    </div>
+
+                    <div class="log-stat-value">Manual</div>
+
+                    <div class="log-stat-description">
+                        Event review, correlation, and evidence collection
+                    </div>
+
+                </article>
+
+            </section>
+
+
+            <!-- =====================================
+                 LOG SOURCES
+            ====================================== -->
+
+            <section class="log-section" id="log-sources">
+
+                <div class="log-section-header">
+
+                    <div class="log-section-heading">
+
+                        <div class="log-section-number">01</div>
+
+                        <div>
+
+                            <h2 class="log-section-title">
+                                Log Sources
+                            </h2>
+
+                            <p class="log-section-subtitle">
+                                Explore the event sources configured
+                                or planned for the SOC lab.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="log-sources-grid">
+
+                    <!-- Windows -->
+
+                    <article class="log-source-card">
+
+                        <div class="log-source-top">
+
+                            <div class="log-source-icon">▤</div>
+
+                            <span class="log-source-badge">
+                                Windows Endpoint
+                            </span>
+
+                        </div>
+
+                        <h3>Windows Event Logs</h3>
+
+                        <p class="log-source-description">
+
+                            Investigate Windows Security events,
+                            authentication failures, successful
+                            logins, account activity, and
+                            security-related system events
+                            collected by the Wazuh agent.
+
+                        </p>
+
+                        <div class="log-source-meta">
+
+                            <span class="log-tag">Security.evtx</span>
+
+                            <span class="log-tag">Event ID 4624</span>
+
+                            <span class="log-tag">Event ID 4625</span>
+
+                        </div>
+
+                        <div class="log-source-footer">
+
+                            <span class="log-source-id">SRC-001</span>
+
+                            <a
+                                href="../content/log-analysis/windows/authentication-events.md"
+                                class="log-source-link"
+                                target="_blank"
+                                rel="noopener">
+
+                                Explore Events ↗
+
+                            </a>
+
+                        </div>
+
+                    </article>
+
+
+                    <!-- Sysmon -->
+
+                    <article class="log-source-card">
+
+                        <div class="log-source-top">
+
+                            <div class="log-source-icon">⌘</div>
+
+                            <span class="log-source-badge">
+                                Endpoint Telemetry
+                            </span>
+
+                        </div>
+
+                        <h3>Sysmon Events</h3>
+
+                        <p class="log-source-description">
+
+                            Examine detailed endpoint telemetry,
+                            including process creation,
+                            network connections, and other
+                            activities recorded by Sysmon.
+
+                        </p>
+
+                        <div class="log-source-meta">
+
+                            <span class="log-tag">Sysmon Operational</span>
+
+                            <span class="log-tag">Event ID 1</span>
+
+                            <span class="log-tag">Event ID 3</span>
+
+                        </div>
+
+                        <div class="log-source-footer">
+
+                            <span class="log-source-id">SRC-002</span>
+
+                            <a
+                                href="../content/log-analysis/windows/sysmon-events.md"
+                                class="log-source-link"
+                                target="_blank"
+                                rel="noopener">
+
+                                Explore Events ↗
+
+                            </a>
+
+                        </div>
+
+                    </article>
+
+
+                    <!-- Linux -->
+
+                    <article class="log-source-card">
+
+                        <div class="log-source-top">
+
+                            <div class="log-source-icon">⌁</div>
+
+                            <span class="log-source-badge">
+                                Linux Endpoint
+                            </span>
+
+                        </div>
+
+                        <h3>Linux Authentication Logs</h3>
+
+                        <p class="log-source-description">
+
+                            Analyze SSH login attempts,
+                            authentication failures,
+                            successful sessions, and
+                            privilege-related events
+                            from monitored Linux systems.
+
+                        </p>
+
+                        <div class="log-source-meta">
+
+                            <span class="log-tag">/var/log/auth.log</span>
+
+                            <span class="log-tag">SSH</span>
+
+                            <span class="log-tag">sudo</span>
+
+                        </div>
+
+                        <div class="log-source-footer">
+
+                            <span class="log-source-id">SRC-003</span>
+
+                            <a
+                                href="../content/log-analysis/linux/ssh-authentication.md"
+                                class="log-source-link"
+                                target="_blank"
+                                rel="noopener">
+
+                                Explore Events ↗
+
+                            </a>
+
+                        </div>
+
+                    </article>
+
+
+                    <!-- Windows Server -->
+
+                    <article class="log-source-card">
+
+                        <div class="log-source-top">
+
+                            <div class="log-source-icon">▦</div>
+
+                            <span class="log-source-badge">
+                                Server Monitoring
+                            </span>
+
+                        </div>
+
+                        <h3>Windows Server &amp; Active Directory</h3>
+
+                        <p class="log-source-description">
+
+                            Review server authentication,
+                            account-related events, and
+                            Active Directory security activity
+                            when a Windows Server or domain
+                            controller is configured in the lab.
+
+                        </p>
+
+                        <div class="log-source-meta">
+
+                            <span class="log-tag">Security.evtx</span>
+
+                            <span class="log-tag">Event ID 4768</span>
+
+                            <span class="log-tag">Event ID 4771</span>
+
+                        </div>
+
+                        <div class="log-source-footer">
+
+                            <span class="log-source-id">SRC-004</span>
+
+                            <a
+                                href="../content/log-analysis/windows-server/active-directory-events.md"
+                                class="log-source-link"
+                                target="_blank"
+                                rel="noopener">
+
+                                Explore Events ↗
+
+                            </a>
+
+                        </div>
+
+                    </article>
+
+                </div>
+
+            </section>
+
+
+            <!-- =====================================
+                 WINDOWS EVENT IDS
+            ====================================== -->
+
+            <section class="log-section" id="windows-events">
+
+                <div class="log-section-header">
+
+                    <div class="log-section-heading">
+
+                        <div class="log-section-number">02</div>
+
+                        <div>
+
+                            <h2 class="log-section-title">
+                                Windows Security Event Reference
+                            </h2>
+
+                            <p class="log-section-subtitle">
+                                Common Windows event IDs useful
+                                during authentication and
+                                account investigations.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="log-panel">
+
+                    <div class="log-table-wrapper">
+
+                        <table class="log-table">
+
+                            <thead>
+
+                                <tr>
+                                    <th>Event ID</th>
+                                    <th>Event Name</th>
+                                    <th>Meaning</th>
+                                    <th>Investigation Use</th>
+                                </tr>
+
+                            </thead>
+
+                            <tbody>
+
+                                <tr>
+
+                                    <td>
+                                        <span class="log-event-id">
+                                            4624
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <span class="log-event-name">
+                                            Successful Logon
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        A logon session was successfully
+                                        established.
+                                    </td>
+
+                                    <td>
+                                        Review account, logon type,
+                                        source address, and time.
+                                    </td>
+
+                                </tr>
+
+                                <tr>
+
+                                    <td>
+                                        <span class="log-event-id">
+                                            4625
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <span class="log-event-name">
+                                            Failed Logon
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        A logon attempt failed.
+                                    </td>
+
+                                    <td>
+                                        Investigate repeated failures,
+                                        account names, and source hosts.
+                                    </td>
+
+                                </tr>
+
+                                <tr>
+
+                                    <td>
+                                        <span class="log-event-id">
+                                            4634
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <span class="log-event-name">
+                                            Logoff
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        A logon session was terminated.
+                                    </td>
+
+                                    <td>
+                                        Correlate session activity
+                                        and logon identifiers.
+                                    </td>
+
+                                </tr>
+
+                                <tr>
+
+                                    <td>
+                                        <span class="log-event-id">
+                                            4648
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <span class="log-event-name">
+                                            Explicit Credentials
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        A logon was attempted using
+                                        explicitly supplied credentials.
+                                    </td>
+
+                                    <td>
+                                        Examine the account,
+                                        process, and target server.
+                                    </td>
+
+                                </tr>
+
+                                <tr>
+
+                                    <td>
+                                        <span class="log-event-id">
+                                            4672
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <span class="log-event-name">
+                                            Special Privileges
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        Special privileges were
+                                        assigned to a new logon.
+                                    </td>
+
+                                    <td>
+                                        Review privileged sessions
+                                        and account context.
+                                    </td>
+
+                                </tr>
+
+                                <tr>
+
+                                    <td>
+                                        <span class="log-event-id">
+                                            4688
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <span class="log-event-name">
+                                            Process Creation
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        A new process was created.
+                                    </td>
+
+                                    <td>
+                                        Review process names,
+                                        command lines, and parent processes.
+                                    </td>
+
+                                </tr>
+
+                                <tr>
+
+                                    <td>
+                                        <span class="log-event-id">
+                                            4720
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <span class="log-event-name">
+                                            User Account Created
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        A user account was created.
+                                    </td>
+
+                                    <td>
+                                        Identify the creating account
+                                        and the new user.
+                                    </td>
+
+                                </tr>
+
+                                <tr>
+
+                                    <td>
+                                        <span class="log-event-id">
+                                            4728
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <span class="log-event-name">
+                                            Member Added to Global Group
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        A member was added to
+                                        a security-enabled global group.
+                                    </td>
+
+                                    <td>
+                                        Review privileged group
+                                        membership changes.
+                                    </td>
+
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                    <p class="log-section-subtitle"
+                        style="margin-top:18px;">
+
+                        Event availability depends on Windows
+                        audit policy, system configuration,
+                        and the log collection settings
+                        configured for the Wazuh agent.
+
+                    </p>
+
+                </div>
+
+            </section>
+
+
+            <!-- =====================================
+                 SYSMON REFERENCE
+            ====================================== -->
+
+            <section class="log-section" id="sysmon-events">
+
+                <div class="log-section-header">
+
+                    <div class="log-section-heading">
+
+                        <div class="log-section-number">03</div>
+
+                        <div>
+
+                            <h2 class="log-section-title">
+                                Sysmon Event Reference
+                            </h2>
+
+                            <p class="log-section-subtitle">
+                                Review endpoint telemetry used
+                                for process and network investigations.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="log-panel">
+
+                    <div class="log-table-wrapper">
+
+                        <table class="log-table">
+
+                            <thead>
+
+                                <tr>
+                                    <th>Event ID</th>
+                                    <th>Event Name</th>
+                                    <th>Collected Information</th>
+                                    <th>Analysis Focus</th>
+                                </tr>
+
+                            </thead>
+
+                            <tbody>
+
+                                <tr>
+
+                                    <td>
+                                        <span class="log-event-id">
+                                            1
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <span class="log-event-name">
+                                            Process Create
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        Process image, command line,
+                                        parent process, and hashes
+                                        when configured.
+                                    </td>
+
+                                    <td>
+                                        Process execution
+                                        and suspicious commands.
+                                    </td>
+
+                                </tr>
+
+                                <tr>
+
+                                    <td>
+                                        <span class="log-event-id">
+                                            3
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <span class="log-event-name">
+                                            Network Connection
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        Process-related network
+                                        connection information.
+                                    </td>
+
+                                    <td>
+                                        Destination IP,
+                                        ports, and processes.
+                                    </td>
+
+                                </tr>
+
+                                <tr>
+
+                                    <td>
+                                        <span class="log-event-id">
+                                            7
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <span class="log-event-name">
+                                            Image Loaded
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        Module or image loading
+                                        events when configured.
+                                    </td>
+
+                                    <td>
+                                        Unusual module loading
+                                        and process behavior.
+                                    </td>
+
+                                </tr>
+
+                                <tr>
+
+                                    <td>
+                                        <span class="log-event-id">
+                                            10
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <span class="log-event-name">
+                                            Process Access
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        One process accessing
+                                        another process.
+                                    </td>
+
+                                    <td>
+                                        Investigate suspicious
+                                        cross-process access.
+                                    </td>
+
+                                </tr>
+
+                                <tr>
+
+                                    <td>
+                                        <span class="log-event-id">
+                                            11
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <span class="log-event-name">
+                                            File Create
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        File creation or
+                                        overwrite activity.
+                                    </td>
+
+                                    <td>
+                                        Review created files
+                                        and their paths.
+                                    </td>
+
+                                </tr>
+
+                                <tr>
+
+                                    <td>
+                                        <span class="log-event-id">
+                                            22
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <span class="log-event-name">
+                                            DNS Query
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        DNS query activity
+                                        associated with processes.
+                                    </td>
+
+                                    <td>
+                                        Investigate queried
+                                        domains and processes.
+                                    </td>
+
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                    <p class="log-section-subtitle"
+                        style="margin-top:18px;">
+
+                        Sysmon events are recorded in
+                        Microsoft-Windows-Sysmon/Operational.
+                        Event generation depends on the
+                        installed Sysmon configuration.
+
+                    </p>
+
+                </div>
+
+            </section>
+
+
+            <!-- =====================================
+                 EVENT INVESTIGATION LIBRARY
+            ====================================== -->
+
+            <section class="log-section" id="event-library">
+
+                <div class="log-section-header">
+
+                    <div class="log-section-heading">
+
+                        <div class="log-section-number">04</div>
+
+                        <div>
+
+                            <h2 class="log-section-title">
+                                Event Investigation Library
+                            </h2>
+
+                            <p class="log-section-subtitle">
+                                Search and filter documented
+                                investigation scenarios.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="log-panel"
+                    style="margin-bottom:22px;">
+
+                    <label class="log-search-box"
+                        for="logSearch">
+
+                        <span class="log-search-icon">⌕</span>
+
+                        <input
+                            type="search"
+                            id="logSearch"
+                            class="log-search-input"
+                            placeholder="Search events, SSH, authentication, Sysmon..."
+                            autocomplete="off"
+                            aria-label="Search investigation scenarios">
+
+                    </label>
+
+                    <div class="log-filters"
+                        role="group"
+                        aria-label="Filter log investigations">
+
+                        <button
+                            type="button"
+                            class="log-filter-btn active"
+                            data-filter="all"
+                            aria-pressed="true">
+
+                            All Events
+
+                        </button>
+
+                        <button
+                            type="button"
+                            class="log-filter-btn"
+                            data-filter="windows"
+                            aria-pressed="false">
+
+                            Windows
+
+                        </button>
+
+                        <button
+                            type="button"
+                            class="log-filter-btn"
+                            data-filter="sysmon"
+                            aria-pressed="false">
+
+                            Sysmon
+
+                        </button>
+
+                        <button
+                            type="button"
+                            class="log-filter-btn"
+                            data-filter="linux"
+                            aria-pressed="false">
+
+                            Linux
+
+                        </button>
+
+                        <button
+                            type="button"
+                            class="log-filter-btn"
+                            data-filter="server"
+                            aria-pressed="false">
+
+                            Windows Server
+
+                        </button>
+
+                    </div>
+
+                    <div class="log-results-count"
+                        id="logResultsCount"
+                        aria-live="polite">
+
+                        Showing all investigation scenarios.
+
+                    </div>
+
+                </div>
+
+
+                <div class="log-sources-grid"
+                    id="logInvestigationGrid">
+
+
+                    <!-- Windows Authentication -->
+
+                    <article
+                        class="log-source-card log-event-card"
+                        data-category="windows"
+                        data-search="windows authentication events 4624 4625 successful failed login security">
+
+                        <div class="log-source-top">
+
+                            <div class="log-source-icon">⌁</div>
+
+                            <span class="log-source-badge">
+                                Windows
+                            </span>
+
+                        </div>
+
+                        <h3>Authentication Events</h3>
+
+                        <p class="log-source-description">
+
+                            Investigate Windows login activity,
+                            failed authentication attempts,
+                            account names, logon types,
+                            and source addresses.
+
+                        </p>
+
+                        <div class="log-source-meta">
+
+                            <span class="log-tag">Event ID 4624</span>
+
+                            <span class="log-tag">Event ID 4625</span>
+
+                        </div>
+
+                        <div class="log-source-footer">
+
+                            <span class="log-source-id">LOG-001</span>
+
+                            <a
+                                href="../content/log-analysis/windows/authentication-events.md"
+                                class="log-source-link"
+                                target="_blank"
+                                rel="noopener">
+
+                                Read Guide ↗
+
+                            </a>
+
+                        </div>
+
+                    </article>
+
+
+                    <!-- Process Creation -->
+
+                    <article
+                        class="log-source-card log-event-card"
+                        data-category="windows"
+                        data-search="windows process creation 4688 command line parent process">
+
+                        <div class="log-source-top">
+
+                            <div class="log-source-icon">⌘</div>
+
+                            <span class="log-source-badge">
+                                Windows
+                            </span>
+
+                        </div>
+
+                        <h3>Process Creation Analysis</h3>
+
+                        <p class="log-source-description">
+
+                            Review process creation events,
+                            process names, command-line
+                            arguments, and available
+                            process context.
+
+                        </p>
+
+                        <div class="log-source-meta">
+
+                            <span class="log-tag">Event ID 4688</span>
+
+                            <span class="log-tag">Process Audit</span>
+
+                        </div>
+
+                        <div class="log-source-footer">
+
+                            <span class="log-source-id">LOG-002</span>
+
+                            <a
+                                href="../content/log-analysis/windows/process-creation.md"
+                                class="log-source-link"
+                                target="_blank"
+                                rel="noopener">
+
+                                Read Guide ↗
+
+                            </a>
+
+                        </div>
+
+                    </article>
+
+
+                    <!-- Sysmon -->
+
+                    <article
+                        class="log-source-card log-event-card"
+                        data-category="sysmon"
+                        data-search="sysmon events process creation network connection dns file creation">
+
+                        <div class="log-source-top">
+
+                            <div class="log-source-icon">▤</div>
+
+                            <span class="log-source-badge">
+                                Sysmon
+                            </span>
+
+                        </div>
+
+                        <h3>Sysmon Event Analysis</h3>
+
+                        <p class="log-source-description">
+
+                            Examine Sysmon telemetry,
+                            process creation, network
+                            connections, DNS queries,
+                            and file activity.
+
+                        </p>
+
+                        <div class="log-source-meta">
+
+                            <span class="log-tag">Event ID 1</span>
+
+                            <span class="log-tag">Event ID 3</span>
+
+                            <span class="log-tag">Event ID 22</span>
+
+                        </div>
+
+                        <div class="log-source-footer">
+
+                            <span class="log-source-id">LOG-003</span>
+
+                            <a
+                                href="../content/log-analysis/windows/sysmon-events.md"
+                                class="log-source-link"
+                                target="_blank"
+                                rel="noopener">
+
+                                Read Guide ↗
+
+                            </a>
+
+                        </div>
+
+                    </article>
+
+
+                    <!-- Linux SSH -->
+
+                    <article
+                        class="log-source-card log-event-card"
+                        data-category="linux"
+                        data-search="linux ssh authentication failed password accepted sshd auth.log">
+
+                        <div class="log-source-top">
+
+                            <div class="log-source-icon">⌁</div>
+
+                            <span class="log-source-badge">
+                                Linux
+                            </span>
+
+                        </div>
+
+                        <h3>SSH Authentication Analysis</h3>
+
+                        <p class="log-source-description">
+
+                            Investigate SSH authentication
+                            failures, successful logins,
+                            source IP addresses,
+                            and account activity.
+
+                        </p>
+
+                        <div class="log-source-meta">
+
+                            <span class="log-tag">auth.log</span>
+
+                            <span class="log-tag">sshd</span>
+
+                        </div>
+
+                        <div class="log-source-footer">
+
+                            <span class="log-source-id">LOG-004</span>
+
+                            <a
+                                href="../content/log-analysis/linux/ssh-authentication.md"
+                                class="log-source-link"
+                                target="_blank"
+                                rel="noopener">
+
+                                Read Guide ↗
+
+                            </a>
+
+                        </div>
+
+                    </article>
+
+
+                    <!-- Linux Privilege -->
+
+                    <article
+                        class="log-source-card log-event-card"
+                        data-category="linux"
+                        data-search="linux privilege escalation sudo su root authorization logs">
+
+                        <div class="log-source-top">
+
+                            <div class="log-source-icon">⚙</div>
+
+                            <span class="log-source-badge">
+                                Linux
+                            </span>
+
+                        </div>
+
+                        <h3>Privilege Escalation Analysis</h3>
+
+                        <p class="log-source-description">
+
+                            Review sudo usage, privilege-related
+                            events, user context, and
+                            suspicious authorization activity.
+
+                        </p>
+
+                        <div class="log-source-meta">
+
+                            <span class="log-tag">sudo</span>
+
+                            <span class="log-tag">Privilege Monitoring</span>
+
+                        </div>
+
+                        <div class="log-source-footer">
+
+                            <span class="log-source-id">LOG-005</span>
+
+                            <a
+                                href="../content/log-analysis/linux/privilege-escalation.md"
+                                class="log-source-link"
+                                target="_blank"
+                                rel="noopener">
+
+                                Read Guide ↗
+
+                            </a>
+
+                        </div>
+
+                    </article>
+
+
+                    <!-- Active Directory -->
+
+                    <article
+                        class="log-source-card log-event-card"
+                        data-category="server"
+                        data-search="windows server active directory authentication kerberos account domain controller">
+
+                        <div class="log-source-top">
+
+                            <div class="log-source-icon">▦</div>
+
+                            <span class="log-source-badge">
+                                Windows Server
+                            </span>
+
+                        </div>
+
+                        <h3>Active Directory Events</h3>
+
+                        <p class="log-source-description">
+
+                            Examine domain authentication,
+                            Kerberos-related events,
+                            account activity, and
+                            domain controller logs.
+
+                        </p>
+
+                        <div class="log-source-meta">
+
+                            <span class="log-tag">Event ID 4768</span>
+
+                            <span class="log-tag">Event ID 4771</span>
+
+                        </div>
+
+                        <div class="log-source-footer">
+
+                            <span class="log-source-id">LOG-006</span>
+
+                            <a
+                                href="../content/log-analysis/windows-server/active-directory-events.md"
+                                class="log-source-link"
+                                target="_blank"
+                                rel="noopener">
+
+                                Read Guide ↗
+
+                            </a>
+
+                        </div>
+
+                    </article>
+
+                </div>
+
+
+                <div class="log-empty-state"
+                    id="logEmptyState">
+
+                    <h3>No Investigation Found</h3>
+
+                    <p>
+                        Try a different keyword
+                        or select another log source.
+                    </p>
+
+                </div>
+
+            </section>
+
+
+            <!-- =====================================
+                 QUERY EXAMPLES
+            ====================================== -->
+
+            <section class="log-section" id="query-examples">
+
+                <div class="log-section-header">
+
+                    <div class="log-section-heading">
+
+                        <div class="log-section-number">05</div>
+
+                        <div>
+
+                            <h2 class="log-section-title">
+                                Log Investigation Queries
+                            </h2>
+
+                            <p class="log-section-subtitle">
+                                Example queries for investigating
+                                events in the Wazuh dashboard.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="log-query-grid">
+
+                    <!-- Windows Query -->
+
+                    <article class="log-query-card">
+
+                        <div class="log-query-header">
+
+                            <h3>Windows Failed Logons</h3>
+
+                            <span>Windows Security</span>
+
+                        </div>
+
+                        <div class="log-query-code">
+
+                            <pre><code>data.win.system.eventID: "4625"</code></pre>
+
+                        </div>
+
+                        <div class="log-query-note">
+
+                            Search for Windows failed logon
+                            events. Field availability and
+                            query syntax depend on the
+                            Wazuh dashboard index mapping.
+
+                        </div>
+
+                    </article>
+
+
+                    <!-- Sysmon Query -->
+
+                    <article class="log-query-card">
+
+                        <div class="log-query-header">
+
+                            <h3>Sysmon Process Creation</h3>
+
+                            <span>Sysmon</span>
+
+                        </div>
+
+                        <div class="log-query-code">
+
+                            <pre><code>data.win.system.channel:
+"Microsoft-Windows-Sysmon/Operational"
+AND data.win.system.eventID: "1"</code></pre>
+
+                        </div>
+
+                        <div class="log-query-note">
+
+                            Search for Sysmon process creation
+                            events. Confirm the field names
+                            using the actual indexed alert
+                            documents in your environment.
+
+                        </div>
+
+                    </article>
+
+
+                    <!-- Linux Query -->
+
+                    <article class="log-query-card">
+
+                        <div class="log-query-header">
+
+                            <h3>Linux SSH Authentication</h3>
+
+                            <span>Linux</span>
+
+                        </div>
+
+                        <div class="log-query-code">
+
+                            <pre><code>rule.groups: "authentication_failed"</code></pre>
+
+                        </div>
+
+                        <div class="log-query-note">
+
+                            Illustrative search for failed
+                            authentication alerts. Wazuh
+                            rule groups and indexed fields
+                            vary according to the matched
+                            decoder and rule.
+
+                        </div>
+
+                    </article>
+
+
+                    <!-- Alert Level -->
+
+                    <article class="log-query-card">
+
+                        <div class="log-query-header">
+
+                            <h3>Higher-Level Alerts</h3>
+
+                            <span>Wazuh Alerts</span>
+
+                        </div>
+
+                        <div class="log-query-code">
+
+                            <pre><code>rule.level: [10 TO 15]</code></pre>
+
+                        </div>
+
+                        <div class="log-query-note">
+
+                            Example range for reviewing
+                            higher-level alerts. This is
+                            not a determination that every
+                            matching event is malicious.
+
+                        </div>
+
+                    </article>
+
+                </div>
+
+            </section>
+
+
+            <!-- =====================================
+                 INVESTIGATION WORKFLOW
+            ====================================== -->
+
+            <section class="log-section"
+                id="investigation-workflow">
+
+                <div class="log-section-header">
+
+                    <div class="log-section-heading">
+
+                        <div class="log-section-number">06</div>
+
+                        <div>
+
+                            <h2 class="log-section-title">
+                                SOC Investigation Workflow
+                            </h2>
+
+                            <p class="log-section-subtitle">
+                                Follow a repeatable process
+                                when investigating security events.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="log-workflow">
+
+                    <article class="log-workflow-card">
+
+                        <div class="log-workflow-number">01</div>
+
+                        <h3>Identify the Event</h3>
+
+                        <p>
+                            Locate the alert or event.
+                            Record its timestamp, source
+                            host, event ID, and affected account.
+                        </p>
+
+                    </article>
+
+
+                    <article class="log-workflow-card">
+
+                        <div class="log-workflow-number">02</div>
+
+                        <h3>Collect Context</h3>
+
+                        <p>
+                            Review the source IP,
+                            process information, user,
+                            logon type, and surrounding events.
+                        </p>
+
+                    </article>
+
+
+                    <article class="log-workflow-card">
+
+                        <div class="log-workflow-number">03</div>
+
+                        <h3>Correlate Events</h3>
+
+                        <p>
+                            Search related events across
+                            the relevant time window
+                            and monitored endpoints.
+                        </p>
+
+                    </article>
+
+
+                    <article class="log-workflow-card">
+
+                        <div class="log-workflow-number">04</div>
+
+                        <h3>Document Findings</h3>
+
+                        <p>
+                            Record evidence, conclusions,
+                            uncertainty, and escalation
+                            or response actions.
+                        </p>
+
+                    </article>
+
+                </div>
+
+            </section>
+
+
+            <!-- =====================================
+                 RELATED RESOURCES
+            ====================================== -->
+
+            <section class="log-section"
+                id="related-resources">
+
+                <div class="log-section-header">
+
+                    <div class="log-section-heading">
+
+                        <div class="log-section-number">07</div>
+
+                        <div>
+
+                            <h2 class="log-section-title">
+                                Related Resources
+                            </h2>
+
+                            <p class="log-section-subtitle">
+                                Continue your investigation
+                                through the other SOC lab modules.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="log-resource-grid">
+
+                    <article class="log-resource-card">
+
+                        <h3>Detection Rules</h3>
+
+                        <p>
+                            Review custom Wazuh XML rules,
+                            detection logic, and
+                            MITRE ATT&amp;CK mappings.
+                        </p>
+
+                        <a href="detection-rules.html">
+                            Explore Detection Rules →
+                        </a>
+
+                    </article>
+
+
+                    <article class="log-resource-card">
+
+                        <h3>Threat Detection</h3>
+
+                        <p>
+                            Explore documented threat
+                            scenarios and their
+                            detection procedures.
+                        </p>
+
+                        <a href="threat-detection.html">
+                            Explore Threat Detection →
+                        </a>
+
+                    </article>
+
+
+                    <article class="log-resource-card">
+
+                        <h3>Incident Response</h3>
+
+                        <p>
+                            Review investigation cases,
+                            evidence collection,
+                            and incident documentation.
+                        </p>
+
+                        <a href="incident-response.html">
+                            Explore Incident Response →
+                        </a>
+
+                    </article>
+
+                </div>
+
+            </section>
+
+
+            <!-- =====================================
+                 FOOTER
+            ====================================== -->
+
+            <footer class="log-footer">
+
+                <div>
+                    Wazuh SOC Home Lab
+                    <span> | </span>
+                    Log Analysis
+                </div>
+
+                <div>
+
+                    <a href="architecture.html">
+                        Architecture
+                    </a>
+
+                    <span> · </span>
+
+                    <a href="detection-rules.html">
+                        Detection Rules
+                    </a>
+
+                    <span> · </span>
+
+                    <a href="../index.html">
+                        Back to Home
+                    </a>
+
+                </div>
+
+            </footer>
+
+        </div>
+
+    </main>
+
+
+    <!-- Sidebar overlay -->
+
+    <div
+        class="sidebar-overlay"
+        id="sidebarOverlay"
+        aria-hidden="true">
+    </div>
+
+
+    <!-- Shared JavaScript -->
+
+    <script src="../assets/js/navigation.js"></script>
+    <script src="../assets/js/main.js"></script>
+    <script src="../assets/js/search.js"></script>
+    <script src="../assets/js/viewer.js"></script>
+
+
+    <!-- =========================================
+         LOG ANALYSIS PAGE JAVASCRIPT
+    ========================================== -->
+
+    <script>
+
+        document.addEventListener("DOMContentLoaded", function () {
+
+            /* =====================================
+               1. SEARCH AND FILTER
+            ====================================== */
+
+            const searchInput =
+                document.getElementById("logSearch");
+
+            const filterButtons =
+                document.querySelectorAll(".log-filter-btn");
+
+            const eventCards =
+                document.querySelectorAll(".log-event-card");
+
+            const emptyState =
+                document.getElementById("logEmptyState");
+
+            const resultsCount =
+                document.getElementById("logResultsCount");
+
+            let activeFilter = "all";
+
+
+            function filterEvents() {
+
+                const searchTerm =
+                    searchInput.value.trim().toLowerCase();
+
+                let visibleCount = 0;
+
+                eventCards.forEach(function (card) {
+
+                    const category =
+                        card.dataset.category || "";
+
+                    const searchableText =
+                        (
+                            card.dataset.search +
+                            " " +
+                            card.textContent
+                        ).toLowerCase();
+
+                    const matchesCategory =
+                        activeFilter === "all" ||
+                        category === activeFilter;
+
+                    const matchesSearch =
+                        searchableText.includes(searchTerm);
+
+                    const visible =
+                        matchesCategory && matchesSearch;
+
+                    card.hidden = !visible;
+
+                    if (visible) {
+                        visibleCount++;
+                    }
+
+                });
+
+
+                emptyState.style.display =
+                    visibleCount === 0 ? "block" : "none";
+
+                resultsCount.textContent =
+                    "Showing " + visibleCount +
+                    " investigation scenario" +
+                    (visibleCount === 1 ? "" : "s") + ".";
+
+            }
+
+
+            searchInput.addEventListener(
+                "input",
+                filterEvents
+            );
+
+
+            filterButtons.forEach(function (button) {
+
+                button.addEventListener("click", function () {
+
+                    filterButtons.forEach(function (btn) {
+
+                        btn.classList.remove("active");
+
+                        btn.setAttribute(
+                            "aria-pressed",
+                            "false"
+                        );
+
+                    });
+
+                    button.classList.add("active");
+
+                    button.setAttribute(
+                        "aria-pressed",
+                        "true"
+                    );
+
+                    activeFilter =
+                        button.dataset.filter;
+
+                    filterEvents();
+
+                });
+
+            });
+
+
+            filterEvents();
+
+        });
+
+    </script>
+
+</body>
+
+</html>

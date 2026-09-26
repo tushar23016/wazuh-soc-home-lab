@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Incident response and investigation workspace for the Wazuh SOC Home Lab, including playbooks, incident records, evidence checklists, and analyst handover.">
+<meta name="theme-color" content="#080d18">
+<title>Incident Response | Wazuh SOC Home Lab</title>
+<link rel="stylesheet" href="../assets/css/style.css">
+<link rel="stylesheet" href="../assets/css/responsive.css">
+<link rel="stylesheet" href="../assets/css/animations.css">
+<style>
+.incident-page{--ir-accent:#00e599;--ir-soft:rgba(0,229,153,.1);--ir-border:rgba(148,163,184,.14);--ir-muted:#8492a6;--ir-panel:rgba(15,23,42,.78);padding:30px;color:#e2e8f0}
+.incident-page *{box-sizing:border-box}.ir-container{max-width:1500px;margin:auto}
+.ir-breadcrumb{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:25px;color:var(--ir-muted);font-size:13px}.ir-breadcrumb a{color:var(--ir-muted);text-decoration:none}.ir-breadcrumb a:hover,.ir-breadcrumb .current{color:var(--ir-accent)}
+.ir-header{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;flex-wrap:wrap;margin-bottom:30px}.ir-heading{max-width:850px}.ir-eyebrow{display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border:1px solid rgba(0,229,153,.22);border-radius:30px;background:var(--ir-soft);color:var(--ir-accent);font-size:11px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:16px}.ir-dot{width:7px;height:7px;border-radius:50%;background:var(--ir-accent);box-shadow:0 0 10px rgba(0,229,153,.7)}
+.ir-title{font-size:clamp(30px,4vw,48px);line-height:1.15;letter-spacing:-1.2px;margin:0 0 15px;color:#eaf2fa}.ir-title span{color:var(--ir-accent)}.ir-description{color:#9aa9bd;font-size:15px;line-height:1.8;margin:0}
+.ir-actions{display:flex;gap:10px;flex-wrap:wrap}.ir-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 16px;border:1px solid var(--ir-border);border-radius:10px;background:rgba(15,23,42,.8);color:#dce5ef;text-decoration:none;font:600 13px inherit;cursor:pointer;transition:.2s}.ir-btn:hover{border-color:rgba(0,229,153,.4);transform:translateY(-2px)}.ir-btn-primary{background:var(--ir-accent);color:#04120d;border-color:var(--ir-accent)}
+.ir-section{margin-top:34px}.ir-section-head{display:flex;justify-content:space-between;align-items:flex-end;gap:18px;flex-wrap:wrap;margin-bottom:18px}.ir-kicker{color:var(--ir-accent);font-size:11px;font-weight:800;letter-spacing:1.3px;text-transform:uppercase;margin:0 0 8px}.ir-h2{margin:0;color:#e5edf6;font-size:clamp(22px,2.5vw,29px);letter-spacing:-.4px}.ir-subtitle{margin:9px 0 0;color:var(--ir-muted);font-size:14px;line-height:1.7}
+.ir-lifecycle{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px}.ir-phase{position:relative;padding:19px 16px;border:1px solid var(--ir-border);border-radius:14px;background:var(--ir-panel);min-height:155px}.ir-phase-num{color:var(--ir-accent);font-size:11px;font-weight:800;letter-spacing:1px;margin-bottom:15px}.ir-phase h3{font-size:14px;margin:0 0 9px;color:#e6eef7}.ir-phase p{font-size:12px;line-height:1.65;color:var(--ir-muted);margin:0}
+.ir-toolbar{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px}.ir-search{flex:1;min-width:220px;position:relative}.ir-search input{width:100%;padding:13px 15px;border:1px solid var(--ir-border);border-radius:11px;background:rgba(8,15,29,.8);color:#e2e8f0;font:inherit;outline:none}.ir-search input:focus{border-color:var(--ir-accent);box-shadow:0 0 0 3px rgba(0,229,153,.08)}.ir-filters{display:flex;gap:8px;flex-wrap:wrap}.ir-filter{padding:10px 13px;border:1px solid var(--ir-border);border-radius:9px;background:rgba(15,23,42,.65);color:var(--ir-muted);font:600 12px inherit;cursor:pointer}.ir-filter.active,.ir-filter:hover{color:var(--ir-accent);border-color:rgba(0,229,153,.35);background:var(--ir-soft)}
+.ir-playbook-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.ir-playbook{padding:23px;border:1px solid var(--ir-border);border-radius:16px;background:var(--ir-panel);transition:transform .2s,border-color .2s}.ir-playbook:hover{transform:translateY(-3px);border-color:rgba(0,229,153,.3)}.ir-playbook-top{display:flex;justify-content:space-between;gap:15px;align-items:flex-start;margin-bottom:16px}.ir-playbook-icon{width:45px;height:45px;display:grid;place-items:center;border:1px solid rgba(0,229,153,.2);border-radius:12px;background:var(--ir-soft);color:var(--ir-accent);font-size:21px}.ir-tag{font-size:10px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;padding:6px 9px;border-radius:20px;border:1px solid var(--ir-border);color:var(--ir-muted)}.ir-playbook h3{margin:0 0 9px;font-size:17px;color:#e6eef7}.ir-playbook p{margin:0 0 17px;color:var(--ir-muted);font-size:13px;line-height:1.75}.ir-points{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:20px}.ir-points span{font-size:11px;color:#a9b7c8;padding:6px 8px;border:1px solid rgba(148,163,184,.1);border-radius:7px;background:rgba(2,6,15,.2)}.ir-playbook .ir-btn{width:100%}
+.ir-record-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px}.ir-record{padding:22px;border:1px solid var(--ir-border);border-radius:15px;background:var(--ir-panel)}.ir-record-id{color:var(--ir-accent);font-size:11px;font-weight:800;letter-spacing:1px}.ir-record h3{font-size:16px;margin:12px 0;color:#e6eef7}.ir-record p{font-size:13px;line-height:1.7;color:var(--ir-muted);margin:0 0 17px}.ir-record a{color:var(--ir-accent);font-size:12px;font-weight:700;text-decoration:none}.ir-record a:hover{text-decoration:underline}
+.ir-two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px}.ir-panel{padding:23px;border:1px solid var(--ir-border);border-radius:16px;background:var(--ir-panel)}.ir-panel h3{margin:0 0 17px;font-size:17px;color:#e6eef7}.ir-checklist{display:grid;gap:12px}.ir-check{display:flex;align-items:flex-start;gap:11px;color:#aebccc;font-size:13px;line-height:1.6}.ir-check input{margin-top:3px;accent-color:var(--ir-accent);width:15px;height:15px;flex-shrink:0}.ir-handover{display:grid;gap:12px}.ir-handover li{color:#aebccc;font-size:13px;line-height:1.65;padding-left:4px}.ir-handover li::marker{color:var(--ir-accent)}
+.ir-note{display:flex;gap:13px;margin-top:26px;padding:20px;border:1px solid rgba(0,229,153,.2);border-radius:14px;background:rgba(0,229,153,.05)}.ir-note strong{display:block;color:#dffcf1;font-size:14px;margin-bottom:6px}.ir-note p{margin:0;color:#9aabbc;font-size:13px;line-height:1.7}.ir-footer{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-top:38px;padding-top:22px;border-top:1px solid var(--ir-border);font-size:12px;color:var(--ir-muted)}.ir-footer a{color:var(--ir-accent);text-decoration:none}
+.ir-modal-backdrop{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(2,6,15,.78);backdrop-filter:blur(8px)}.ir-modal-backdrop.open{display:flex}.ir-modal{width:min(720px,100%);max-height:85vh;overflow:auto;border:1px solid rgba(0,229,153,.25);border-radius:18px;background:#0b1220;box-shadow:0 25px 90px rgba(0,0,0,.5)}.ir-modal-head{display:flex;justify-content:space-between;align-items:center;gap:15px;padding:22px;border-bottom:1px solid var(--ir-border)}.ir-modal-head h2{margin:0;color:#e6eef7;font-size:20px}.ir-modal-close{border:1px solid var(--ir-border);border-radius:8px;background:transparent;color:#dce5ef;font-size:20px;width:36px;height:36px;cursor:pointer}.ir-modal-body{padding:23px;color:#aebccc;font-size:14px;line-height:1.8}.ir-modal-body h3{color:var(--ir-accent);font-size:14px;margin:18px 0 6px}.ir-modal-body h3:first-child{margin-top:0}.ir-modal-body ul{padding-left:20px;margin:7px 0}
+@media(max-width:1200px){.ir-lifecycle{grid-template-columns:repeat(3,minmax(0,1fr))}.ir-record-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:900px){.incident-page{padding:24px}.ir-two-col{grid-template-columns:1fr}}
+@media(max-width:640px){.incident-page{padding:20px 15px}.ir-lifecycle,.ir-playbook-grid,.ir-record-grid{grid-template-columns:1fr}.ir-header .ir-actions{width:100%}.ir-header .ir-btn{flex:1}.ir-phase{min-height:0}.ir-section-head{align-items:flex-start}.ir-panel{padding:18px}.ir-footer{flex-direction:column}}
+@media(prefers-reduced-motion:reduce){.incident-page *,.incident-page *::before,.incident-page *::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+    <!-- Shared top navigation: kept identical to supplied page structure -->
+    <header class="navbar" id="navbar">
+        <div class="navbar-left">
+            <button class="menu-toggle" id="menuToggle" type="button" aria-label="Toggle sidebar" aria-expanded="false" aria-controls="sidebar">
+                <span></span><span></span><span></span>
+            </button>
+            <a href="../index.html" class="navbar-brand">
+                <img src="../assets/images/logo.svg" alt="Wazuh SOC Lab Logo" class="navbar-logo">
+                <span class="brand-text">WAZUH <span class="brand-highlight">SOC LAB</span></span>
+            </a>
+        </div>
+        <div class="navbar-right">
+            <div class="navbar-status"><span class="status-dot"></span><span>Home Lab</span></div>
+            <a href="../index.html" class="navbar-home" aria-label="Return to homepage"><span>Home</span></a>
+        </div>
+    </header>
+
+    <!-- Shared sidebar navigation; Incident Response is the active SOC Lab page -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header"><span class="sidebar-section-label">MAIN MENU</span></div>
+        <nav class="sidebar-nav" aria-label="Main navigation">
+            <a href="../index.html" class="nav-link"><span class="nav-icon">⌂</span><span class="nav-text">Overview</span></a>
+            <div class="sidebar-divider"></div>
+            <span class="sidebar-section-label">SOC LAB</span>
+            <a href="architecture.html" class="nav-link"><span class="nav-icon">⌘</span><span class="nav-text">Architecture</span></a>
+            <a href="documentation.html" class="nav-link"><span class="nav-icon">▤</span><span class="nav-text">Documentation</span></a>
+            <a href="detection-rules.html" class="nav-link"><span class="nav-icon">⚙</span><span class="nav-text">Detection Rules</span></a>
+            <a href="log-analysis.html" class="nav-link"><span class="nav-icon">⌕</span><span class="nav-text">Log Analysis</span></a>
+            <a href="threat-detection.html" class="nav-link"><span class="nav-icon">⚠</span><span class="nav-text">Threat Detection</span></a>
+            <a href="incident-response.html" class="nav-link active" aria-current="page"><span class="nav-icon">◎</span><span class="nav-text">Incident Response</span></a>
+            <div class="sidebar-divider"></div>
+            <span class="sidebar-section-label">RESOURCES</span>
+            <a href="dashboards.html" class="nav-link"><span class="nav-icon">▦</span><span class="nav-text">Dashboards</span></a>
+            <a href="scripts.html" class="nav-link"><span class="nav-icon">⌘</span><span class="nav-text">Scripts</span></a>
+            <a href="reports.html" class="nav-link"><span class="nav-icon">▧</span><span class="nav-text">Reports</span></a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="sidebar-footer-indicator"><span class="status-dot"></span><span>Personal Lab Environment</span></div>
+            <p>Wazuh SOC Home Lab</p>
+        </div>
+    </aside>
+
+    <main class="main-content incident-page">
+        <div class="ir-container">
+            <nav class="ir-breadcrumb" aria-label="Breadcrumb"><a href="../index.html">Home</a><span>/</span><span>SOC Lab</span><span>/</span><span class="current">Incident Response</span></nav>
+            <section class="ir-header">
+                <div class="ir-heading">
+                    <div class="ir-eyebrow"><span class="ir-dot"></span> SOC OPERATIONS · INVESTIGATION WORKSPACE</div>
+                    <h1 class="ir-title">Incident Response <span>&amp; Investigation</span></h1>
+                    <p class="ir-description">A structured workspace for documenting how a SOC analyst handles security incidents—from initial alert triage and evidence collection through containment, remediation, recovery, and lessons learned. Use the playbooks as investigation checklists and link each exercise to its corresponding incident record and lab evidence.</p>
+                </div>
+                <div class="ir-actions">
+                    <a class="ir-btn ir-btn-primary" href="../content/incident-response/README.md" target="_blank" rel="noopener">Incident Register ↗</a>
+                    <a class="ir-btn" href="#ir-playbooks">Explore Playbooks ↓</a>
+                </div>
+            </section>
+
+            <section class="ir-section" aria-labelledby="ir-lifecycle-title">
+                <div class="ir-section-head"><div><p class="ir-kicker">Response framework</p><h2 class="ir-h2" id="ir-lifecycle-title">Incident Response Lifecycle</h2><p class="ir-subtitle">Six phases provide a repeatable structure for investigation and response. Actions should be adapted to the incident, lab scope, and available evidence.</p></div></div>
+                <div class="ir-lifecycle">
+                    <article class="ir-phase"><div class="ir-phase-num">PHASE 01</div><h3>Preparation</h3><p>Maintain tools, access, logging, response procedures, and evidence-handling readiness.</p></article>
+                    <article class="ir-phase"><div class="ir-phase-num">PHASE 02</div><h3>Identification</h3><p>Validate the alert, identify affected assets, establish scope, and determine initial severity.</p></article>
+                    <article class="ir-phase"><div class="ir-phase-num">PHASE 03</div><h3>Analysis &amp; Investigation</h3><p>Correlate events, build a timeline, collect artifacts, and document findings and uncertainty.</p></article>
+                    <article class="ir-phase"><div class="ir-phase-num">PHASE 04</div><h3>Containment</h3><p>Limit further activity using authorized, proportionate actions and preserve relevant evidence.</p></article>
+                    <article class="ir-phase"><div class="ir-phase-num">PHASE 05</div><h3>Eradication &amp; Remediation</h3><p>Remove the cause, address affected accounts or systems, and close identified control gaps.</p></article>
+                    <article class="ir-phase"><div class="ir-phase-num">PHASE 06</div><h3>Recovery &amp; Lessons Learned</h3><p>Validate normal operation, monitor for recurrence, and record improvements and follow-ups.</p></article>
+                </div>
+            </section>
+
+            <section class="ir-section" id="ir-playbooks" aria-labelledby="ir-playbooks-title">
+                <div class="ir-section-head"><div><p class="ir-kicker">Analyst procedures</p><h2 class="ir-h2" id="ir-playbooks-title">Investigation Playbooks</h2><p class="ir-subtitle">Search and filter playbooks, then open a playbook for triage, investigation, containment, recovery, and evidence guidance.</p></div></div>
+                <div class="ir-toolbar">
+                    <div class="ir-search"><input type="search" id="irSearch" placeholder="Search playbooks, indicators, or evidence..." aria-label="Search incident response playbooks"></div>
+                    <div class="ir-filters" role="group" aria-label="Filter playbooks">
+                        <button class="ir-filter active" data-filter="all" type="button">All Playbooks</button>
+                        <button class="ir-filter" data-filter="identity" type="button">Identity</button>
+                        <button class="ir-filter" data-filter="endpoint" type="button">Endpoint</button>
+                        <button class="ir-filter" data-filter="network" type="button">Network</button>
+                    </div>
+                </div>
+                <div class="ir-playbook-grid" id="irPlaybookGrid">
+                    <article class="ir-playbook" data-category="identity" data-search="failed logins authentication failures brute force source ip affected accounts account lockout">
+                        <div class="ir-playbook-top"><div class="ir-playbook-icon">⌁</div><span class="ir-tag">Identity</span></div>
+                        <h3>Failed Logins &amp; Brute-Force Indicators</h3><p>Investigate repeated authentication failures, identify source addresses and targeted accounts, and assess whether successful access followed the failures.</p>
+                        <div class="ir-points"><span>Authentication events</span><span>Source IP</span><span>Account activity</span></div>
+                        <button class="ir-btn ir-btn-primary" type="button" data-playbook="failed">Open Investigation Playbook →</button>
+                    </article>
+                    <article class="ir-playbook" data-category="endpoint" data-search="suspicious processes process creation command line parent process endpoint evidence">
+                        <div class="ir-playbook-top"><div class="ir-playbook-icon">⌘</div><span class="ir-tag">Endpoint</span></div>
+                        <h3>Suspicious Process Execution</h3><p>Review process creation and command-line activity, parent-child relationships, user context, timestamps, and associated endpoint evidence.</p>
+                        <div class="ir-points"><span>Process tree</span><span>Command line</span><span>Sysmon</span></div>
+                        <button class="ir-btn ir-btn-primary" type="button" data-playbook="process">Open Investigation Playbook →</button>
+                    </article>
+                    <article class="ir-playbook" data-category="endpoint" data-search="file integrity monitoring fim unexpected file modifications hash file path user">
+                        <div class="ir-playbook-top"><div class="ir-playbook-icon">▧</div><span class="ir-tag">Endpoint</span></div>
+                        <h3>Unexpected File Integrity Changes</h3><p>Validate Wazuh FIM alerts, examine changed paths and attributes, identify the responsible account or process where possible, and assess impact.</p>
+                        <div class="ir-points"><span>FIM alerts</span><span>File path</span><span>Change context</span></div>
+                        <button class="ir-btn ir-btn-primary" type="button" data-playbook="fim">Open Investigation Playbook →</button>
+                    </article>
+                    <article class="ir-playbook" data-category="network" data-search="unexpected network connections suspicious connections destination ip ports endpoint activity">
+                        <div class="ir-playbook-top"><div class="ir-playbook-icon">⇄</div><span class="ir-tag">Network</span></div>
+                        <h3>Unexpected Network Connections</h3><p>Investigate unusual connection records, destination addresses and ports, initiating processes, endpoint context, and related activity.</p>
+                        <div class="ir-points"><span>Destination IP</span><span>Ports</span><span>Process context</span></div>
+                        <button class="ir-btn ir-btn-primary" type="button" data-playbook="network">Open Investigation Playbook →</button>
+                    </article>
+                </div>
+                <p id="irNoResults" hidden style="color:var(--ir-muted);padding:20px 0">No playbooks match your search. Try another term or category.</p>
+            </section>
+
+            <section class="ir-section" aria-labelledby="ir-records-title">
+                <div class="ir-section-head"><div><p class="ir-kicker">Case documentation</p><h2 class="ir-h2" id="ir-records-title">Incident Records</h2><p class="ir-subtitle">Open the corresponding Markdown case file to record severity, evidence, timeline, response actions, resolution, and outcome. These are planned record links; populate them with verified lab findings.</p></div></div>
+                <div class="ir-record-grid">
+                    <article class="ir-record"><div class="ir-record-id">INC-001</div><h3>Brute-Force Activity</h3><p>Authentication failure sequence, source and target details, investigation timeline, and response outcome.</p><a href="../content/incident-response/INC-001-brute-force.md" target="_blank" rel="noopener">Open incident record ↗</a></article>
+                    <article class="ir-record"><div class="ir-record-id">INC-002</div><h3>Suspicious Login</h3><p>Login context, account and endpoint review, related events, evidence, and documented disposition.</p><a href="../content/incident-response/INC-002-suspicious-login.md" target="_blank" rel="noopener">Open incident record ↗</a></article>
+                    <article class="ir-record"><div class="ir-record-id">INC-003</div><h3>Suspicious Process</h3><p>Process execution evidence, parent process and command line, investigation decisions, and remediation notes.</p><a href="../content/incident-response/INC-003-suspicious-process.md" target="_blank" rel="noopener">Open incident record ↗</a></article>
+                </div>
+            </section>
+
+            <section class="ir-section" aria-labelledby="ir-evidence-title">
+                <div class="ir-section-head"><div><p class="ir-kicker">Operational checklist</p><h2 class="ir-h2" id="ir-evidence-title">Evidence &amp; Analyst Handover</h2><p class="ir-subtitle">Use these checklists during lab exercises. Checkmarks are local to this page session and are not saved to the incident files.</p></div></div>
+                <div class="ir-two-col">
+                    <div class="ir-panel"><h3>Evidence Collection Checklist</h3><div class="ir-checklist">
+                        <label class="ir-check"><input type="checkbox">Record incident ID, detection time, timezone, analyst, and alert source.</label>
+                        <label class="ir-check"><input type="checkbox">Capture relevant Wazuh alert details, rule ID, severity, agent, and event fields.</label>
+                        <label class="ir-check"><input type="checkbox">Preserve relevant raw logs and screenshots with source and timestamp context.</label>
+                        <label class="ir-check"><input type="checkbox">Record affected hosts, users, source/destination IPs, ports, paths, and process details as applicable.</label>
+                        <label class="ir-check"><input type="checkbox">Build a chronological timeline and distinguish observed facts from hypotheses.</label>
+                        <label class="ir-check"><input type="checkbox">Document evidence filenames, collection method, and any integrity checks performed.</label>
+                    </div></div>
+                    <div class="ir-panel"><h3>Analyst Handover Guidance</h3><ol class="ir-handover">
+                        <li>Summarize what triggered the investigation and the current status.</li>
+                        <li>Identify affected assets, accounts, known scope, severity rationale, and unresolved questions.</li>
+                        <li>Provide a timestamped event timeline and links to supporting evidence.</li>
+                        <li>List containment or remediation actions already taken, including who authorized them.</li>
+                        <li>State the next recommended investigative tasks and any monitoring requirements.</li>
+                        <li>Record the receiving analyst, handover time, and acknowledgment in the incident record.</li>
+                    </ol></div>
+                </div>
+            </section>
+
+            <aside class="ir-note"><div style="color:var(--ir-accent);font-size:22px" aria-hidden="true">ⓘ</div><div><strong>Lab safety and evidence integrity</strong><p>Perform testing only on systems and accounts you own or are explicitly authorized to assess. Keep response actions proportionate to the lab scenario. Do not claim containment, eradication, recovery, or incident closure unless the action was performed and its result was verified. Replace planned case details with your actual Wazuh evidence.</p></div></aside>
+
+            <footer class="ir-footer"><div>Wazuh SOC Home Lab <span> | </span> Incident Response</div><div><a href="threat-detection.html">Threat Detection</a> <span> · </span> <a href="log-analysis.html">Log Analysis</a> <span> · </span> <a href="../index.html">Back to Home</a></div></footer>
+        </div>
+    </main>
+
+    <div class="sidebar-overlay" id="sidebarOverlay" aria-hidden="true"></div>
+
+    <!-- Playbook investigation modal -->
+    <div class="ir-modal-backdrop" id="irModal" role="dialog" aria-modal="true" aria-labelledby="irModalTitle">
+        <div class="ir-modal">
+            <div class="ir-modal-head"><h2 id="irModalTitle">Investigation Playbook</h2><button class="ir-modal-close" id="irModalClose" type="button" aria-label="Close playbook">×</button></div>
+            <div class="ir-modal-body" id="irModalBody"></div>
+        </div>
+    </div>
+
+    <script src="../assets/js/navigation.js"></script>
+    <script src="../assets/js/main.js"></script>
+    <script src="../assets/js/search.js"></script>
+    <script src="../assets/js/viewer.js"></script>
+    
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const search = document.getElementById("irSearch");
+        const cards = Array.from(document.querySelectorAll(".ir-playbook"));
+        const filters = Array.from(document.querySelectorAll(".ir-filter"));
+        const empty = document.getElementById("irNoResults");
+        let activeFilter = "all";
+        function filterPlaybooks() {
+            const term = search.value.trim().toLowerCase();
+            let count = 0;
+            cards.forEach(card => {
+                const matchCategory = activeFilter === "all" || card.dataset.category === activeFilter;
+                const matchText = (card.dataset.search + " " + card.textContent).toLowerCase().includes(term);
+                const visible = matchCategory && matchText;
+                card.hidden = !visible;
+                if (visible) count++;
+            });
+            empty.hidden = count !== 0;
+        }
+        filters.forEach(button => button.addEventListener("click", () => {
+            activeFilter = button.dataset.filter;
+            filters.forEach(item => item.classList.toggle("active", item === button));
+            filterPlaybooks();
+        }));
+        search.addEventListener("input", filterPlaybooks);
+
+        const playbooks = {
+            failed: {
+                title: "Failed Logins & Brute-Force Investigation",
+                triage: ["Confirm the alert source, timestamp/timezone, Wazuh rule ID, agent, and event details.", "Identify the targeted account(s), source IP/address, authentication method, and failure frequency.", "Check whether successful authentication occurred before, during, or after the failures; review related account activity."],
+                contain: ["In an authorized lab scenario, consider account lockout or blocking the source only after validating scope and impact.", "Preserve relevant authentication logs and alert evidence before making changes."],
+                recover: ["Verify authentication returns to expected behavior and review for repeated attempts.", "Document the outcome, detection gaps, and any rule or monitoring improvements."],
+                evidence: ["Authentication event records and Wazuh alert JSON", "Source/destination or host details and targeted account", "Timeline of failures and any successful login", "Actions taken, approvals, and validation results"]
+            },
+            process: {
+                title: "Suspicious Process Investigation",
+                triage: ["Record endpoint, user, timestamp, alert/rule ID, process name, PID, and executable path.", "Review command-line arguments, parent process, child processes, and process user context.", "Correlate with Sysmon/process creation events, authentication activity, and nearby endpoint events."],
+                contain: ["Validate the process and business/lab context before taking action.", "If authorized and warranted, isolate the lab endpoint or stop the process while preserving evidence."],
+                recover: ["Check for persistence or related processes using available lab telemetry.", "Validate endpoint behavior after remediation and document remaining uncertainty."],
+                evidence: ["Process creation event and full command line", "Parent-child process context, PID, user, and path", "Related Wazuh/Sysmon records and timestamps", "Containment and remediation verification"]
+            },
+            fim: {
+                title: "File Integrity Change Investigation",
+                triage: ["Capture the FIM alert, endpoint, monitored path, change type, and event time.", "Determine whether the change was expected and identify the relevant user or process where telemetry permits.", "Compare file attributes or hashes when available and examine nearby system or process events."],
+                contain: ["Preserve the changed file or relevant metadata according to lab procedures.", "Avoid deleting or restoring evidence until the change is understood and the action is authorized."],
+                recover: ["Restore or correct the file only from a trusted, verified source if required by the scenario.", "Confirm FIM monitoring resumes and record any baseline or policy updates."],
+                evidence: ["FIM alert fields and monitored file path", "Before/after metadata or hashes when available", "Related user, process, and endpoint events", "Restoration source and post-change validation"]
+            },
+            network: {
+                title: "Unexpected Network Connection Investigation",
+                triage: ["Record endpoint, timestamp, protocol, source/destination addresses, ports, and available connection state.", "Identify the initiating process and user where endpoint telemetry supports it.", "Correlate with DNS, process, authentication, and other network records available in the lab."],
+                contain: ["Validate the destination and expected lab activity before blocking or isolating anything.", "For authorized testing, restrict the connection or isolate the endpoint only when justified and documented."],
+                recover: ["Verify expected connectivity and check for recurring connections after remediation.", "Document indicators, scope limitations, and any detection coverage improvements."],
+                evidence: ["Connection event/log and address/port details", "Process and user context where available", "Correlated DNS or endpoint events", "Containment action and connectivity validation"]
+            }
+        };
+        const modal = document.getElementById("irModal");
+        const modalTitle = document.getElementById("irModalTitle");
+        const modalBody = document.getElementById("irModalBody");
+        const close = document.getElementById("irModalClose");
+        function openPlaybook(key) {
+            const item = playbooks[key];
+            if (!item) return;
+            modalTitle.textContent = item.title;
+            const section = (heading, list) => "<h3>" + heading + "</h3><ul>" + list.map(text => "<li>" + text + "</li>").join("") + "</ul>";
+            modalBody.innerHTML = section("1. Triage & Investigation", item.triage) + section("2. Containment Considerations", item.contain) + section("3. Recovery & Validation", item.recover) + section("4. Evidence to Collect", item.evidence);
+            modal.classList.add("open");
+            close.focus();
+        }
+        document.querySelectorAll("[data-playbook]").forEach(button => button.addEventListener("click", () => openPlaybook(button.dataset.playbook)));
+        function closeModal() { modal.classList.remove("open"); }
+        close.addEventListener("click", closeModal);
+        modal.addEventListener("click", event => { if (event.target === modal) closeModal(); });
+        document.addEventListener("keydown", event => { if (event.key === "Escape") closeModal(); });
+    });
+    </script>
+</body>
+</html>

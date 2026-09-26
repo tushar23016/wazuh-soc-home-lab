@@ -1,0 +1,81 @@
+# Operating system files
+.DS_Store
+.DS_Store?
+Thumbs.db
+Desktop.ini
+
+# Editor and IDE files
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+secrets/
+credentials/
+
+# Logs and temporary files
+*.log
+logs/
+tmp/
+temp/
+*.tmp
+*.bak
+*.old
+
+# Python artifacts (for optional helper scripts)
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+env/
+
+# Node.js artifacts (only if tooling is added later)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Build and deployment output
+dist/
+build/
+.cache/
+.parcel-cache/
+
+# Local databases and data dumps
+*.sqlite
+*.sqlite3
+*.db
+*.dump
+
+# Local virtual machine disks and exports
+*.vdi
+*.vmdk
+*.vhd
+*.vhdx
+*.ova
+*.ovf
+*.iso
+
+# Local captures and potentially sensitive security data
+*.pcap
+*.pcapng
+*.evtx
+*.har
+# Uncomment only if you store these locally and do not intend to publish them:
+# content/private/
+# evidence/raw/
+
+# Keep website assets, screenshots, reports, and PDFs tracked by Git.
+# Do not ignore *.png, *.jpg, *.mp4, *.pdf, or custom-rules.xml globally.

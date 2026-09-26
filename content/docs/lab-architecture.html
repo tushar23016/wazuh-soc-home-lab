@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#07111f">
+  <meta name="description" content="Wazuh SOC Home Lab architecture, virtual machine inventory, network layout, and deployment evidence.">
+  <title>Lab Architecture | Wazuh SOC Home Lab</title>
+  <style>
+    :root {
+      --bg: #07111f; --panel: rgba(14, 27, 45, .88); --panel2: #101e31;
+      --line: rgba(148, 170, 198, .18); --text: #eaf2fc; --muted: #9aacc2;
+      --green: #63f0aa; --cyan: #6bdcff; --radius: 18px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 100px; }
+    body {
+      margin: 0; color: var(--text); background: var(--bg);
+      font: 15px/1.75 Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    body::before {
+      content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+      background: radial-gradient(ellipse at 8% 0%, rgba(40, 160, 130, .15), transparent 40%),
+                  radial-gradient(ellipse at 100% 25%, rgba(38, 106, 180, .15), transparent 38%), #07111f;
+    }
+    a { color: var(--green); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .topbar {
+      position: sticky; top: 0; z-index: 100; background: rgba(5, 11, 20, .86);
+      border-bottom: 1px solid var(--line); backdrop-filter: blur(18px);
+    }
+    .nav {
+      max-width: 1200px; margin: auto; padding: 13px 24px; display: flex;
+      align-items: center; justify-content: space-between; gap: 18px;
+    }
+    .brand { display: flex; align-items: center; gap: 11px; color: var(--text); font-weight: 850; letter-spacing: -.03em; }
+    .brand-mark { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 12px; color: #04140c; background: var(--green); font-size: 22px; }
+    .brand small { display: block; color: var(--muted); font-size: 10px; letter-spacing: .13em; text-transform: uppercase; }
+    .nav-actions { display: flex; gap: 9px; align-items: center; }
+    .nav-btn { display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--line); border-radius: 10px; padding: 8px 13px; color: var(--text); background: rgba(255,255,255,.035); font-size: 13px; cursor: pointer; }
+    .nav-btn:hover { border-color: var(--green); color: var(--green); text-decoration: none; }
+    .progress-track { height: 3px; background: #ffffff08; }
+    .progress-bar { width: 0; height: 100%; background: var(--green); }
+    .wrap { width: min(1160px, calc(100% - 40px)); margin: 42px auto 90px; }
+    .hero {
+      position: relative; overflow: hidden; padding: clamp(28px, 6vw, 66px);
+      border: 1px solid var(--line); border-radius: 26px;
+      background: linear-gradient(130deg, rgba(19, 39, 61, .96), rgba(10, 23, 39, .93));
+      box-shadow: 0 25px 90px #0004;
+    }
+    .hero::after {
+      content: "SOC"; position: absolute; right: -15px; bottom: -85px; font-size: clamp(130px, 25vw, 300px);
+      line-height: 1; font-weight: 950; letter-spacing: -.1em; color: rgba(99,240,170,.035); pointer-events: none;
+    }
+    .eyebrow { color: var(--green); font-size: 11px; font-weight: 850; letter-spacing: .17em; text-transform: uppercase; }
+    h1 { position: relative; z-index: 1; margin: 17px 0 15px; max-width: 800px; font-size: clamp(38px, 6vw, 66px); line-height: 1.08; letter-spacing: -.06em; }
+    h1 span { color: var(--green); }
+    .hero p { position: relative; z-index: 1; max-width: 720px; margin: 0; color: #b4c4d8; font-size: 17px; }
+    .chips { position: relative; z-index: 1; display: flex; flex-wrap: wrap; gap: 8px; margin-top: 25px; }
+    .chip { border: 1px solid var(--line); border-radius: 999px; padding: 5px 11px; color: #c2d0e0; background: #ffffff05; font-size: 12px; }
+    .content-grid { display: grid; grid-template-columns: 225px minmax(0,1fr); gap: 24px; margin-top: 28px; align-items: start; }
+    .toc { position: sticky; top: 91px; padding: 20px; border: 1px solid var(--line); border-radius: var(--radius); background: rgba(12, 23, 38, .9); }
+    .toc h2 { margin: 0 0 12px; font-size: 12px; letter-spacing: .13em; text-transform: uppercase; color: var(--muted); }
+    .toc a { display: block; margin: 3px 0; padding: 8px 10px; border-radius: 9px; color: #b7c7da; font-size: 13px; }
+    .toc a:hover, .toc a.active { background: #63f0aa12; color: var(--green); text-decoration: none; }
+    .toc-note { border-top: 1px solid var(--line); margin-top: 14px; padding-top: 13px; color: #8194ac; font-size: 11px; line-height: 1.6; }
+    main { min-width: 0; }
+    .section { scroll-margin-top: 95px; margin-bottom: 24px; padding: clamp(23px, 4vw, 38px); border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); box-shadow: 0 18px 55px #0002; }
+    .section-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; margin-bottom: 22px; }
+    .section h2 { margin: 6px 0 8px; font-size: clamp(24px, 3vw, 34px); line-height: 1.2; letter-spacing: -.045em; }
+    .section h3 { margin: 25px 0 8px; font-size: 18px; }
+    p { color: #bdcada; margin: 0 0 15px; }
+    .section-intro { color: var(--muted); max-width: 760px; }
+    .label { flex: 0 0 auto; border: 1px solid rgba(99,240,170,.28); color: var(--green); background: #63f0aa0b; border-radius: 9px; padding: 5px 9px; font-size: 11px; font-weight: 800; }
+    .diagram-img { display: block; width: 100%; height: auto; max-height: 650px; object-fit: contain; border: 1px solid var(--line); border-radius: 14px; background: #08111d; }
+    .diagram-placeholder { padding: 34px 22px; border: 1px dashed #54708e; border-radius: 14px; text-align: center; color: var(--muted); background: #ffffff03; }
+    .diagram-placeholder strong { display: block; color: var(--cyan); margin-bottom: 6px; }
+    .vm-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 14px; margin-top: 18px; }
+    .vm-card { padding: 17px; border: 1px solid var(--line); border-radius: 14px; background: #ffffff04; }
+    .vm-card strong { display: block; margin-bottom: 4px; color: var(--green); }
+    .vm-card span { display: block; color: var(--muted); font-size: 13px; }
+    .evidence-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 18px; margin-top: 22px; }
+    figure { margin: 0; min-width: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 15px; background: #0a1422; }
+    figure a { display: block; cursor: zoom-in; }
+    figure img { display: block; width: 100%; height: auto; min-height: 130px; max-height: 390px; object-fit: contain; background: #060b12; }
+    figcaption { padding: 15px 16px 17px; border-top: 1px solid var(--line); }
+    figcaption strong { display: block; margin-bottom: 5px; font-size: 14px; color: var(--text); }
+    figcaption span { display: block; color: var(--muted); font-size: 12px; line-height: 1.6; }
+    .note { margin-top: 22px; padding: 17px 19px; border: 1px solid rgba(99,240,170,.25); border-radius: 13px; background: #63f0aa09; color: #c7d6e5; }
+    .note strong { color: var(--green); }
+    .table-wrap { overflow-x: auto; margin: 18px 0; }
+    table { width: 100%; border-collapse: collapse; min-width: 480px; font-size: 13px; }
+    th, td { border: 1px solid var(--line); padding: 12px 14px; text-align: left; vertical-align: top; }
+    th { color: var(--green); background: #63f0aa0b; }
+    td { color: #c0cede; }
+    .flow { display: grid; grid-template-columns: repeat(5, minmax(0,1fr)); gap: 10px; margin: 20px 0; }
+    .flow-item { padding: 15px 10px; text-align: center; border: 1px solid rgba(107,220,255,.22); border-radius: 12px; background: #6bdcff07; }
+    .flow-item b { display: block; color: var(--cyan); font-size: 13px; }
+    .flow-item span { display: block; margin-top: 5px; color: var(--muted); font-size: 11px; }
+    footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; margin-top: 28px; padding: 18px 4px; border-top: 1px solid var(--line); color: #71859e; font-size: 12px; }
+    @media (max-width: 900px) { .content-grid { grid-template-columns: 1fr; } .toc { position: static; display: flex; flex-wrap: wrap; align-items: center; gap: 3px; } .toc h2 { width: 100%; } .toc-note { display: none; } .flow { grid-template-columns: repeat(2,1fr); } }
+    @media (max-width: 600px) { .wrap { width: min(100% - 22px, 1160px); margin-top: 18px; } .nav { padding: 10px 12px; } .brand { font-size: 12px; } .brand-mark { width: 32px; height: 32px; } .brand small { font-size: 9px; } .nav-btn { padding: 7px 9px; font-size: 11px; } .nav-actions .nav-btn:first-child { display: none; } .vm-grid,.evidence-grid { grid-template-columns: 1fr; } .section-head { display: block; } .label { display: inline-block; margin-top: 9px; } .flow { grid-template-columns: 1fr; } }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { animation: none !important; transition: none !important; } }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <nav class="nav">
+      <a class="brand" href="../../index.html">
+        <span class="brand-mark">⌁</span>
+        <span>WAZUH SOC LAB<small>Architecture & deployment</small></span>
+      </a>
+      <div class="nav-actions">
+        <a class="nav-btn" href="../../index.html">← Main Homepage</a>
+        <a class="nav-btn" href="../../pages/architecture.html">Architecture Hub</a>
+      </div>
+    </nav>
+    <div class="progress-track"><div class="progress-bar" id="progress"></div></div>
+  </header>
+
+  <div class="wrap">
+    <section class="hero">
+      <div class="eyebrow">Infrastructure · Virtualization · Telemetry</div>
+      <h1>Lab <span>Architecture</span></h1>
+      <p>A visual guide to the virtual machines, network layout, and monitoring flow of the Wazuh SOC Home Lab. The evidence panels below are wired to the screenshot filenames in this repository.</p>
+      <div class="chips">
+        <span class="chip">Oracle VirtualBox</span><span class="chip">Wazuh</span><span class="chip">Ubuntu Server</span><span class="chip">Windows 11</span><span class="chip">Kali Linux</span><span class="chip">Metasploitable 2</span>
+      </div>
+    </section>
+
+    <div class="content-grid">
+      <aside class="toc" aria-label="Page contents">
+        <h2>On this page</h2>
+        <a href="#overview">Architecture overview</a>
+        <a href="#inventory">Virtual machine inventory</a>
+        <a href="#network">Network configuration</a>
+        <a href="#wazuh">Wazuh server & agents</a>
+        <a href="#flow">Telemetry flow</a>
+        <a href="#security">Lab safety</a>
+        <div class="toc-note">Use the section links to navigate. Select a screenshot to open the original image in a new tab.</div>
+      </aside>
+
+      <main>
+        <section class="section" id="overview">
+          <div class="section-head">
+            <div><div class="eyebrow">01 · Overview</div><h2>Architecture at a glance</h2></div>
+            <span class="label">Design & components</span>
+          </div>
+          <p class="section-intro">The lab uses virtual machines to create a controlled environment for endpoint monitoring, log collection, alert review, and authorized security testing. The diagram is intended to communicate the logical roles; confirm that it matches the network adapters and services actually configured on your VMs.</p>
+          <img class="diagram-img" src="../architecture/soc-lab-architecture.png" alt="SOC home lab architecture diagram" loading="lazy" onerror="this.hidden=true;this.nextElementSibling.hidden=false">
+          <div class="diagram-placeholder" hidden><strong>Architecture diagram not found</strong>Place your diagram at <code>content/architecture/soc-lab-architecture.png</code>.</div>
+          <h3>Core components</h3>
+          <div class="vm-grid">
+            <div class="vm-card"><strong>Ubuntu Server</strong><span>Host for the Wazuh server stack in this lab, based on your actual installation.</span></div>
+            <div class="vm-card"><strong>Windows 11</strong><span>Windows endpoint for event collection and endpoint-monitoring exercises.</span></div>
+            <div class="vm-card"><strong>Kali Linux</strong><span>Security testing workstation for authorized activity inside the isolated lab.</span></div>
+            <div class="vm-card"><strong>Metasploitable 2</strong><span>Intentionally vulnerable target for controlled training. Keep isolated from untrusted networks.</span></div>
+          </div>
+        </section>
+
+        <section class="section" id="inventory">
+          <div class="section-head">
+            <div><div class="eyebrow">02 · Inventory</div><h2>Virtual machine inventory</h2></div>
+            <span class="label">VirtualBox evidence</span>
+          </div>
+          <p class="section-intro">This screenshot documents the VMs registered in Oracle VirtualBox. VM names and power states can change as the lab develops.</p>
+          <div class="evidence-grid">
+            <figure>
+              <a href="../architecture/screenshots/virtualbox-vms.png" target="_blank" rel="noopener"><img src="../architecture/screenshots/virtualbox-vms.png" alt="Oracle VirtualBox Manager showing Kali Linux, Metasploitable 2, Ubuntu Server, and Windows 11" loading="lazy" onerror="this.closest('figure').hidden=true"></a>
+              <figcaption><strong>VirtualBox VM inventory</strong><span>Registered lab machines: Kali Linux, Metasploitable 2, Ubuntu Server, and Windows 11.</span></figcaption>
+            </figure>
+            <figure>
+              <a href="../architecture/screenshots/wazuh-server-terminal.png" target="_blank" rel="noopener"><img src="../architecture/screenshots/wazuh-server-terminal.png" alt="Ubuntu Server terminal showing Wazuh service status" loading="lazy" onerror="this.closest('figure').hidden=true"></a>
+              <figcaption><strong>Ubuntu / Wazuh server evidence</strong><span>Capture showing the server running and relevant Wazuh service or deployment status.</span></figcaption>
+            </figure>
+          </div>
+          <div class="note"><strong>Evidence standard:</strong> Keep screenshots genuine and readable. Capture the current state of your own VMs, and avoid including passwords, tokens, or sensitive host details.</div>
+        </section>
+
+        <section class="section" id="network">
+          <div class="section-head">
+            <div><div class="eyebrow">03 · Network</div><h2>Network configuration</h2></div>
+            <span class="label">Virtual networking</span>
+          </div>
+          <p class="section-intro">Document the adapter mode and connectivity used by each machine. The screenshot should show the relevant VirtualBox network settings. Do not label the lab as isolated or host-only unless that is what your configuration actually uses.</p>
+          <div class="evidence-grid">
+            <figure>
+              <a href="../architecture/screenshots/network-adapters.png" target="_blank" rel="noopener"><img src="../architecture/screenshots/network-adapters.png" alt="VirtualBox network adapter settings for the SOC lab" loading="lazy" onerror="this.closest('figure').hidden=true"></a>
+              <figcaption><strong>VirtualBox network adapters</strong><span>Adapter mode and network settings for the lab VMs. Add additional screenshots if the machines use different modes.</span></figcaption>
+            </figure>
+            <figure>
+              <a href="../architecture/network-topology.png" target="_blank" rel="noopener"><img src="../architecture/network-topology.png" alt="Network topology diagram for the SOC lab" loading="lazy" onerror="this.closest('figure').hidden=true"></a>
+              <figcaption><strong>Network topology</strong><span>Logical network diagram showing the lab segments and permitted communication paths.</span></figcaption>
+            </figure>
+          </div>
+          <h3>Record the configuration</h3>
+          <div class="table-wrap"><table><thead><tr><th>VM</th><th>Adapter mode / network</th><th>Purpose</th></tr></thead><tbody>
+            <tr><td>Ubuntu Server / Wazuh</td><td>Document your actual setting</td><td>Central monitoring server</td></tr>
+            <tr><td>Windows 11</td><td>Document your actual setting</td><td>Endpoint event source</td></tr>
+            <tr><td>Kali Linux</td><td>Document your actual setting</td><td>Authorized test workstation</td></tr>
+            <tr><td>Metasploitable 2</td><td>Document your actual setting</td><td>Intentionally vulnerable lab target</td></tr>
+          </tbody></table></div>
+        </section>
+
+        <section class="section" id="wazuh">
+          <div class="section-head">
+            <div><div class="eyebrow">04 · Monitoring</div><h2>Wazuh server and agent connectivity</h2></div>
+            <span class="label">Endpoint telemetry</span>
+          </div>
+          <p class="section-intro">Use the Wazuh dashboard screenshot to show enrolled agent status, and include only the endpoints that are actually installed and connected. Do not imply an agent is connected based only on the VM being present in VirtualBox.</p>
+          <div class="evidence-grid">
+            <figure>
+              <a href="../architecture/screenshots/wazuh-agents-status.png" target="_blank" rel="noopener"><img src="../architecture/screenshots/wazuh-agents-status.png" alt="Wazuh dashboard displaying endpoint agent status" loading="lazy" onerror="this.closest('figure').hidden=true"></a>
+              <figcaption><strong>Wazuh agent status</strong><span>Dashboard evidence showing the current agent enrollment and connection state.</span></figcaption>
+            </figure>
+            <figure>
+              <a href="../dashboards/screenshots/wazuh-dashboard.png" target="_blank" rel="noopener"><img src="../dashboards/screenshots/wazuh-dashboard.png" alt="Wazuh dashboard overview" loading="lazy" onerror="this.closest('figure').hidden=true"></a>
+              <figcaption><strong>Wazuh dashboard overview</strong><span>Dashboard interface used for monitoring and alert investigation. This uses the shared dashboard screenshot folder.</span></figcaption>
+            </figure>
+          </div>
+          <div class="note"><strong>What to verify:</strong> Agent status, endpoint identity, recent event arrival, and the relevant time range. Include a short note on any agent that is disconnected or not yet configured.</div>
+        </section>
+
+        <section class="section" id="flow">
+          <div class="section-head">
+            <div><div class="eyebrow">05 · Event flow</div><h2>From endpoint to investigation</h2></div>
+            <span class="label">Conceptual workflow</span>
+          </div>
+          <p class="section-intro">The intended monitoring flow is endpoint event generation, agent collection, central analysis, and analyst review. Actual event coverage depends on agent configuration, enabled log sources, and the rules deployed.</p>
+          <div class="flow">
+            <div class="flow-item"><b>1. Generate</b><span>Endpoint activity</span></div>
+            <div class="flow-item"><b>2. Collect</b><span>Wazuh agent</span></div>
+            <div class="flow-item"><b>3. Analyze</b><span>Wazuh server</span></div>
+            <div class="flow-item"><b>4. Alert</b><span>Rules & detections</span></div>
+            <div class="flow-item"><b>5. Investigate</b><span>Analyst review</span></div>
+          </div>
+          <p>For each validation exercise, record the test time, endpoint, relevant event or alert identifiers, observed result, and any limitations. Link the detailed evidence from the log-analysis, detection-rules, and incident-response sections of the repository.</p>
+        </section>
+
+        <section class="section" id="security">
+          <div class="section-head">
+            <div><div class="eyebrow">06 · Safety & documentation</div><h2>Keep the lab controlled</h2></div>
+            <span class="label">Lab boundaries</span>
+          </div>
+          <ul>
+            <li>Use Kali and Metasploitable only against systems and networks you own or are explicitly authorized to test.</li>
+            <li>Keep Metasploitable 2 isolated from public, production, and other untrusted networks.</li>
+            <li>Do not publish passwords, private keys, tokens, or sensitive personal/network information in screenshots.</li>
+            <li>Update screenshots and descriptions when VM names, adapter modes, or deployment status change.</li>
+            <li>Clearly distinguish planned components from components that are installed and verified.</li>
+          </ul>
+          <div class="note"><strong>Project documentation:</strong> This page describes the lab based on the listed components and intended evidence. Keep the wording aligned with your actual setup and current screenshots.</div>
+          <p style="margin-top:22px"><a href="../../pages/architecture.html">← Return to Architecture Hub</a> &nbsp;·&nbsp; <a href="../../index.html">Main Homepage</a></p>
+        </section>
+      </main>
+    </div>
+    <footer><span>Wazuh SOC Home Lab · Lab Architecture</span><span>Prepared by Tushar Mondal · Educational lab documentation</span></footer>
+  </div>
+  <script>
+    const progress = document.getElementById('progress');
+    function updateProgress() {
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      progress.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+    }
+    window.addEventListener('scroll', updateProgress, { passive: true });
+    updateProgress();
+
+    const sections = [...document.querySelectorAll('main .section')];
+    const links = [...document.querySelectorAll('.toc a')];
+    if ('IntersectionObserver' in window) {
+      const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            links.forEach(link => link.classList.toggle('active', link.getAttribute('href') === '#' + entry.target.id));
+          }
+        });
+      }, { threshold: 0.2 });
+      sections.forEach(section => observer.observe(section));
+    }
+  </script>
+</body>
+</html>

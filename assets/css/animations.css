@@ -1,0 +1,638 @@
+/* =========================================================
+   WAZUH SOC HOME LAB
+   File: assets/css/animations.css
+   Purpose: Polished, visitor-facing motion and interaction.
+   Theme: Dark SOC interface with restrained green accents.
+   Load AFTER style.css and responsive.css.
+   ========================================================= */
+
+/* ---------- Motion tokens ---------- */
+:root {
+  --motion-fast: 160ms;
+  --motion-base: 260ms;
+  --motion-slow: 520ms;
+  --motion-ease: cubic-bezier(.2, .75, .25, 1);
+  --motion-spring: cubic-bezier(.2, 1.35, .4, 1);
+  --motion-glow: rgba(0, 230, 118, .18);
+}
+
+/* Keep anchor jumps smooth, with reduced-motion override below. */
+html {
+  scroll-behavior: smooth;
+}
+
+/* ---------- Keyframes ---------- */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translate3d(0, 22px, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+@keyframes fadeDown {
+  from { opacity: 0; transform: translate3d(0, -14px, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translate3d(-24px, 0, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translate3d(24px, 0, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes softPop {
+  0% { opacity: 0; transform: scale(.94); }
+  70% { opacity: 1; transform: scale(1.015); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes floatSoft {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-7px); }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(0, 230, 118, 0), 0 0 18px rgba(0, 230, 118, .04); }
+  50% { box-shadow: 0 0 0 1px rgba(0, 230, 118, .13), 0 0 28px rgba(0, 230, 118, .12); }
+}
+
+@keyframes statusPulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(0, 230, 118, .38); }
+  50% { opacity: .78; box-shadow: 0 0 0 6px rgba(0, 230, 118, 0); }
+}
+
+@keyframes scanLine {
+  0% { transform: translateY(-110%); opacity: 0; }
+  12% { opacity: .45; }
+  88% { opacity: .28; }
+  100% { transform: translateY(110%); opacity: 0; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -220% 0; }
+  100% { background-position: 220% 0; }
+}
+
+@keyframes borderFlow {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes blinkCursor {
+  0%, 48% { opacity: 1; }
+  49%, 100% { opacity: 0; }
+}
+
+@keyframes rotateSlow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes progressLoad {
+  from { width: 0; }
+  to { width: var(--progress, 100%); }
+}
+
+/* ---------- Page entrance: subtle and fast ---------- */
+body {
+  animation: fadeIn 420ms ease-out both;
+}
+
+main,
+.main-content {
+  animation: fadeUp 560ms var(--motion-ease) both;
+}
+
+.page-header,
+.page-hero,
+.hero,
+.dashboard-hero {
+  animation: fadeUp 620ms var(--motion-ease) both;
+}
+
+.page-header > *,
+.page-hero > *,
+.hero > *,
+.dashboard-hero > * {
+  animation: fadeUp 620ms var(--motion-ease) both;
+}
+
+.page-header > *:nth-child(2),
+.page-hero > *:nth-child(2),
+.hero > *:nth-child(2),
+.dashboard-hero > *:nth-child(2) {
+  animation-delay: 90ms;
+}
+
+/* ---------- Staggered entrance for card collections ---------- */
+.cards-grid > *,
+.card-grid > *,
+.stats-grid > *,
+.dashboard-grid > *,
+.features-grid > *,
+.metrics-grid > *,
+.playbook-grid > *,
+.incident-grid > *,
+.resource-grid > * {
+  animation: fadeUp 540ms var(--motion-ease) both;
+}
+
+.cards-grid > :nth-child(2),
+.card-grid > :nth-child(2),
+.stats-grid > :nth-child(2),
+.dashboard-grid > :nth-child(2),
+.features-grid > :nth-child(2),
+.metrics-grid > :nth-child(2),
+.playbook-grid > :nth-child(2),
+.incident-grid > :nth-child(2),
+.resource-grid > :nth-child(2) {
+  animation-delay: 70ms;
+}
+
+.cards-grid > :nth-child(3),
+.card-grid > :nth-child(3),
+.stats-grid > :nth-child(3),
+.dashboard-grid > :nth-child(3),
+.features-grid > :nth-child(3),
+.metrics-grid > :nth-child(3),
+.playbook-grid > :nth-child(3),
+.incident-grid > :nth-child(3),
+.resource-grid > :nth-child(3) {
+  animation-delay: 130ms;
+}
+
+.cards-grid > :nth-child(4),
+.card-grid > :nth-child(4),
+.stats-grid > :nth-child(4),
+.dashboard-grid > :nth-child(4),
+.features-grid > :nth-child(4),
+.metrics-grid > :nth-child(4),
+.playbook-grid > :nth-child(4),
+.incident-grid > :nth-child(4),
+.resource-grid > :nth-child(4) {
+  animation-delay: 190ms;
+}
+
+.cards-grid > :nth-child(n+5),
+.card-grid > :nth-child(n+5),
+.stats-grid > :nth-child(n+5),
+.dashboard-grid > :nth-child(n+5),
+.features-grid > :nth-child(n+5),
+.metrics-grid > :nth-child(n+5),
+.playbook-grid > :nth-child(n+5),
+.incident-grid > :nth-child(n+5),
+.resource-grid > :nth-child(n+5) {
+  animation-delay: 230ms;
+}
+
+/* ---------- Interactive cards ---------- */
+.card,
+.panel,
+.widget,
+.stat-card,
+.metric-card,
+.dashboard-card,
+.feature-card,
+.playbook-card,
+.incident-card,
+.resource-card,
+.architecture-card,
+.report-card,
+.project-card {
+  transition:
+    transform var(--motion-base) var(--motion-ease),
+    border-color var(--motion-base) ease,
+    box-shadow var(--motion-base) ease,
+    background-color var(--motion-base) ease;
+  transform: translateZ(0);
+}
+
+.card:hover,
+.panel:hover,
+.widget:hover,
+.stat-card:hover,
+.metric-card:hover,
+.dashboard-card:hover,
+.feature-card:hover,
+.playbook-card:hover,
+.incident-card:hover,
+.resource-card:hover,
+.architecture-card:hover,
+.report-card:hover,
+.project-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(0, 230, 118, .34);
+  box-shadow: 0 12px 34px rgba(0, 0, 0, .22), 0 0 22px rgba(0, 230, 118, .055);
+}
+
+/* Slight lift for clickable cards only; preserve their existing layout. */
+a.card:hover,
+a.feature-card:hover,
+a.project-card:hover,
+button.card:hover,
+[role="button"].card:hover {
+  cursor: pointer;
+}
+
+.card:active,
+.feature-card:active,
+.project-card:active,
+button.btn:active,
+.btn:active {
+  transform: translateY(-1px) scale(.99);
+}
+
+/* ---------- Buttons and links ---------- */
+.btn,
+.button,
+button,
+.nav-link,
+.sidebar a,
+a.link,
+.text-link {
+  transition:
+    color var(--motion-fast) ease,
+    background-color var(--motion-fast) ease,
+    border-color var(--motion-fast) ease,
+    box-shadow var(--motion-fast) ease,
+    transform var(--motion-fast) var(--motion-ease);
+}
+
+.btn:hover,
+.button:hover,
+button:hover {
+  filter: brightness(1.06);
+}
+
+.btn-primary:hover,
+.button-primary:hover,
+button.primary:hover {
+  box-shadow: 0 0 0 3px rgba(0, 230, 118, .09), 0 8px 24px rgba(0, 230, 118, .13);
+  transform: translateY(-2px);
+}
+
+.nav-link:hover,
+.sidebar a:hover,
+a.link:hover,
+.text-link:hover {
+  color: var(--accent, #00e676);
+}
+
+/* Underline sweep for inline text links. */
+a.text-link,
+a.animated-link {
+  position: relative;
+  text-decoration: none;
+}
+
+a.text-link::after,
+a.animated-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -3px;
+  width: 100%;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform var(--motion-base) var(--motion-ease);
+}
+
+a.text-link:hover::after,
+a.animated-link:hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+/* ---------- Navbar / sidebar micro-interactions ---------- */
+.navbar,
+.top-navbar,
+.top-nav {
+  transition: background-color var(--motion-base) ease, box-shadow var(--motion-base) ease;
+}
+
+.navbar a,
+.top-navbar a,
+.top-nav a {
+  transition: color var(--motion-fast) ease, opacity var(--motion-fast) ease;
+}
+
+.menu-toggle,
+#menuToggle,
+.hamburger,
+.mobile-menu-toggle {
+  transition: background-color var(--motion-fast) ease, transform var(--motion-fast) ease;
+}
+
+.menu-toggle:hover,
+#menuToggle:hover,
+.hamburger:hover,
+.mobile-menu-toggle:hover {
+  transform: scale(1.04);
+}
+
+.sidebar a,
+.sidebar .nav-link {
+  transition: color var(--motion-fast) ease, background-color var(--motion-fast) ease, padding-left var(--motion-fast) ease;
+}
+
+.sidebar a:hover,
+.sidebar .nav-link:hover {
+  padding-left: 1.1em;
+}
+
+/* ---------- Status indicators and SOC live-style accents ---------- */
+.status-dot,
+.status-indicator,
+.online-indicator,
+.live-dot {
+  animation: statusPulse 2.2s ease-in-out infinite;
+}
+
+.status-badge,
+.live-badge,
+.system-status {
+  transition: border-color var(--motion-base) ease, box-shadow var(--motion-base) ease;
+}
+
+.status-badge:hover,
+.live-badge:hover,
+.system-status:hover {
+  box-shadow: 0 0 18px rgba(0, 230, 118, .12);
+}
+
+/* Use .scan-effect on a visual panel only; decorative, not a real scan. */
+.scan-effect {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.scan-effect::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  pointer-events: none;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 35%;
+  background: linear-gradient(180deg, transparent, rgba(0, 230, 118, .075), transparent);
+  animation: scanLine 5.5s linear infinite;
+}
+
+/* Decorative green glow; apply intentionally to hero artwork or a feature panel. */
+.glow-effect {
+  animation: pulseGlow 4.5s ease-in-out infinite;
+}
+
+.float-effect {
+  animation: floatSoft 5s ease-in-out infinite;
+}
+
+/* ---------- Hero and visual treatments ---------- */
+.hero-visual,
+.hero-image,
+.dashboard-visual,
+.architecture-visual {
+  transition: transform 500ms var(--motion-ease), filter 500ms ease;
+}
+
+.hero-visual:hover,
+.hero-image:hover,
+.dashboard-visual:hover,
+.architecture-visual:hover {
+  transform: translateY(-3px);
+  filter: drop-shadow(0 12px 30px rgba(0, 230, 118, .08));
+}
+
+.gradient-border {
+  border: 1px solid transparent;
+  background:
+    linear-gradient(var(--surface, #0b1220), var(--surface, #0b1220)) padding-box,
+    linear-gradient(120deg, rgba(0, 230, 118, .12), rgba(78, 155, 255, .35), rgba(0, 230, 118, .45)) border-box;
+  background-size: auto, 220% 220%;
+  animation: borderFlow 8s ease infinite;
+}
+
+.shimmer,
+.loading-shimmer {
+  background-image: linear-gradient(100deg, transparent 20%, rgba(255, 255, 255, .045) 45%, transparent 70%);
+  background-size: 220% 100%;
+  animation: shimmer 2.6s linear infinite;
+}
+
+/* ---------- Images and screenshot gallery ---------- */
+.gallery img,
+.image-gallery img,
+.screenshot-grid img,
+.screenshot-card img,
+.dashboard-screenshot img {
+  transition: transform 420ms var(--motion-ease), filter 420ms ease;
+}
+
+.gallery a,
+.image-gallery a,
+.screenshot-grid a,
+.screenshot-card,
+.dashboard-screenshot {
+  overflow: hidden;
+}
+
+.gallery a:hover img,
+.image-gallery a:hover img,
+.screenshot-grid a:hover img,
+.screenshot-card:hover img,
+.dashboard-screenshot:hover img {
+  transform: scale(1.035);
+  filter: brightness(1.06);
+}
+
+/* ---------- Progress bars and meters ---------- */
+.progress-bar > span,
+.progress-fill,
+.progress-track .progress,
+.meter-fill {
+  animation: progressLoad 900ms var(--motion-ease) both;
+}
+
+.progress-track,
+.progress-bar,
+.meter {
+  overflow: hidden;
+}
+
+/* ---------- Modals, dropdowns, search and filters ---------- */
+.modal,
+.modal-content,
+.dialog,
+.viewer-modal,
+.ir-modal,
+.dropdown-menu,
+.popover,
+.tooltip {
+  animation: softPop 240ms var(--motion-ease) both;
+  transform-origin: center;
+}
+
+.modal-backdrop,
+.modal-overlay,
+.sidebar-overlay,
+#sidebarOverlay {
+  animation: fadeIn 180ms ease both;
+}
+
+.filter-btn,
+.ir-filter,
+.chip,
+.tag,
+.badge {
+  transition: color var(--motion-fast) ease, background-color var(--motion-fast) ease, border-color var(--motion-fast) ease, transform var(--motion-fast) ease;
+}
+
+.filter-btn:hover,
+.ir-filter:hover,
+.chip:hover {
+  transform: translateY(-1px);
+}
+
+input,
+select,
+textarea,
+.search-input {
+  transition: border-color var(--motion-fast) ease, box-shadow var(--motion-fast) ease, background-color var(--motion-fast) ease;
+}
+
+input:focus,
+select:focus,
+textarea:focus,
+.search-input:focus {
+  box-shadow: 0 0 0 3px rgba(0, 230, 118, .08);
+}
+
+/* ---------- Timeline and incident response lifecycle ---------- */
+.timeline-item,
+.phase-card,
+.lifecycle-step,
+.incident-step {
+  transition: border-color var(--motion-base) ease, transform var(--motion-base) var(--motion-ease), box-shadow var(--motion-base) ease;
+}
+
+.timeline-item:hover,
+.phase-card:hover,
+.lifecycle-step:hover,
+.incident-step:hover {
+  transform: translateY(-3px);
+  border-color: rgba(0, 230, 118, .3);
+}
+
+/* ---------- Terminal / code interaction ---------- */
+.code-block,
+pre,
+.terminal,
+.log-output {
+  transition: border-color var(--motion-base) ease, box-shadow var(--motion-base) ease;
+}
+
+.code-block:hover,
+pre:hover,
+.terminal:hover,
+.log-output:hover {
+  border-color: rgba(0, 230, 118, .2);
+}
+
+/* ---------- Scroll reveal opt-in ---------- */
+/* Add class="reveal" to elements that should animate when JS adds .is-visible.
+   Without the class is-visible, content remains visible by default to avoid
+   hiding content when JavaScript is unavailable. */
+.reveal {
+  opacity: 1;
+  transform: none;
+}
+
+.reveal.reveal-ready {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 600ms var(--motion-ease), transform 600ms var(--motion-ease);
+}
+
+.reveal.reveal-ready.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ---------- Responsive motion tuning ---------- */
+@media (max-width: 768px) {
+  .card:hover,
+  .panel:hover,
+  .widget:hover,
+  .stat-card:hover,
+  .metric-card:hover,
+  .dashboard-card:hover,
+  .feature-card:hover,
+  .playbook-card:hover,
+  .incident-card:hover,
+  .resource-card:hover,
+  .architecture-card:hover,
+  .report-card:hover,
+  .project-card:hover {
+    transform: translateY(-2px);
+  }
+
+  .sidebar a:hover,
+  .sidebar .nav-link:hover {
+    padding-left: inherit;
+  }
+
+  .scan-effect::after {
+    animation-duration: 7s;
+  }
+}
+
+/* ---------- Reduced-motion preference ---------- */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-delay: 0ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .card:hover,
+  .panel:hover,
+  .widget:hover,
+  .stat-card:hover,
+  .metric-card:hover,
+  .dashboard-card:hover,
+  .feature-card:hover,
+  .playbook-card:hover,
+  .incident-card:hover,
+  .resource-card:hover,
+  .architecture-card:hover,
+  .report-card:hover,
+  .project-card:hover,
+  .btn:hover,
+  button:hover {
+    transform: none;
+  }
+}

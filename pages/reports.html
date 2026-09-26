@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Incident reports, investigation summaries, evidence records, and reporting templates for the Wazuh SOC Home Lab.">
+    <meta name="theme-color" content="#080d18">
+    <title>Reports | Wazuh SOC Home Lab</title>
+
+    <!-- Shared website styles -->
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/responsive.css">
+    <link rel="stylesheet" href="../assets/css/animations.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <!-- Scripts page styles: consistent with the Architecture and Dashboards page treatment -->
+    <style>
+        .scripts-page {
+            --scr-accent: #00e599;
+            --scr-accent-soft: rgba(0,229,153,.10);
+            --scr-border: rgba(148,163,184,.14);
+            --scr-muted: #8492a6;
+            --scr-panel: rgba(15,23,42,.78);
+            padding:30px;
+            color:#e2e8f0;
+        }
+        .scripts-page * { box-sizing:border-box; }
+        .scr-container { max-width:1500px; margin:0 auto; }
+        .scr-breadcrumb { display:flex; align-items:center; flex-wrap:wrap; gap:9px; margin-bottom:25px; color:var(--scr-muted); font-size:13px; }
+        .scr-breadcrumb a { color:var(--scr-muted); text-decoration:none; transition:color .2s ease; }
+        .scr-breadcrumb a:hover,.scr-breadcrumb .current { color:var(--scr-accent); }
+        .scr-page-header { display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:24px; margin-bottom:32px; }
+        .scr-heading-content { max-width:780px; }
+        .scr-eyebrow { display:inline-flex; align-items:center; gap:8px; margin-bottom:16px; padding:7px 12px; border:1px solid rgba(0,229,153,.22); border-radius:30px; background:var(--scr-accent-soft); color:var(--scr-accent); font-size:11px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase; }
+        .scr-eyebrow-dot { width:7px; height:7px; border-radius:50%; background:var(--scr-accent); box-shadow:0 0 10px rgba(0,229,153,.7); }
+        .scr-page-title { margin:0 0 16px; color:#f8fafc; font-size:clamp(30px,4vw,46px); font-weight:800; line-height:1.15; letter-spacing:-1.5px; }
+        .scr-page-title span { color:var(--scr-accent); }
+        .scr-page-description { max-width:720px; margin:0; color:#94a3b8; font-size:15px; line-height:1.85; }
+        .scr-header-actions { display:flex; flex-wrap:wrap; align-items:center; gap:12px; }
+        .scr-btn { display:inline-flex; align-items:center; justify-content:center; gap:9px; min-height:43px; padding:11px 17px; border:1px solid var(--scr-border); border-radius:10px; background:rgba(15,23,42,.75); color:#cbd5e1; font-family:inherit; font-size:13px; font-weight:600; text-decoration:none; cursor:pointer; transition:background .25s ease,border-color .25s ease,transform .25s ease; }
+        .scr-btn:hover { transform:translateY(-2px); border-color:rgba(0,229,153,.45); background:rgba(0,229,153,.07); color:var(--scr-accent); }
+        .scr-btn-primary { border-color:rgba(0,229,153,.4); background:rgba(0,229,153,.10); color:var(--scr-accent); }
+        .scr-section { margin-top:34px; }
+        .scr-section-header { display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:15px; margin-bottom:18px; }
+        .scr-section-kicker { display:block; margin-bottom:7px; color:var(--scr-accent); font-size:10px; font-weight:800; letter-spacing:1.5px; text-transform:uppercase; }
+        .scr-section-title { margin:0; color:#f1f5f9; font-size:clamp(20px,2.4vw,26px); font-weight:750; letter-spacing:-.5px; }
+        .scr-section-description { margin:8px 0 0; color:#94a3b8; font-size:13px; line-height:1.7; }
+        .scr-panel { min-width:0; overflow:hidden; border:1px solid var(--scr-border); border-radius:16px; background:var(--scr-panel); box-shadow:0 12px 35px rgba(0,0,0,.12); }
+        .scr-panel-head { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; padding:19px 21px; border-bottom:1px solid var(--scr-border); }
+        .scr-panel-title { display:flex; align-items:center; gap:10px; margin:0; color:#e2e8f0; font-size:14px; font-weight:700; }
+        .scr-panel-title i { color:var(--scr-accent); }
+        .scr-panel-body { padding:21px; }
+        .scr-badge { display:inline-flex; align-items:center; gap:6px; padding:6px 9px; border:1px solid var(--scr-border); border-radius:30px; color:#94a3b8; font-size:10px; font-weight:700; white-space:nowrap; }
+        .scr-badge.green { border-color:rgba(0,229,153,.2); background:rgba(0,229,153,.07); color:#00e599; }
+        .scr-badge.amber { border-color:rgba(251,191,36,.2); background:rgba(251,191,36,.07); color:#fbbf24; }
+        .scr-badge.blue { border-color:rgba(96,165,250,.2); background:rgba(96,165,250,.07); color:#93c5fd; }
+        .scr-stats-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:16px; }
+        .scr-stat-card { padding:21px; border:1px solid var(--scr-border); border-radius:15px; background:linear-gradient(145deg,rgba(15,23,42,.92),rgba(10,16,29,.78)); transition:transform .25s ease,border-color .25s ease; }
+        .scr-stat-card:hover { transform:translateY(-3px); border-color:rgba(0,229,153,.3); }
+        .scr-stat-top { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:20px; }
+        .scr-stat-icon { display:grid; place-items:center; width:42px; height:42px; border:1px solid rgba(0,229,153,.18); border-radius:12px; background:var(--scr-accent-soft); color:var(--scr-accent); font-size:17px; }
+        .scr-stat-label { color:#94a3b8; font-size:12px; font-weight:600; }
+        .scr-stat-value { margin:8px 0 7px; color:#f8fafc; font-size:30px; font-weight:800; letter-spacing:-1px; }
+        .scr-stat-note { color:#64748b; font-size:11px; line-height:1.6; }
+        .scr-stat-note i { margin-right:5px; color:var(--scr-accent); }
+        .scr-filter-bar { display:flex; align-items:center; flex-wrap:wrap; gap:10px; }
+        .scr-search { flex:1 1 240px; position:relative; }
+        .scr-search i { position:absolute; top:50%; left:14px; transform:translateY(-50%); color:#64748b; font-size:13px; }
+        .scr-search input { width:100%; min-height:43px; padding:11px 14px 11px 39px; border:1px solid var(--scr-border); border-radius:10px; outline:none; background:rgba(2,6,23,.4); color:#e2e8f0; font:13px inherit; }
+        .scr-search input:focus { border-color:rgba(0,229,153,.45); box-shadow:0 0 0 3px rgba(0,229,153,.06); }
+        .scr-filter-buttons { display:flex; flex-wrap:wrap; gap:8px; }
+        .scr-filter { padding:10px 13px; border:1px solid var(--scr-border); border-radius:9px; background:rgba(15,23,42,.7); color:#94a3b8; font:600 11px inherit; cursor:pointer; transition:all .2s ease; }
+        .scr-filter:hover,.scr-filter.active { border-color:rgba(0,229,153,.35); background:rgba(0,229,153,.08); color:var(--scr-accent); }
+        .scr-script-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:17px; }
+        .scr-script-card { display:flex; flex-direction:column; min-width:0; border:1px solid var(--scr-border); border-radius:15px; overflow:hidden; background:rgba(15,23,42,.72); transition:transform .25s ease,border-color .25s ease; }
+        .scr-script-card:hover { transform:translateY(-3px); border-color:rgba(0,229,153,.32); }
+        .scr-script-card[hidden] { display:none !important; }
+        .scr-script-card-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; padding:19px 19px 14px; }
+        .scr-script-icon { display:grid; place-items:center; flex:0 0 40px; height:40px; border:1px solid rgba(0,229,153,.18); border-radius:11px; background:var(--scr-accent-soft); color:var(--scr-accent); }
+        .scr-script-card h3 { margin:0 0 7px; color:#e2e8f0; font-size:14px; line-height:1.45; }
+        .scr-script-card .scr-script-path { display:block; overflow-wrap:anywhere; color:#64748b; font:11px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace; }
+        .scr-script-card-body { flex:1; padding:0 19px 17px; }
+        .scr-script-card-body p { margin:0 0 15px; color:#94a3b8; font-size:12px; line-height:1.75; }
+        .scr-tag-row { display:flex; flex-wrap:wrap; gap:7px; }
+        .scr-tag { padding:5px 8px; border:1px solid rgba(148,163,184,.12); border-radius:6px; color:#94a3b8; font-size:10px; }
+        .scr-script-card-footer { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:13px 19px; border-top:1px solid rgba(148,163,184,.09); }
+        .scr-script-card-footer span { color:#64748b; font-size:10px; }
+        .scr-text-link { display:inline-flex; align-items:center; gap:7px; color:var(--scr-accent); font-size:11px; font-weight:700; text-decoration:none; }
+        .scr-text-link:hover { color:#a7f3d0; }
+        .scr-empty { display:none; padding:30px; border:1px dashed var(--scr-border); border-radius:13px; color:#94a3b8; text-align:center; font-size:13px; }
+        .scr-empty.show { display:block; }
+        .scr-grid-two { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; }
+        .scr-code-window { overflow:hidden; border:1px solid rgba(148,163,184,.14); border-radius:12px; background:#070c16; }
+        .scr-code-top { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:12px 15px; border-bottom:1px solid rgba(148,163,184,.12); background:rgba(15,23,42,.75); }
+        .scr-code-dots { display:flex; gap:6px; }
+        .scr-code-dots span { width:7px; height:7px; border-radius:50%; background:#475569; }
+        .scr-code-filename { color:#94a3b8; font:11px ui-monospace,SFMono-Regular,Menlo,monospace; }
+        .scr-code-window pre { overflow-x:auto; margin:0; padding:18px; color:#a7f3d0; font:12px/1.8 ui-monospace,SFMono-Regular,Menlo,monospace; tab-size:4; }
+        .scr-code-caption { margin:12px 0 0; color:#64748b; font-size:11px; line-height:1.7; }
+        .scr-table-wrap { overflow-x:auto; }
+        .scr-table { width:100%; border-collapse:collapse; min-width:650px; }
+        .scr-table th { padding:14px 18px; background:rgba(15,23,42,.65); color:#64748b; font-size:10px; font-weight:800; letter-spacing:.8px; text-align:left; text-transform:uppercase; white-space:nowrap; }
+        .scr-table td { padding:15px 18px; border-top:1px solid rgba(148,163,184,.09); color:#cbd5e1; font-size:12px; line-height:1.65; vertical-align:top; }
+        .scr-table code { padding:4px 7px; border:1px solid var(--scr-border); border-radius:6px; background:rgba(2,6,23,.5); color:#a7f3d0; font-size:11px; }
+        .scr-callout { display:flex; align-items:flex-start; gap:14px; padding:19px 21px; border:1px solid rgba(251,191,36,.18); border-radius:13px; background:rgba(251,191,36,.045); }
+        .scr-callout > i { margin-top:3px; color:#fbbf24; font-size:17px; }
+        .scr-callout strong { display:block; margin-bottom:5px; color:#fcd34d; font-size:13px; }
+        .scr-callout p { margin:0; color:#a8b3c4; font-size:12px; line-height:1.75; }
+        .scr-workflow { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; }
+        .scr-step { padding:20px; border:1px solid var(--scr-border); border-radius:14px; background:rgba(15,23,42,.65); }
+        .scr-step-num { display:grid; place-items:center; width:34px; height:34px; margin-bottom:16px; border:1px solid rgba(0,229,153,.25); border-radius:10px; background:var(--scr-accent-soft); color:var(--scr-accent); font-size:12px; font-weight:800; }
+        .scr-step h3 { margin:0 0 8px; color:#e2e8f0; font-size:14px; }
+        .scr-step p { margin:0; color:#94a3b8; font-size:12px; line-height:1.75; }
+        .scr-footer { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px; margin-top:38px; padding-top:22px; border-top:1px solid var(--scr-border); color:#64748b; font-size:11px; }
+        .scr-footer a { color:var(--scr-accent); text-decoration:none; }
+        @media(max-width:1200px) { .scr-script-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .scr-stats-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .scr-workflow { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+        @media(max-width:900px) { .scripts-page { padding:24px; } .scr-grid-two { grid-template-columns:1fr; } }
+        @media(max-width:640px) {
+            .scripts-page { padding:20px 15px; }
+            .scr-page-header { gap:18px; margin-bottom:26px; }
+            .scr-header-actions { width:100%; }
+            .scr-header-actions .scr-btn { flex:1; }
+            .scr-stats-grid,.scr-script-grid,.scr-workflow { grid-template-columns:1fr; }
+            .scr-stat-card { padding:19px; }
+            .scr-stat-value { font-size:27px; }
+            .scr-panel-head,.scr-panel-body { padding:17px; }
+            .scr-section-header { align-items:flex-start; }
+            .scr-footer { align-items:flex-start; flex-direction:column; }
+            .scr-filter-bar { align-items:stretch; }
+            .scr-filter-buttons { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); }
+            .scr-filter { text-align:center; }
+        }
+        @media(prefers-reduced-motion:reduce) {
+            .scripts-page *, .scripts-page *::before, .scripts-page *::after { scroll-behavior:auto !important; animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; }
+        }
+
+        .scr-data-table{width:100%;border-collapse:collapse;min-width:760px;font-size:13px}.scr-data-table th{padding:14px 16px;text-align:left;color:#8492a6;font-size:10px;letter-spacing:1px;text-transform:uppercase;background:rgba(2,6,23,.28);border-bottom:1px solid var(--scr-border)}.scr-data-table td{padding:16px;border-bottom:1px solid var(--scr-border);color:#aab7c9;vertical-align:top;line-height:1.6}.scr-data-table td strong{color:#e2e8f0}.scr-check-list{list-style:none;padding:0;margin:0;display:grid;gap:15px}.scr-check-list li{display:flex;gap:11px;color:#aab7c9;font-size:13px;line-height:1.65}.scr-check-list i{color:var(--scr-accent);margin-top:4px}.scr-body-copy{color:#aab7c9;font-size:13px;line-height:1.8;margin:0 0 18px}.scr-callout{display:flex;gap:13px;padding:15px;border:1px solid rgba(0,229,153,.2);border-radius:12px;background:rgba(0,229,153,.05);color:var(--scr-accent)}.scr-callout>div{color:#cbd5e1;font-size:13px;line-height:1.65}.scr-callout strong{color:#f1f5f9}.scr-callout p{margin:5px 0 0;color:#94a3b8}.scr-cta{display:flex;justify-content:space-between;align-items:center;gap:25px;flex-wrap:wrap;padding:26px;border:1px solid rgba(0,229,153,.2);border-radius:17px;background:linear-gradient(120deg,rgba(0,229,153,.07),rgba(15,23,42,.65))}.scr-cta .scr-section-title{margin-bottom:8px}.scr-cta .scr-section-description{max-width:650px}
+
+    </style>
+</head>
+<body>
+    <!-- Shared top navigation -->
+    <header class="navbar" id="navbar">
+        <div class="navbar-left">
+            <button class="menu-toggle" id="menuToggle" type="button" aria-label="Toggle sidebar" aria-expanded="false" aria-controls="sidebar">
+                <span></span><span></span><span></span>
+            </button>
+            <a href="../index.html" class="navbar-brand">
+                <img src="../assets/images/logo.svg" alt="Wazuh SOC Lab Logo" class="navbar-logo">
+                <span class="brand-text">WAZUH <span class="brand-highlight">SOC LAB</span></span>
+            </a>
+        </div>
+        <div class="navbar-right">
+            <div class="navbar-status"><span class="status-dot"></span><span>Home Lab</span></div>
+            <a href="../index.html" class="navbar-home" aria-label="Return to homepage"><span>Home</span></a>
+        </div>
+    </header>
+
+    <!-- Shared sidebar navigation -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header"><span class="sidebar-section-label">MAIN MENU</span></div>
+        <nav class="sidebar-nav" aria-label="Main navigation">
+            <a href="../index.html" class="nav-link"><span class="nav-icon">⌂</span><span class="nav-text">Overview</span></a>
+            <div class="sidebar-divider"></div>
+            <span class="sidebar-section-label">SOC LAB</span>
+            <a href="architecture.html" class="nav-link"><span class="nav-icon">⌘</span><span class="nav-text">Architecture</span></a>
+            <a href="documentation.html" class="nav-link"><span class="nav-icon">▤</span><span class="nav-text">Documentation</span></a>
+            <a href="detection-rules.html" class="nav-link"><span class="nav-icon">⚙</span><span class="nav-text">Detection Rules</span></a>
+            <a href="log-analysis.html" class="nav-link"><span class="nav-icon">⌕</span><span class="nav-text">Log Analysis</span></a>
+            <a href="threat-detection.html" class="nav-link"><span class="nav-icon">⚠</span><span class="nav-text">Threat Detection</span></a>
+            <a href="incident-response.html" class="nav-link"><span class="nav-icon">◎</span><span class="nav-text">Incident Response</span></a>
+            <div class="sidebar-divider"></div>
+            <span class="sidebar-section-label">RESOURCES</span>
+            <a href="dashboards.html" class="nav-link"><span class="nav-icon">▦</span><span class="nav-text">Dashboards</span></a>
+            <a href="scripts.html" class="nav-link"><span class="nav-icon">⌘</span><span class="nav-text">Scripts</span></a>
+            <a href="reports.html" class="nav-link active" aria-current="page"><span class="nav-icon">▧</span><span class="nav-text">Reports</span></a>
+        </nav>
+        <div class="sidebar-footer"><p>Personal Lab Environment</p><span>Wazuh SOC Home Lab</span></div>
+    </aside>
+
+    <main class="main-content scripts-page">
+      <div class="scr-container">
+        <nav class="scr-breadcrumb" aria-label="Breadcrumb"><a href="../index.html">Home</a><i class="fa-solid fa-chevron-right"></i><span>Resources</span><i class="fa-solid fa-chevron-right"></i><span class="current">Reports</span></nav>
+        <section class="scr-page-header"><div class="scr-heading-content"><div class="scr-eyebrow"><span class="scr-eyebrow-dot"></span> INCIDENT DOCUMENTATION &amp; EVIDENCE</div><h1 class="scr-page-title">SOC Lab <span>Reports</span></h1><p class="scr-page-description">A central reporting workspace for documenting security alerts, investigations, evidence, response actions, and lessons learned in the Wazuh SOC Home Lab. Use the templates as a consistent structure; replace all sample fields with verified lab observations before publishing a report.</p></div><div class="scr-header-actions"><a href="../content/reports/" class="scr-btn scr-btn-primary"><i class="fa-solid fa-folder-open"></i> Reports Directory</a><a href="incident-response.html" class="scr-btn"><i class="fa-solid fa-shield-halved"></i> Incident Response</a></div></section>
+        <section class="scr-stats-grid" aria-label="Report workspace overview">
+          <article class="scr-stat-card"><div class="scr-stat-top"><div class="scr-stat-icon"><i class="fa-solid fa-file-lines"></i></div><span class="scr-badge">Templates</span></div><div class="scr-stat-label">Incident Report</div><div class="scr-stat-value">01</div><div class="scr-stat-note">Structured incident summary and timeline.</div></article>
+          <article class="scr-stat-card"><div class="scr-stat-top"><div class="scr-stat-icon"><i class="fa-solid fa-magnifying-glass-chart"></i></div><span class="scr-badge">Workflow</span></div><div class="scr-stat-label">Investigation Records</div><div class="scr-stat-value">03</div><div class="scr-stat-note">INC-001 through INC-003 are case references, not confirmed findings.</div></article>
+          <article class="scr-stat-card"><div class="scr-stat-top"><div class="scr-stat-icon"><i class="fa-solid fa-paperclip"></i></div><span class="scr-badge">Evidence</span></div><div class="scr-stat-label">Evidence Checklist</div><div class="scr-stat-value">06</div><div class="scr-stat-note">Collection, integrity, and handling checkpoints.</div></article>
+          <article class="scr-stat-card"><div class="scr-stat-top"><div class="scr-stat-icon"><i class="fa-solid fa-clipboard-check"></i></div><span class="scr-badge green">Analyst-ready</span></div><div class="scr-stat-label">Report Standard</div><div class="scr-stat-value">100%</div><div class="scr-stat-note">Use timestamps, sources, and confidence labels in every case.</div></article>
+        </section>
+        <section class="scr-section"><div class="scr-section-header"><div><span class="scr-section-kicker">REPORT LIBRARY</span><h2 class="scr-section-title">Report templates &amp; records</h2><p class="scr-section-description">These are reporting structures and case placeholders. They do not represent actual Wazuh alerts or completed investigations.</p></div><span class="scr-badge"><i class="fa-solid fa-folder-tree"></i> 6 resources</span></div>
+          <div class="scr-script-grid">
+            <article class="scr-script-card"><div class="scr-script-card-head"><div><h3>Incident Report Template</h3><span class="scr-script-path">content/reports/incident-report-template.md</span></div><span class="scr-script-icon"><i class="fa-solid fa-file-circle-exclamation"></i></span></div><div class="scr-script-card-body"><p>Document incident ID, severity, affected assets, alert details, analyst assessment, timeline, response, and closure criteria.</p><div class="scr-tag-row"><span class="scr-tag">Markdown</span><span class="scr-tag">Template</span><span class="scr-tag">Incident</span></div></div><div class="scr-script-card-footer"><span>Reusable template</span><a class="scr-text-link" href="../content/reports/incident-report-template.md">Open file <i class="fa-solid fa-arrow-right"></i></a></div></article>
+            <article class="scr-script-card"><div class="scr-script-card-head"><div><h3>Investigation Summary</h3><span class="scr-script-path">content/reports/investigation-summary-template.md</span></div><span class="scr-script-icon"><i class="fa-solid fa-magnifying-glass"></i></span></div><div class="scr-script-card-body"><p>Capture the alert source, query or rule, relevant events, pivoting steps, findings, limitations, and next actions.</p><div class="scr-tag-row"><span class="scr-tag">Analysis</span><span class="scr-tag">Triage</span></div></div><div class="scr-script-card-footer"><span>Analyst notes</span><a class="scr-text-link" href="../content/reports/investigation-summary-template.md">Open file <i class="fa-solid fa-arrow-right"></i></a></div></article>
+            <article class="scr-script-card"><div class="scr-script-card-head"><div><h3>Evidence Register</h3><span class="scr-script-path">content/reports/evidence-register.csv</span></div><span class="scr-script-icon"><i class="fa-solid fa-box-archive"></i></span></div><div class="scr-script-card-body"><p>Maintain evidence ID, source host, collection time and timezone, file path, hash, collector, and storage location.</p><div class="scr-tag-row"><span class="scr-tag">CSV</span><span class="scr-tag">Chain of custody</span></div></div><div class="scr-script-card-footer"><span>Evidence tracking</span><a class="scr-text-link" href="../content/reports/evidence-register.csv">Open file <i class="fa-solid fa-arrow-right"></i></a></div></article>
+            <article class="scr-script-card"><div class="scr-script-card-head"><div><h3>Detection Validation Report</h3><span class="scr-script-path">content/reports/detection-validation-template.md</span></div><span class="scr-script-icon"><i class="fa-solid fa-crosshairs"></i></span></div><div class="scr-script-card-body"><p>Record the test objective, rule ID, controlled test procedure, expected versus observed alert, and tuning notes.</p><div class="scr-tag-row"><span class="scr-tag">Detection engineering</span><span class="scr-tag">Validation</span></div></div><div class="scr-script-card-footer"><span>Rule testing</span><a class="scr-text-link" href="../content/reports/detection-validation-template.md">Open file <i class="fa-solid fa-arrow-right"></i></a></div></article>
+            <article class="scr-script-card"><div class="scr-script-card-head"><div><h3>Weekly SOC Summary</h3><span class="scr-script-path">content/reports/weekly-soc-summary-template.md</span></div><span class="scr-script-icon"><i class="fa-solid fa-chart-column"></i></span></div><div class="scr-script-card-body"><p>Summarize the reporting period, alert volumes from verified data, notable cases, recurring issues, and planned improvements.</p><div class="scr-tag-row"><span class="scr-tag">Periodic</span><span class="scr-tag">Metrics</span></div></div><div class="scr-script-card-footer"><span>Operations summary</span><a class="scr-text-link" href="../content/reports/weekly-soc-summary-template.md">Open file <i class="fa-solid fa-arrow-right"></i></a></div></article>
+            <article class="scr-script-card"><div class="scr-script-card-head"><div><h3>Lessons Learned</h3><span class="scr-script-path">content/reports/lessons-learned-template.md</span></div><span class="scr-script-icon"><i class="fa-solid fa-lightbulb"></i></span></div><div class="scr-script-card-body"><p>Record what worked, gaps in telemetry or process, root-cause evidence, owners, and measurable follow-up actions.</p><div class="scr-tag-row"><span class="scr-tag">Post-incident</span><span class="scr-tag">Improvement</span></div></div><div class="scr-script-card-footer"><span>Continuous improvement</span><a class="scr-text-link" href="../content/reports/lessons-learned-template.md">Open file <i class="fa-solid fa-arrow-right"></i></a></div></article>
+          </div>
+        </section>
+        <section class="scr-section"><div class="scr-section-header"><div><span class="scr-section-kicker">CASE TRACKER</span><h2 class="scr-section-title">Investigation register</h2><p class="scr-section-description">Starter case IDs for organizing lab exercises. Update status and findings only after performing and documenting the investigation.</p></div></div><div class="scr-panel"><div class="scr-panel-body" style="overflow-x:auto"><table class="scr-data-table"><thead><tr><th>Case ID</th><th>Scenario / focus</th><th>Evidence to capture</th><th>Status</th><th>Workspace</th></tr></thead><tbody><tr><td><strong>INC-001</strong></td><td>Authentication anomaly / failed logons</td><td>Relevant auth events, source IP, account, timestamps</td><td><span class="scr-badge">Not started</span></td><td><a class="scr-text-link" href="incident-response.html">Response workflow</a></td></tr><tr><td><strong>INC-002</strong></td><td>Endpoint alert review</td><td>Wazuh alert JSON, agent details, process context</td><td><span class="scr-badge">Not started</span></td><td><a class="scr-text-link" href="threat-detection.html">Threat detection</a></td></tr><tr><td><strong>INC-003</strong></td><td>File integrity / configuration change</td><td>FIM event, file path, hashes, baseline comparison</td><td><span class="scr-badge">Not started</span></td><td><a class="scr-text-link" href="log-analysis.html">Log analysis</a></td></tr></tbody></table></div></div></section>
+        <section class="scr-section"><div class="scr-section-header"><div><span class="scr-section-kicker">REPORTING STANDARD</span><h2 class="scr-section-title">Evidence and quality checklist</h2><p class="scr-section-description">Apply these checks before marking a report complete.</p></div></div><div class="scr-grid-two"><div class="scr-panel"><div class="scr-panel-head"><h3 class="scr-panel-title"><i class="fa-solid fa-list-check"></i> Analyst checklist</h3></div><div class="scr-panel-body"><ul class="scr-check-list"><li><i class="fa-solid fa-check"></i><span>Include incident ID, author, review date, and reporting timezone.</span></li><li><i class="fa-solid fa-check"></i><span>Separate observed facts from hypotheses and analyst interpretation.</span></li><li><i class="fa-solid fa-check"></i><span>Reference source logs, alert IDs, hostnames, and query time ranges.</span></li><li><i class="fa-solid fa-check"></i><span>Record hashes for exported evidence where applicable.</span></li><li><i class="fa-solid fa-check"></i><span>Document response actions, authorization, and outcome.</span></li><li><i class="fa-solid fa-check"></i><span>State unresolved questions, limitations, and follow-up owners.</span></li></ul></div></div><div class="scr-panel"><div class="scr-panel-head"><h3 class="scr-panel-title"><i class="fa-solid fa-scale-balanced"></i> Reporting principles</h3></div><div class="scr-panel-body"><p class="scr-body-copy">Use precise, reproducible language. Avoid declaring an incident confirmed solely from a single alert. Preserve original timestamps and timezone context, minimize sensitive data in screenshots, and ensure evidence is stored only in an appropriate lab location.</p><div class="scr-callout"><i class="fa-solid fa-circle-info"></i><div><strong>Lab data only</strong><p>Use authorized test systems and sanitized examples. Never publish real credentials, personal data, tokens, or unredacted sensitive logs in a public repository.</p></div></div></div></div></div></section>
+        <section class="scr-section"><div class="scr-cta"><div><span class="scr-section-kicker">CONTINUE THE WORKFLOW</span><h2 class="scr-section-title">From alert to documented outcome</h2><p class="scr-section-description">Use the dashboards to locate events, analyze the underlying logs, and follow the response process before finalizing a report.</p></div><div class="scr-header-actions"><a href="dashboards.html" class="scr-btn scr-btn-primary"><i class="fa-solid fa-chart-line"></i> Dashboards</a><a href="log-analysis.html" class="scr-btn"><i class="fa-solid fa-magnifying-glass"></i> Log Analysis</a></div></div></section>
+        <footer class="scr-footer"><span>Wazuh SOC Home Lab · Reports &amp; Evidence</span><a href="../index.html">Back to overview <i class="fa-solid fa-arrow-up-right-from-square"></i></a></footer>
+      </div>
+    </main>
+
+    <!-- Shared navigation behavior -->
+    <script src="../assets/js/main.js"></script>
+    <script src="../assets/js/navigation.js"></script>
+    <script src="../assets/js/search.js"></script>
+    <script src="../assets/js/viewer.js"></script>
+</body>
+</html>

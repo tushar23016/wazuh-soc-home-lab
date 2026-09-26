@@ -1,0 +1,767 @@
+/* =========================================================
+   WAZUH SOC HOME LAB
+   File: assets/css/responsive.css
+   Purpose: Responsive layout and accessibility enhancements
+   Load AFTER style.css and before/after animations.css as
+   currently referenced by your HTML pages.
+   ========================================================= */
+
+/* ---------- Responsive foundations ---------- */
+:root {
+  --rs-header-height: var(--soc-topbar-height, 72px);
+  --rs-sidebar-width: var(--soc-sidebar-width, 258px);
+  --rs-page-gutter: clamp(16px, 3vw, 32px);
+  --rs-mobile-nav-height: 64px;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-padding-top: calc(var(--rs-header-height) + 20px);
+}
+
+body {
+  min-width: 320px;
+  overflow-x: clip;
+}
+
+img,
+svg,
+video,
+canvas,
+iframe {
+  max-width: 100%;
+}
+
+img,
+video {
+  height: auto;
+}
+
+pre,
+code,
+.table-wrapper,
+.table-responsive,
+table {
+  max-width: 100%;
+}
+
+pre,
+.code-block,
+.terminal,
+.log-output {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  white-space: pre;
+}
+
+button,
+input,
+select,
+textarea {
+  max-width: 100%;
+  font: inherit;
+}
+
+button,
+a,
+input,
+select,
+textarea,
+summary {
+  -webkit-tap-highlight-color: transparent;
+}
+
+a,
+button {
+  touch-action: manipulation;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent, #00e676);
+  outline-offset: 4px;
+}
+
+/* ---------- Main application layout ---------- */
+.main-content,
+.main,
+.page-content,
+.content,
+.dashboard-content {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.main-content {
+  width: auto;
+  margin-left: var(--rs-sidebar-width);
+  padding: calc(var(--rs-header-height) + 28px) var(--rs-page-gutter) 40px;
+}
+
+main {
+  min-width: 0;
+}
+
+.container,
+.content-container,
+.page-container {
+  width: min(100%, 1440px);
+  margin-inline: auto;
+}
+
+section,
+article,
+.card,
+.panel,
+.widget,
+.dashboard-card,
+.stat-card,
+.feature-card {
+  min-width: 0;
+}
+
+.grid,
+.cards-grid,
+.card-grid,
+.stats-grid,
+.dashboard-grid,
+.features-grid,
+.metrics-grid,
+.playbook-grid,
+.incident-grid,
+.resource-grid {
+  display: grid;
+  grid-template-columns: repeat( auto-fit, minmax(min(100%, 260px), 1fr) );
+  gap: clamp(14px, 2vw, 22px);
+}
+
+.flex-row,
+.toolbar,
+.filter-bar,
+.search-toolbar,
+.action-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.card,
+.panel,
+.widget,
+.stat-card,
+.dashboard-card,
+.feature-card {
+  overflow-wrap: anywhere;
+}
+
+/* ---------- Shared fixed navbar ---------- */
+/* Keep the site's existing .topbar design; only correct stacking/geometry. */
+.topbar,
+.navbar,
+.main-navbar {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 1300;
+  min-height: var(--soc-topbar-height, var(--rs-header-height, 72px));
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.topbar > *,
+.navbar > *,
+.main-navbar > * {
+  min-width: 0;
+}
+
+/* ---------- Shared sidebar and overlay ---------- */
+/* The outer sidebar is the fixed scrolling panel. */
+.sidebar,
+.side-nav {
+  position: fixed;
+  top: var(--soc-topbar-height, var(--rs-header-height, 72px));
+  bottom: 0;
+  left: 0;
+  width: var(--soc-sidebar-width, var(--rs-sidebar-width, 258px));
+  max-width: 88vw;
+  z-index: 1100;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  box-sizing: border-box;
+}
+
+/* Important: if .sidebar-nav is nested inside .sidebar, it must NOT
+   become a second fixed panel. This prevents duplicated/overlapping
+   sidebar headings and navigation labels. A standalone .sidebar-nav
+   can still act as a sidebar for older page markup. */
+.sidebar > .sidebar-nav,
+.sidebar .sidebar-nav,
+.sidebar > nav.sidebar-nav {
+  position: static;
+  inset: auto;
+  width: 100%;
+  max-width: none;
+  height: auto;
+  min-height: 0;
+  max-height: none;
+  z-index: auto;
+  overflow: visible;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Keep nested menu containers in normal document flow. */
+.sidebar .sidebar-menu,
+.sidebar .nav-links,
+.sidebar .sidebar-links {
+  position: static;
+  width: 100%;
+  min-width: 0;
+  height: auto;
+  overflow: visible;
+}
+
+.sidebar a,
+.sidebar button,
+.sidebar .nav-link,
+.side-nav a {
+  overflow-wrap: anywhere;
+}
+
+/* Backdrop below the sidebar; navbar remains on top. */
+.sidebar-overlay,
+#sidebarOverlay,
+.overlay {
+  z-index: 1050;
+}
+
+/* Shared page layout: preserve existing margin and top padding,
+   but ensure flex/grid children can shrink without horizontal spill. */
+.main,
+.main-content,
+.page-main,
+.content-area {
+  position: relative;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* ---------- Wide screens and smaller laptops ---------- */
+@media (max-width: 1200px) {
+  :root {
+    --rs-sidebar-width: 238px;
+    --rs-page-gutter: 24px;
+  }
+
+  .main-content {
+    padding-top: calc(var(--rs-header-height) + 24px);
+  }
+
+  .hero,
+  .page-hero,
+  .dashboard-hero {
+    gap: 24px;
+  }
+
+  .stats-grid,
+  .metrics-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ---------- Tablet / compact laptop ---------- */
+@media (max-width: 992px) {
+  :root {
+    --rs-header-height: 68px;
+    --soc-topbar-height: 68px;
+    --rs-sidebar-width: 250px;
+    --rs-page-gutter: 22px;
+  }
+
+  .main-content {
+    margin-left: 0;
+    padding: calc(var(--rs-header-height) + 24px) var(--rs-page-gutter) 36px;
+  }
+
+  /* Sidebar is expected to be toggled by navigation.js.
+     This stylesheet does not override its open/closed class. */
+  .sidebar {
+    top: var(--rs-header-height);
+    height: calc(100dvh - var(--rs-header-height));
+    max-height: calc(100dvh - var(--rs-header-height));
+  }
+
+  .hero,
+  .page-hero,
+  .dashboard-hero,
+  .two-column,
+  .two-col,
+  .content-layout,
+  .architecture-layout,
+  .detail-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .hero-content,
+  .hero-text,
+  .hero-visual,
+  .hero-image {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .three-column,
+  .three-col {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .wide-card,
+  .span-2,
+  .full-width {
+    grid-column: 1 / -1;
+  }
+
+  .table-wrapper,
+  .table-responsive {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  table {
+    min-width: 620px;
+  }
+
+  .modal,
+  .modal-content,
+  .dialog,
+  .viewer-modal {
+    max-width: min(92vw, 760px);
+  }
+}
+
+/* ---------- Mobile phones ---------- */
+@media (max-width: 768px) {
+  :root {
+    --rs-header-height: 64px;
+    --soc-topbar-height: 64px;
+    --rs-page-gutter: 18px;
+  }
+
+  html {
+    scroll-padding-top: calc(var(--rs-header-height) + 14px);
+  }
+
+  body {
+    font-size: 15px;
+  }
+
+  .navbar,
+  .top-navbar,
+  .top-nav,
+  header.navbar {
+    min-height: var(--rs-header-height);
+  }
+
+  .navbar .nav-container,
+  .navbar .navbar-container,
+  .navbar .nav-inner {
+    min-height: var(--rs-header-height);
+    padding-inline: 16px;
+    gap: 10px;
+  }
+
+  .navbar .brand,
+  .navbar .navbar-brand,
+  .navbar .logo,
+  .brand {
+    min-width: 0;
+    max-width: calc(100% - 64px);
+  }
+
+  .brand-name,
+  .navbar-brand span,
+  .logo-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .menu-toggle,
+  #menuToggle,
+  .hamburger,
+  .mobile-menu-toggle {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .main-content {
+    padding: calc(var(--rs-header-height) + 20px) var(--rs-page-gutter) 30px;
+  }
+
+  .page-header,
+  .section-header,
+  .content-header,
+  .dashboard-header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  h1 {
+    font-size: clamp(1.7rem, 7vw, 2.35rem);
+    line-height: 1.15;
+    overflow-wrap: anywhere;
+  }
+
+  h2 {
+    font-size: clamp(1.35rem, 5.2vw, 1.8rem);
+    line-height: 1.2;
+  }
+
+  h3 {
+    font-size: clamp(1.05rem, 4.3vw, 1.25rem);
+  }
+
+  p,
+  li {
+    overflow-wrap: anywhere;
+  }
+
+  .hero,
+  .page-hero,
+  .dashboard-hero {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    padding: clamp(20px, 5vw, 30px);
+  }
+
+  .hero-actions,
+  .page-actions,
+  .button-group,
+  .action-group {
+    width: 100%;
+    align-items: stretch;
+  }
+
+  .hero-actions .btn,
+  .hero-actions button,
+  .page-actions .btn,
+  .page-actions button,
+  .button-group .btn,
+  .button-group button {
+    flex: 1 1 auto;
+  }
+
+  .grid,
+  .cards-grid,
+  .card-grid,
+  .stats-grid,
+  .dashboard-grid,
+  .features-grid,
+  .metrics-grid,
+  .playbook-grid,
+  .incident-grid,
+  .resource-grid,
+  .three-column,
+  .three-col {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .stat-card,
+  .metric-card,
+  .dashboard-card,
+  .feature-card,
+  .card,
+  .panel {
+    padding: clamp(16px, 4vw, 22px);
+  }
+
+  .toolbar,
+  .filter-bar,
+  .search-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .toolbar > *,
+  .filter-bar > *,
+  .search-toolbar > * {
+    width: 100%;
+    min-width: 0;
+  }
+
+  input,
+  select,
+  textarea {
+    min-height: 44px;
+    width: 100%;
+  }
+
+  textarea {
+    min-height: 120px;
+  }
+
+  .btn,
+  button.btn,
+  .button,
+  .ir-btn,
+  .filter-btn {
+    min-height: 44px;
+    max-width: 100%;
+  }
+
+  .table-wrapper,
+  .table-responsive {
+    margin-inline: calc(var(--rs-page-gutter) * -0.5);
+    padding-inline: calc(var(--rs-page-gutter) * 0.5);
+  }
+
+  table {
+    min-width: 580px;
+    font-size: 13px;
+  }
+
+  th,
+  td {
+    padding: 10px 12px;
+    vertical-align: top;
+  }
+
+  .timeline,
+  .lifecycle,
+  .lifecycle-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .timeline-item,
+  .phase-card {
+    min-width: 0;
+  }
+
+  .modal,
+  .modal-content,
+  .dialog,
+  .viewer-modal,
+  .ir-modal {
+    width: calc(100vw - 24px);
+    max-width: calc(100vw - 24px);
+    max-height: calc(100dvh - 24px);
+    margin: 12px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .modal-backdrop,
+  .modal-overlay {
+    padding: 12px;
+    align-items: center;
+  }
+
+  .modal-header,
+  .modal-footer,
+  .ir-modal-header,
+  .ir-modal-footer {
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .modal-footer > *,
+  .ir-modal-footer > * {
+    flex: 1 1 120px;
+  }
+
+  .gallery,
+  .image-gallery,
+  .screenshot-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .chart-container,
+  .chart-wrapper,
+  .graph-container {
+    width: 100%;
+    min-width: 0;
+    overflow-x: auto;
+  }
+
+  .footer-content,
+  .footer-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  footer {
+    text-align: left;
+  }
+}
+
+/* ---------- Small phones ---------- */
+@media (max-width: 480px) {
+  :root {
+    --rs-page-gutter: 14px;
+  }
+
+  body {
+    font-size: 14px;
+  }
+
+  .main-content {
+    padding-inline: var(--rs-page-gutter);
+  }
+
+  .navbar .nav-container,
+  .navbar .navbar-container,
+  .navbar .nav-inner {
+    padding-inline: 12px;
+  }
+
+  .brand-name,
+  .logo-text {
+    font-size: 13px;
+  }
+
+  .hero,
+  .page-hero,
+  .dashboard-hero {
+    padding: 18px;
+    border-radius: 16px;
+  }
+
+  .hero-actions,
+  .page-actions,
+  .button-group,
+  .action-group {
+    flex-direction: column;
+  }
+
+  .hero-actions > *,
+  .page-actions > *,
+  .button-group > *,
+  .action-group > * {
+    width: 100%;
+  }
+
+  .stats-grid,
+  .metrics-grid,
+  .gallery,
+  .image-gallery,
+  .screenshot-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .card,
+  .panel,
+  .widget,
+  .stat-card,
+  .dashboard-card,
+  .feature-card {
+    border-radius: 14px;
+  }
+
+  .badge,
+  .status-badge,
+  .tag,
+  .chip {
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .pagination,
+  .pagination-controls {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .pagination button,
+  .pagination a {
+    min-width: 40px;
+    min-height: 40px;
+  }
+
+  pre,
+  .code-block,
+  .terminal,
+  .log-output {
+    font-size: 12px;
+    padding: 14px;
+  }
+}
+
+/* ---------- Very narrow screens ---------- */
+@media (max-width: 360px) {
+  :root {
+    --rs-page-gutter: 12px;
+  }
+
+  .navbar .brand,
+  .navbar .navbar-brand,
+  .navbar .logo {
+    max-width: calc(100% - 54px);
+  }
+
+  .brand-name,
+  .logo-text {
+    font-size: 12px;
+  }
+
+  .main-content {
+    padding-top: calc(var(--rs-header-height) + 16px);
+  }
+
+  .hero,
+  .page-hero,
+  .dashboard-hero {
+    padding: 15px;
+  }
+}
+
+/* ---------- Landscape mobile and short viewports ---------- */
+@media (max-height: 520px) and (max-width: 900px) {
+  .sidebar {
+    height: calc(100dvh - var(--rs-header-height));
+    max-height: calc(100dvh - var(--rs-header-height));
+  }
+
+  .modal,
+  .modal-content,
+  .dialog,
+  .viewer-modal,
+  .ir-modal {
+    max-height: calc(100dvh - 16px);
+  }
+}
+
+/* ---------- Reduced motion and accessibility ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (forced-colors: active) {
+  :focus-visible {
+    outline: 2px solid Highlight;
+  }
+
+  .btn,
+  button,
+  .card,
+  .panel {
+    border: 1px solid ButtonText;
+  }
+}

@@ -1,98 +1,158 @@
 
 wazuh-soc-home-lab/
 │
-├── README.md
-├── LICENSE
+├── index.html
+├── README.md                 # GitHub repository overview
+├── LICENSE                   # Keep license file
 ├── .gitignore
 │
-├── docs/
-│   ├── project-overview.md
-│   ├── lab-architecture.md
-│   ├── network-configuration.md
-│   ├── installation-guide.md
-│   └── troubleshooting.md
+├── pages/
+│   ├── architecture.html
+│   ├── documentation.html
+│   ├── detection-rules.html
+│   ├── log-analysis.html
+│   ├── threat-detection.html
+│   ├── incident-response.html
+│   ├── dashboards.html
+│   ├── scripts.html
+│   ├── reports.html
+│   └── project-overview.html
 │
-├── architecture/
-│   ├── soc-lab-architecture.png
-│   ├── network-topology.png
-│   └── vm-inventory.md
-│
-├── setup/
-│   ├── ubuntu-server/
-│   │   ├── installation.md
-│   │   └── server-configuration.md
+├── content/
+│   ├── docs/
+│   │   ├── project-overview.html
+│   │   ├── lab-architecture.html
+│   │   ├── network-configuration.html
+│   │   ├── installation-guide.html
+│   │   └── troubleshooting.html
 │   │
-│   ├── wazuh-server/
-│   │   ├── installation.md
-│   │   ├── configuration.md
-│   │   └── dashboard-setup.md
+│   ├── architecture/
+│   │   ├── soc-lab-architecture.png
+│   │   ├── network-topology.png
+│   │   └── vm-inventory.html
 │   │
-│   ├── wazuh-agent/
-│   │   ├── windows-agent.md
-│   │   ├── linux-agent.md
-│   │   └── agent-troubleshooting.md
+│   ├── setup/
+│   │   ├── ubuntu-server/
+│   │   │   ├── installation.html
+│   │   │   └── server-configuration.html
+│   │   │
+│   │   ├── wazuh-server/
+│   │   │   ├── installation.html
+│   │   │   ├── configuration.html
+│   │   │   └── dashboard-setup.html
+│   │   │
+│   │   ├── wazuh-agent/
+│   │   │   ├── windows-agent.html
+│   │   │   ├── linux-agent.html
+│   │   │   └── agent-troubleshooting.html
+│   │   │
+│   │   ├── windows/
+│   │   │   ├── installation.html
+│   │   │   ├── sysmon-installation.html
+│   │   │   └── event-log-configuration.html
+│   │   │
+│   │   ├── windows-server/
+│   │   │   ├── installation.html
+│   │   │   ├── server-configuration.html
+│   │   │   └── active-directory-setup.html
+│   │   │
+│   │   └── kali-linux/
+│   │       ├── installation.html
+│   │       └── lab-configuration.html
 │   │
-│   ├── windows/
-│   │   ├── installation.md
-│   │   ├── sysmon-installation.md
-│   │   └── event-log-configuration.md
+│   ├── detection-rules/
+│   │   ├── index.html
+│   │   ├── custom-rules.xml
+│   │   ├── rule-testing.html
+│   │   └── mitre-attack-mapping.html
 │   │
-│   ├── windows-server/
-│   │   ├── installation.md
-│   │   ├── server-configuration.md
-│   │   └── active-directory-setup.md
+│   ├── log-analysis/
+│   │   ├── windows/
+│   │   │   ├── authentication-events.html
+│   │   │   ├── process-creation.html
+│   │   │   └── sysmon-events.html
+│   │   ├── windows-server/
+│   │   │   ├── server-authentication.html
+│   │   │   └── active-directory-events.html
+│   │   └── linux/
+│   │       ├── ssh-authentication.html
+│   │       └── privilege-escalation.html
 │   │
-│   └── kali-linux/
-│       ├── installation.md
-│       └── lab-configuration.md
-│
-├── detection-rules/
-│   ├── README.md
-│   ├── custom-rules.xml
-│   ├── rule-testing.md
-│   └── mitre-attack-mapping.md
-│
-├── log-analysis/
-│   ├── windows/
-│   │   ├── authentication-events.md
-│   │   ├── process-creation.md
-│   │   └── sysmon-events.md
+│   ├── threat-detection/
+│   │   ├── brute-force-detection.html
+│   │   ├── suspicious-login.html
+│   │   ├── suspicious-processes.html
+│   │   ├── file-integrity-monitoring.html
+│   │   └── network-activity.html
 │   │
-│   ├── windows-server/
-│   │   ├── server-authentication.md
-│   │   └── active-directory-events.md
+│   ├── incident-response/
+│   │   ├── index.html
+│   │   ├── INC-001-brute-force.html
+│   │   ├── INC-002-suspicious-login.html
+│   │   └── INC-003-suspicious-process.html
 │   │
-│   └── linux/
-│       ├── ssh-authentication.md
-│       └── privilege-escalation.md
+│   ├── dashboards/
+│   │   ├── dashboard-guide.html
+│   │   └── screenshots/
+│   │       ├── wazuh-dashboard.png
+│   │       ├── agent-status.png
+│   │       ├── security-alerts.png
+│   │       └── sysmon-events.png
+│   │
+│   ├── scripts/
+│   │   ├── linux/
+│   │   ├── windows/
+│   │   └── index.html
+│   │
+│   └── reports/
+│       ├── lab-setup-report.html
+│       ├── detection-testing-report.html
+│       └── final-project-report.html
 │
-├── threat-detection/
-│   ├── brute-force-detection.md
-│   ├── suspicious-login.md
-│   ├── suspicious-processes.md
-│   ├── file-integrity-monitoring.md
-│   └── network-activity.md
+├── assets/
+│   ├── css/
+│   │   ├── style.css
+│   │   ├── responsive.css
+│   │   └── animations.css
+│   │
+│   ├── js/
+│   │   ├── main.js
+│   │   ├── navigation.js
+│   │   ├── documentation.js
+│   │   ├── search.js
+│   │   ├── gallery.js
+│   │   └── viewer.js
+│   │
+│   ├── images/
+│   │   ├── logo.svg
+│   │   └── backgrounds/
+│   │
+│   ├── videos/
+│   │   └── soc-background.mp4
+│   │
+│   └── icons/
 │
-├── incident-response/
-│   ├── README.md
-│   ├── INC-001-brute-force.md
-│   ├── INC-002-suspicious-login.md
-│   └── INC-003-suspicious-process.md
+└── documents/
+    └── pdf/
+        ├── lab-setup-report.pdf
+        ├── detection-testing-report.pdf
+        └── final-project-report.pdf
+
+
+
+wazuh-soc-home-lab/
 │
-├── dashboards/
-│   ├── dashboard-guide.md
-│   └── screenshots/
-│       ├── wazuh-dashboard.png
-│       ├── agent-status.png
-│       ├── security-alerts.png
-│       └── sysmon-events.png
-│
-├── scripts/
-│   ├── linux/
-│   ├── windows/
-│   └── README.md
-│
-└── reports/
-    ├── lab-setup-report.md
-    ├── detection-testing-report.md
-    └── final-project-report.md
+├── content/
+│   ├── docs/
+│   │   └── lab-architecture.html
+│   │
+│   ├── architecture/
+│   │   ├── soc-lab-architecture.png
+│   │   ├── network-topology.png
+│   │   ├── vm-inventory.html
+│   │   │
+│   │   └── screenshots/                 ← CREATE THIS
+│   │       ├── virtualbox-vms.png
+│   │       ├── network-adapters.png
+│   │       ├── wazuh-agents-status.png
+│   │       └── wazuh-server-terminal.png

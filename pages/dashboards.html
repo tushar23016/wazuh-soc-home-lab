@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Wazuh SOC Home Lab dashboards, monitoring views, agent health, security alerts, and event investigation guides.">
+    <meta name="theme-color" content="#080d18">
+    <title>Dashboards | Wazuh SOC Home Lab</title>
+
+    <!-- Shared website styles -->
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/responsive.css">
+    <link rel="stylesheet" href="../assets/css/animations.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <!-- Dashboard page styles: follows the Architecture page's page-scoped design pattern -->
+    <style>
+        .dashboard-page {
+            --dash-accent: #00e599;
+            --dash-accent-soft: rgba(0, 229, 153, .10);
+            --dash-border: rgba(148, 163, 184, .14);
+            --dash-muted: #8492a6;
+            --dash-panel: rgba(15, 23, 42, .78);
+            padding: 30px;
+            color: #e2e8f0;
+        }
+        .dashboard-page * { box-sizing: border-box; }
+        .dash-container { max-width: 1500px; margin: 0 auto; }
+        .dash-breadcrumb { display:flex; align-items:center; flex-wrap:wrap; gap:9px; margin-bottom:25px; color:var(--dash-muted); font-size:13px; }
+        .dash-breadcrumb a { color:var(--dash-muted); text-decoration:none; transition:color .2s ease; }
+        .dash-breadcrumb a:hover, .dash-breadcrumb .current { color:var(--dash-accent); }
+        .dash-page-header { display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:24px; margin-bottom:32px; }
+        .dash-heading-content { max-width:780px; }
+        .dash-eyebrow { display:inline-flex; align-items:center; gap:8px; margin-bottom:16px; padding:7px 12px; border:1px solid rgba(0,229,153,.22); border-radius:30px; background:var(--dash-accent-soft); color:var(--dash-accent); font-size:11px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase; }
+        .dash-eyebrow-dot { width:7px; height:7px; border-radius:50%; background:var(--dash-accent); box-shadow:0 0 10px rgba(0,229,153,.7); }
+        .dash-page-title { margin:0 0 16px; color:#f8fafc; font-size:clamp(30px,4vw,46px); font-weight:800; line-height:1.15; letter-spacing:-1.5px; }
+        .dash-page-title span { color:var(--dash-accent); }
+        .dash-page-description { max-width:720px; margin:0; color:#94a3b8; font-size:15px; line-height:1.85; }
+        .dash-header-actions { display:flex; flex-wrap:wrap; align-items:center; gap:12px; }
+        .dash-btn { display:inline-flex; align-items:center; justify-content:center; gap:9px; min-height:43px; padding:11px 17px; border:1px solid var(--dash-border); border-radius:10px; background:rgba(15,23,42,.75); color:#cbd5e1; font:600 13px inherit; text-decoration:none; cursor:pointer; transition:background .25s ease,border-color .25s ease,transform .25s ease; }
+        .dash-btn:hover { transform:translateY(-2px); border-color:rgba(0,229,153,.45); background:rgba(0,229,153,.07); color:var(--dash-accent); }
+        .dash-btn-primary { border-color:rgba(0,229,153,.4); background:rgba(0,229,153,.10); color:var(--dash-accent); }
+        .dash-section { margin-top:34px; }
+        .dash-section-header { display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:15px; margin-bottom:18px; }
+        .dash-section-kicker { display:block; margin-bottom:7px; color:var(--dash-accent); font-size:10px; font-weight:800; letter-spacing:1.5px; text-transform:uppercase; }
+        .dash-section-title { margin:0; color:#f1f5f9; font-size:clamp(20px,2.4vw,26px); font-weight:750; letter-spacing:-.5px; }
+        .dash-section-description { margin:8px 0 0; color:#94a3b8; font-size:13px; line-height:1.7; }
+        .dash-panel { min-width:0; overflow:hidden; border:1px solid var(--dash-border); border-radius:16px; background:var(--dash-panel); box-shadow:0 12px 35px rgba(0,0,0,.12); }
+        .dash-panel-head { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; padding:19px 21px; border-bottom:1px solid var(--dash-border); }
+        .dash-panel-title { display:flex; align-items:center; gap:10px; margin:0; color:#e2e8f0; font-size:14px; font-weight:700; }
+        .dash-panel-title i { color:var(--dash-accent); }
+        .dash-panel-body { padding:21px; }
+        .dash-badge { display:inline-flex; align-items:center; gap:6px; padding:6px 9px; border:1px solid var(--dash-border); border-radius:30px; color:#94a3b8; font-size:10px; font-weight:700; white-space:nowrap; }
+        .dash-badge.green { border-color:rgba(0,229,153,.2); background:rgba(0,229,153,.07); color:#00e599; }
+        .dash-badge.amber { border-color:rgba(251,191,36,.2); background:rgba(251,191,36,.07); color:#fbbf24; }
+        .dash-badge.red { border-color:rgba(248,113,113,.2); background:rgba(248,113,113,.07); color:#f87171; }
+        .dash-overview-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:16px; }
+        .dash-stat-card { position:relative; padding:21px; border:1px solid var(--dash-border); border-radius:15px; background:linear-gradient(145deg,rgba(15,23,42,.92),rgba(10,16,29,.78)); transition:transform .25s ease,border-color .25s ease; }
+        .dash-stat-card:hover { transform:translateY(-3px); border-color:rgba(0,229,153,.3); }
+        .dash-stat-top { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:20px; }
+        .dash-stat-icon { display:grid; place-items:center; width:42px; height:42px; border:1px solid rgba(0,229,153,.18); border-radius:12px; background:var(--dash-accent-soft); color:var(--dash-accent); font-size:17px; }
+        .dash-stat-label { color:#94a3b8; font-size:12px; font-weight:600; }
+        .dash-stat-value { margin:8px 0 7px; color:#f8fafc; font-size:30px; font-weight:800; letter-spacing:-1px; }
+        .dash-stat-note { color:#64748b; font-size:11px; line-height:1.6; }
+        .dash-stat-note i { margin-right:5px; color:var(--dash-accent); }
+        .dash-grid-two { display:grid; grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr); gap:18px; }
+        .dash-chart-legend { display:flex; flex-wrap:wrap; gap:14px; color:#94a3b8; font-size:11px; }
+        .dash-legend-item { display:inline-flex; align-items:center; gap:7px; }
+        .dash-legend-dot { width:8px; height:8px; border-radius:50%; background:var(--dash-accent); }
+        .dash-legend-dot.blue { background:#60a5fa; }
+        .dash-legend-dot.amber { background:#fbbf24; }
+        .dash-bar-chart { display:flex; align-items:flex-end; justify-content:space-between; gap:12px; height:190px; padding:14px 5px 0; border-bottom:1px solid var(--dash-border); background:repeating-linear-gradient(to bottom,transparent 0,transparent 46px,rgba(148,163,184,.08) 47px,transparent 48px); }
+        .dash-bar-group { display:flex; align-items:flex-end; justify-content:center; gap:4px; flex:1; height:100%; }
+        .dash-bar { width:min(18px,35%); min-height:4px; border-radius:5px 5px 0 0; background:linear-gradient(180deg,#00e599,rgba(0,229,153,.25)); transition:filter .2s ease; }
+        .dash-bar.secondary { background:linear-gradient(180deg,#60a5fa,rgba(96,165,250,.22)); }
+        .dash-bar:hover { filter:brightness(1.3); }
+        .dash-chart-labels { display:flex; justify-content:space-between; gap:8px; padding:10px 2px 0; color:#64748b; font-size:10px; }
+        .dash-severity-list { display:grid; gap:17px; }
+        .dash-severity-row { display:grid; grid-template-columns:82px 1fr 32px; align-items:center; gap:12px; color:#94a3b8; font-size:12px; }
+        .dash-progress { height:8px; overflow:hidden; border-radius:30px; background:rgba(148,163,184,.1); }
+        .dash-progress span { display:block; height:100%; border-radius:30px; }
+        .dash-progress .critical { background:#f87171; }
+        .dash-progress .high { background:#fb923c; }
+        .dash-progress .medium { background:#fbbf24; }
+        .dash-progress .low { background:#60a5fa; }
+        .dash-progress .info { background:#00e599; }
+        .dash-severity-count { color:#e2e8f0; text-align:right; font-weight:700; }
+        .dash-screenshot-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; }
+        .dash-screenshot-card { overflow:hidden; border:1px solid var(--dash-border); border-radius:15px; background:rgba(15,23,42,.78); transition:transform .25s ease,border-color .25s ease; }
+        .dash-screenshot-card:hover { transform:translateY(-3px); border-color:rgba(0,229,153,.32); }
+        .dash-screenshot-preview { position:relative; display:grid; place-items:center; min-height:210px; padding:18px; border-bottom:1px solid var(--dash-border); background:radial-gradient(ellipse at 50% 0%,rgba(0,229,153,.07),transparent 70%),#0a1120; }
+        .dash-screenshot-preview img { display:block; width:100%; max-height:300px; object-fit:contain; border:1px solid rgba(148,163,184,.13); border-radius:9px; background:#0b1220; }
+        .dash-placeholder { display:flex; flex-direction:column; align-items:center; gap:12px; color:#64748b; text-align:center; }
+        .dash-placeholder i { color:rgba(0,229,153,.65); font-size:35px; }
+        .dash-placeholder strong { color:#cbd5e1; font-size:13px; }
+        .dash-placeholder span { max-width:280px; font-size:11px; line-height:1.7; }
+        .dash-screenshot-info { padding:18px 20px 20px; }
+        .dash-screenshot-info h3 { margin:0 0 8px; color:#e2e8f0; font-size:15px; }
+        .dash-screenshot-info p { margin:0 0 14px; color:#94a3b8; font-size:12px; line-height:1.75; }
+        .dash-screenshot-meta { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; }
+        .dash-table-wrap { overflow-x:auto; }
+        .dash-table { width:100%; border-collapse:collapse; min-width:650px; }
+        .dash-table th { padding:14px 18px; background:rgba(15,23,42,.65); color:#64748b; font-size:10px; font-weight:800; letter-spacing:.8px; text-align:left; text-transform:uppercase; white-space:nowrap; }
+        .dash-table td { padding:16px 18px; border-top:1px solid rgba(148,163,184,.09); color:#cbd5e1; font-size:12px; vertical-align:middle; }
+        .dash-table tr:hover td { background:rgba(0,229,153,.025); }
+        .dash-table code { padding:4px 7px; border:1px solid var(--dash-border); border-radius:6px; background:rgba(2,6,23,.5); color:#a7f3d0; font-size:11px; }
+        .dash-agent-name { display:flex; align-items:center; gap:10px; font-weight:700; }
+        .dash-agent-icon { display:grid; place-items:center; width:30px; height:30px; border-radius:9px; background:rgba(96,165,250,.1); color:#60a5fa; }
+        .dash-workflow { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; }
+        .dash-workflow-step { position:relative; padding:20px; border:1px solid var(--dash-border); border-radius:14px; background:rgba(15,23,42,.65); }
+        .dash-workflow-number { display:grid; place-items:center; width:34px; height:34px; margin-bottom:16px; border:1px solid rgba(0,229,153,.25); border-radius:10px; background:var(--dash-accent-soft); color:var(--dash-accent); font-size:12px; font-weight:800; }
+        .dash-workflow-step h3 { margin:0 0 8px; color:#e2e8f0; font-size:14px; }
+        .dash-workflow-step p { margin:0; color:#94a3b8; font-size:12px; line-height:1.75; }
+        .dash-callout { display:flex; align-items:flex-start; gap:14px; padding:19px 21px; border:1px solid rgba(251,191,36,.18); border-radius:13px; background:rgba(251,191,36,.045); }
+        .dash-callout > i { margin-top:3px; color:#fbbf24; font-size:17px; }
+        .dash-callout strong { display:block; margin-bottom:5px; color:#fcd34d; font-size:13px; }
+        .dash-callout p { margin:0; color:#a8b3c4; font-size:12px; line-height:1.75; }
+        .dash-resource-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
+        .dash-resource-card { display:flex; align-items:flex-start; gap:14px; padding:20px; border:1px solid var(--dash-border); border-radius:14px; background:rgba(15,23,42,.65); text-decoration:none; transition:transform .25s ease,border-color .25s ease; }
+        .dash-resource-card:hover { transform:translateY(-3px); border-color:rgba(0,229,153,.3); }
+        .dash-resource-icon { display:grid; place-items:center; flex:0 0 42px; height:42px; border:1px solid rgba(0,229,153,.18); border-radius:12px; background:var(--dash-accent-soft); color:var(--dash-accent); }
+        .dash-resource-card h3 { margin:0 0 7px; color:#e2e8f0; font-size:13px; }
+        .dash-resource-card p { margin:0; color:#94a3b8; font-size:11px; line-height:1.7; }
+        .dash-footer { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px; margin-top:38px; padding-top:22px; border-top:1px solid var(--dash-border); color:#64748b; font-size:11px; }
+        .dash-footer a { color:var(--dash-accent); text-decoration:none; }
+        @media (max-width:1100px) {
+            .dash-overview-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+            .dash-workflow { grid-template-columns:repeat(2,minmax(0,1fr)); }
+            .dash-resource-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+        }
+        @media (max-width:900px) {
+            .dashboard-page { padding:24px; }
+            .dash-grid-two { grid-template-columns:1fr; }
+        }
+        @media (max-width:640px) {
+            .dashboard-page { padding:20px 15px; }
+            .dash-page-header { gap:18px; margin-bottom:26px; }
+            .dash-header-actions { width:100%; }
+            .dash-header-actions .dash-btn { flex:1; }
+            .dash-overview-grid,.dash-screenshot-grid,.dash-workflow,.dash-resource-grid { grid-template-columns:1fr; }
+            .dash-stat-card { padding:19px; }
+            .dash-stat-value { font-size:27px; }
+            .dash-panel-head,.dash-panel-body { padding:17px; }
+            .dash-section-header { align-items:flex-start; }
+            .dash-severity-row { grid-template-columns:72px 1fr 28px; gap:9px; }
+            .dash-footer { align-items:flex-start; flex-direction:column; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .dashboard-page *, .dashboard-page *::before, .dashboard-page *::after { scroll-behavior:auto !important; animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Shared top navigation -->
+    <header class="navbar" id="navbar">
+        <div class="navbar-left">
+            <button class="menu-toggle" id="menuToggle" type="button" aria-label="Toggle sidebar" aria-expanded="false" aria-controls="sidebar">
+                <span></span><span></span><span></span>
+            </button>
+            <a href="../index.html" class="navbar-brand">
+                <img src="../assets/images/logo.svg" alt="Wazuh SOC Lab Logo" class="navbar-logo">
+                <span class="brand-text">WAZUH <span class="brand-highlight">SOC LAB</span></span>
+            </a>
+        </div>
+        <div class="navbar-right">
+            <div class="navbar-status"><span class="status-dot"></span><span>Home Lab</span></div>
+            <a href="../index.html" class="navbar-home" aria-label="Return to homepage"><span>Home</span></a>
+        </div>
+    </header>
+
+    <!-- Shared sidebar navigation; Dashboards is the active resource -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header"><span class="sidebar-section-label">MAIN MENU</span></div>
+        <nav class="sidebar-nav" aria-label="Main navigation">
+            <a href="../index.html" class="nav-link"><span class="nav-icon">⌂</span><span class="nav-text">Overview</span></a>
+            <div class="sidebar-divider"></div>
+            <span class="sidebar-section-label">SOC LAB</span>
+            <a href="architecture.html" class="nav-link"><span class="nav-icon">⌘</span><span class="nav-text">Architecture</span></a>
+            <a href="documentation.html" class="nav-link"><span class="nav-icon">▤</span><span class="nav-text">Documentation</span></a>
+            <a href="detection-rules.html" class="nav-link"><span class="nav-icon">⚙</span><span class="nav-text">Detection Rules</span></a>
+            <a href="log-analysis.html" class="nav-link"><span class="nav-icon">⌕</span><span class="nav-text">Log Analysis</span></a>
+            <a href="threat-detection.html" class="nav-link"><span class="nav-icon">⚠</span><span class="nav-text">Threat Detection</span></a>
+            <a href="incident-response.html" class="nav-link"><span class="nav-icon">◎</span><span class="nav-text">Incident Response</span></a>
+            <div class="sidebar-divider"></div>
+            <span class="sidebar-section-label">RESOURCES</span>
+            <a href="dashboards.html" class="nav-link active" aria-current="page"><span class="nav-icon">▦</span><span class="nav-text">Dashboards</span></a>
+            <a href="scripts.html" class="nav-link"><span class="nav-icon">⌘</span><span class="nav-text">Scripts</span></a>
+            <a href="reports.html" class="nav-link"><span class="nav-icon">▧</span><span class="nav-text">Reports</span></a>
+        </nav>
+        <div class="sidebar-footer"><p>Personal Lab Environment</p><span>Wazuh SOC Home Lab</span></div>
+    </aside>
+
+    <main class="main-content dashboard-page">
+        <div class="dash-container">
+            <nav class="dash-breadcrumb" aria-label="Breadcrumb">
+                <a href="../index.html">Home</a><i class="fa-solid fa-chevron-right"></i>
+                <span>Resources</span><i class="fa-solid fa-chevron-right"></i>
+                <span class="current">Dashboards</span>
+            </nav>
+
+            <section class="dash-page-header">
+                <div class="dash-heading-content">
+                    <div class="dash-eyebrow"><span class="dash-eyebrow-dot"></span> SOC VISIBILITY &amp; MONITORING</div>
+                    <h1 class="dash-page-title">Wazuh <span>Dashboards</span></h1>
+                    <p class="dash-page-description">A centralized visual guide to the monitoring views used in this SOC home lab. Explore agent health, security alerts, endpoint events, and the dashboard evidence collected during lab testing.</p>
+                </div>
+                <div class="dash-header-actions">
+                    <a href="../content/dashboards/dashboard-guide.md" class="dash-btn dash-btn-primary"><i class="fa-solid fa-book-open"></i> Dashboard Guide</a>
+                    <a href="log-analysis.html" class="dash-btn"><i class="fa-solid fa-magnifying-glass-chart"></i> Log Analysis</a>
+                </div>
+            </section>
+
+            <!-- Snapshot cards are descriptive placeholders until live data is connected -->
+            <section class="dash-overview-grid" aria-label="Dashboard overview">
+                <article class="dash-stat-card">
+                    <div class="dash-stat-top"><div class="dash-stat-icon"><i class="fa-solid fa-desktop"></i></div><span class="dash-badge">Lab metric</span></div>
+                    <div class="dash-stat-label">Monitored Endpoints</div><div class="dash-stat-value">—</div>
+                    <div class="dash-stat-note">Populate after confirming connected Wazuh agents.</div>
+                </article>
+                <article class="dash-stat-card">
+                    <div class="dash-stat-top"><div class="dash-stat-icon"><i class="fa-solid fa-bell"></i></div><span class="dash-badge">Lab metric</span></div>
+                    <div class="dash-stat-label">Alerts Investigated</div><div class="dash-stat-value">—</div>
+                    <div class="dash-stat-note">Use verified alert counts from your lab exercises.</div>
+                </article>
+                <article class="dash-stat-card">
+                    <div class="dash-stat-top"><div class="dash-stat-icon"><i class="fa-solid fa-shield-halved"></i></div><span class="dash-badge">Lab metric</span></div>
+                    <div class="dash-stat-label">Detection Scenarios</div><div class="dash-stat-value">5</div>
+                    <div class="dash-stat-note">Brute force, suspicious login/process, FIM, and network activity.</div>
+                </article>
+                <article class="dash-stat-card">
+                    <div class="dash-stat-top"><div class="dash-stat-icon"><i class="fa-solid fa-images"></i></div><span class="dash-badge amber">Evidence</span></div>
+                    <div class="dash-stat-label">Dashboard Evidence</div><div class="dash-stat-value">4</div>
+                    <div class="dash-stat-note">Four planned screenshot slots in the project structure.</div>
+                </article>
+            </section>
+
+            <section class="dash-section">
+                <div class="dash-section-header">
+                    <div><span class="dash-section-kicker">MONITORING OVERVIEW</span><h2 class="dash-section-title">Dashboard at a glance</h2><p class="dash-section-description">Illustrative dashboard components for page layout only. Replace with measured values or genuine Wazuh screenshots before presenting as lab results.</p></div>
+                    <span class="dash-badge amber"><i class="fa-solid fa-circle-info"></i> Sample visualization</span>
+                </div>
+                <div class="dash-grid-two">
+                    <article class="dash-panel">
+                        <div class="dash-panel-head"><h3 class="dash-panel-title"><i class="fa-solid fa-chart-column"></i> Event volume timeline</h3><span class="dash-badge">Illustrative</span></div>
+                        <div class="dash-panel-body">
+                            <div class="dash-chart-legend"><span class="dash-legend-item"><span class="dash-legend-dot"></span> Security events</span><span class="dash-legend-item"><span class="dash-legend-dot blue"></span> Authentication events</span></div>
+                            <div class="dash-bar-chart" role="img" aria-label="Illustrative paired bar chart without real event counts">
+                                <div class="dash-bar-group"><span class="dash-bar" style="height:38%"></span><span class="dash-bar secondary" style="height:22%"></span></div>
+                                <div class="dash-bar-group"><span class="dash-bar" style="height:55%"></span><span class="dash-bar secondary" style="height:31%"></span></div>
+                                <div class="dash-bar-group"><span class="dash-bar" style="height:43%"></span><span class="dash-bar secondary" style="height:26%"></span></div>
+                                <div class="dash-bar-group"><span class="dash-bar" style="height:76%"></span><span class="dash-bar secondary" style="height:48%"></span></div>
+                                <div class="dash-bar-group"><span class="dash-bar" style="height:62%"></span><span class="dash-bar secondary" style="height:35%"></span></div>
+                                <div class="dash-bar-group"><span class="dash-bar" style="height:88%"></span><span class="dash-bar secondary" style="height:59%"></span></div>
+                                <div class="dash-bar-group"><span class="dash-bar" style="height:51%"></span><span class="dash-bar secondary" style="height:28%"></span></div>
+                                <div class="dash-bar-group"><span class="dash-bar" style="height:69%"></span><span class="dash-bar secondary" style="height:41%"></span></div>
+                            </div>
+                            <div class="dash-chart-labels"><span>Window 01</span><span>Window 02</span><span>Window 03</span><span>Window 04</span><span>Window 05</span><span>Window 06</span><span>Window 07</span><span>Window 08</span></div>
+                        </div>
+                    </article>
+                    <article class="dash-panel">
+                        <div class="dash-panel-head"><h3 class="dash-panel-title"><i class="fa-solid fa-chart-pie"></i> Alert severity distribution</h3><span class="dash-badge">Illustrative</span></div>
+                        <div class="dash-panel-body">
+                            <div class="dash-severity-list">
+                                <div class="dash-severity-row"><span>Critical</span><div class="dash-progress"><span class="critical" style="width:18%"></span></div><span class="dash-severity-count">—</span></div>
+                                <div class="dash-severity-row"><span>High</span><div class="dash-progress"><span class="high" style="width:44%"></span></div><span class="dash-severity-count">—</span></div>
+                                <div class="dash-severity-row"><span>Medium</span><div class="dash-progress"><span class="medium" style="width:68%"></span></div><span class="dash-severity-count">—</span></div>
+                                <div class="dash-severity-row"><span>Low</span><div class="dash-progress"><span class="low" style="width:82%"></span></div><span class="dash-severity-count">—</span></div>
+                                <div class="dash-severity-row"><span>Informational</span><div class="dash-progress"><span class="info" style="width:56%"></span></div><span class="dash-severity-count">—</span></div>
+                            </div>
+                            <p class="dash-section-description" style="margin-top:22px">Bars are visual placeholders and do not represent a measured severity breakdown. Record counts from your Wazuh dashboard to make this panel factual.</p>
+                        </div>
+                    </article>
+                </div>
+            </section>
+
+            <section class="dash-section">
+                <div class="dash-section-header"><div><span class="dash-section-kicker">VISUAL EVIDENCE</span><h2 class="dash-section-title">Dashboard screenshot gallery</h2><p class="dash-section-description">Add your actual screenshots to <code>content/dashboards/screenshots/</code>. The image slots below use the planned repository filenames.</p></div><span class="dash-badge"><i class="fa-regular fa-folder-open"></i> content/dashboards/screenshots</span></div>
+                <div class="dash-screenshot-grid">
+                    <article class="dash-screenshot-card">
+                        <div class="dash-screenshot-preview"><img src="../content/dashboards/screenshots/wazuh-dashboard.png" alt="Main Wazuh dashboard screenshot" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div class="dash-placeholder" style="display:none"><i class="fa-regular fa-image"></i><strong>Main Wazuh Dashboard</strong><span>Place wazuh-dashboard.png in the screenshots folder to display your captured dashboard.</span></div></div>
+                        <div class="dash-screenshot-info"><h3>Main Wazuh Dashboard</h3><p>Overview of the Wazuh interface and its primary monitoring panels. Capture the actual dashboard from your lab.</p><div class="dash-screenshot-meta"><span class="dash-badge">wazuh-dashboard.png</span><span class="dash-badge amber">Add evidence</span></div></div>
+                    </article>
+                    <article class="dash-screenshot-card">
+                        <div class="dash-screenshot-preview"><img src="../content/dashboards/screenshots/agent-status.png" alt="Wazuh agent status screenshot" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div class="dash-placeholder" style="display:none"><i class="fa-solid fa-computer"></i><strong>Agent Status</strong><span>Place agent-status.png in the screenshots folder to display connected and disconnected agent status.</span></div></div>
+                        <div class="dash-screenshot-info"><h3>Agent Health &amp; Status</h3><p>Evidence of endpoint enrollment and agent connectivity. Avoid claiming an endpoint is active unless the dashboard confirms it.</p><div class="dash-screenshot-meta"><span class="dash-badge">agent-status.png</span><span class="dash-badge amber">Add evidence</span></div></div>
+                    </article>
+                    <article class="dash-screenshot-card">
+                        <div class="dash-screenshot-preview"><img src="../content/dashboards/screenshots/security-alerts.png" alt="Wazuh security alerts screenshot" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div class="dash-placeholder" style="display:none"><i class="fa-solid fa-bell"></i><strong>Security Alerts</strong><span>Place security-alerts.png in the screenshots folder to show alert data from a lab exercise.</span></div></div>
+                        <div class="dash-screenshot-info"><h3>Security Alerts</h3><p>Alert view used to review severity, rule information, timestamps, and affected agents during triage.</p><div class="dash-screenshot-meta"><span class="dash-badge">security-alerts.png</span><span class="dash-badge amber">Add evidence</span></div></div>
+                    </article>
+                    <article class="dash-screenshot-card">
+                        <div class="dash-screenshot-preview"><img src="../content/dashboards/screenshots/sysmon-events.png" alt="Sysmon events in Wazuh screenshot" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div class="dash-placeholder" style="display:none"><i class="fa-solid fa-list-check"></i><strong>Sysmon Events</strong><span>Place sysmon-events.png in the screenshots folder to show collected Windows Sysmon events.</span></div></div>
+                        <div class="dash-screenshot-info"><h3>Windows Sysmon Events</h3><p>Evidence of process and endpoint telemetry collected from a monitored Windows system.</p><div class="dash-screenshot-meta"><span class="dash-badge">sysmon-events.png</span><span class="dash-badge amber">Add evidence</span></div></div>
+                    </article>
+                </div>
+            </section>
+
+            <section class="dash-section">
+                <div class="dash-section-header"><div><span class="dash-section-kicker">ENDPOINT VISIBILITY</span><h2 class="dash-section-title">Agent inventory</h2><p class="dash-section-description">Use this table as a checklist when validating agent connectivity. Replace example labels and pending states with the real agent name, ID, OS, and status shown by your Wazuh deployment.</p></div></div>
+                <div class="dash-panel">
+                    <div class="dash-table-wrap">
+                        <table class="dash-table">
+                            <thead><tr><th>Endpoint / Role</th><th>Operating system</th><th>Wazuh agent ID</th><th>Connection status</th><th>Evidence to capture</th></tr></thead>
+                            <tbody>
+                                <tr><td><span class="dash-agent-name"><span class="dash-agent-icon"><i class="fa-brands fa-windows"></i></span>Windows Endpoint</span></td><td>Windows</td><td><code>Verify in Wazuh</code></td><td><span class="dash-badge amber">Not recorded</span></td><td>Agent overview</td></tr>
+                                <tr><td><span class="dash-agent-name"><span class="dash-agent-icon"><i class="fa-brands fa-linux"></i></span>Ubuntu / Linux Endpoint</span></td><td>Linux</td><td><code>Verify in Wazuh</code></td><td><span class="dash-badge amber">Not recorded</span></td><td>Agent overview</td></tr>
+                                <tr><td><span class="dash-agent-name"><span class="dash-agent-icon"><i class="fa-solid fa-server"></i></span>Windows Server</span></td><td>Windows Server</td><td><code>If enrolled</code></td><td><span class="dash-badge amber">Not recorded</span></td><td>Agent overview / events</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <section class="dash-section">
+                <div class="dash-section-header"><div><span class="dash-section-kicker">ANALYST WORKFLOW</span><h2 class="dash-section-title">How to use the dashboard during triage</h2><p class="dash-section-description">A repeatable workflow for moving from dashboard visibility to a documented investigation.</p></div></div>
+                <div class="dash-workflow">
+                    <article class="dash-workflow-step"><div class="dash-workflow-number">01</div><h3>Check agent health</h3><p>Confirm the relevant endpoint is enrolled and communicating. Note any disconnected or never-connected agent state.</p></article>
+                    <article class="dash-workflow-step"><div class="dash-workflow-number">02</div><h3>Filter security alerts</h3><p>Set a relevant time range and filter by severity, rule, agent, or event category. Record the query context.</p></article>
+                    <article class="dash-workflow-step"><div class="dash-workflow-number">03</div><h3>Inspect event details</h3><p>Review timestamp, rule ID, source fields, user, host, process details, and related events before drawing conclusions.</p></article>
+                    <article class="dash-workflow-step"><div class="dash-workflow-number">04</div><h3>Document findings</h3><p>Capture relevant evidence and link the investigation to the appropriate log-analysis, threat-detection, or incident record.</p></article>
+                </div>
+            </section>
+
+            <section class="dash-section">
+                <div class="dash-callout"><i class="fa-solid fa-triangle-exclamation"></i><div><strong>Evidence and accuracy note</strong><p>This page is a static portfolio interface, not a live connection to the Wazuh API. The visual charts are illustrative and the metrics are intentionally unpopulated. Do not present them as live telemetry. Add genuine screenshots and measured values from your own lab before using them as project evidence.</p></div></div>
+            </section>
+
+            <section class="dash-section">
+                <div class="dash-section-header"><div><span class="dash-section-kicker">RELATED RESOURCES</span><h2 class="dash-section-title">Continue the investigation</h2><p class="dash-section-description">Move from dashboard visibility into the technical records and response workflow.</p></div></div>
+                <div class="dash-resource-grid">
+                    <a href="../content/dashboards/dashboard-guide.md" class="dash-resource-card"><span class="dash-resource-icon"><i class="fa-solid fa-book-open"></i></span><div><h3>Dashboard Guide</h3><p>Navigation, monitoring panels, filters, and alert investigation instructions.</p></div></a>
+                    <a href="log-analysis.html" class="dash-resource-card"><span class="dash-resource-icon"><i class="fa-solid fa-magnifying-glass-chart"></i></span><div><h3>Log Analysis</h3><p>Analyze Windows, Sysmon, Windows Server, and Linux event data.</p></div></a>
+                    <a href="incident-response.html" class="dash-resource-card"><span class="dash-resource-icon"><i class="fa-solid fa-bullseye"></i></span><div><h3>Incident Response</h3><p>Document triage, evidence, containment, remediation, and lessons learned.</p></div></a>
+                </div>
+            </section>
+
+            <footer class="dash-footer">
+                <span>Wazuh SOC Home Lab · Dashboards &amp; Monitoring</span>
+                <span><a href="../index.html">Return to Overview</a> · Personal lab documentation</span>
+            </footer>
+        </div>
+    </main>
+
+    <!-- Shared navigation behavior -->
+    <script src="../assets/js/main.js"></script>
+    <script src="../assets/js/navigation.js"></script>
+    <script src="../assets/js/search.js"></script>
+    <script src="../assets/js/gallery.js"></script>
+    <script src="../assets/js/viewer.js"></script>
+</body>
+</html>

@@ -1,0 +1,2317 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="description"
+        content="Wazuh SOC Home Lab documentation, installation guides, server configuration, agent setup, troubleshooting, and security operations references.">
+
+    <meta name="theme-color" content="#080d18">
+
+    <title>Documentation | Wazuh SOC Home Lab</title>
+
+    <!-- Shared CSS -->
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/responsive.css">
+    <link rel="stylesheet" href="../assets/css/animations.css">
+
+    <!-- Documentation Page Styles -->
+    <style>
+        /* =========================================
+           DOCUMENTATION PAGE
+           Shared SOC layout preserved
+        ========================================= */
+
+        .documentation-page {
+            --doc-accent: #00e599;
+            --doc-accent-soft: rgba(0, 229, 153, 0.10);
+            --doc-border: rgba(148, 163, 184, 0.14);
+            --doc-muted: #8492a6;
+            --doc-panel: rgba(15, 23, 42, 0.78);
+
+            padding: 30px;
+            color: #e2e8f0;
+        }
+
+        .documentation-page * {
+            box-sizing: border-box;
+        }
+
+        .doc-container {
+            max-width: 1500px;
+            margin: 0 auto;
+        }
+
+        /* Breadcrumb */
+
+        .doc-breadcrumb {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 9px;
+            margin-bottom: 25px;
+            color: var(--doc-muted);
+            font-size: 13px;
+        }
+
+        .doc-breadcrumb a {
+            color: var(--doc-muted);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .doc-breadcrumb a:hover {
+            color: var(--doc-accent);
+        }
+
+        .doc-breadcrumb .current {
+            color: var(--doc-accent);
+        }
+
+        /* Page Header */
+
+        .doc-page-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .doc-heading-content {
+            max-width: 800px;
+        }
+
+        .doc-eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+            padding: 7px 12px;
+            border: 1px solid rgba(0, 229, 153, 0.22);
+            border-radius: 30px;
+            background: var(--doc-accent-soft);
+            color: var(--doc-accent);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+        }
+
+        .doc-eyebrow-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--doc-accent);
+            box-shadow: 0 0 10px rgba(0, 229, 153, 0.7);
+        }
+
+        .doc-page-title {
+            margin: 0 0 16px;
+            color: #f8fafc;
+            font-size: clamp(30px, 4vw, 46px);
+            font-weight: 800;
+            line-height: 1.15;
+            letter-spacing: -1.5px;
+        }
+
+        .doc-page-title span {
+            color: var(--doc-accent);
+        }
+
+        .doc-page-description {
+            max-width: 750px;
+            margin: 0;
+            color: #94a3b8;
+            font-size: 15px;
+            line-height: 1.85;
+        }
+
+        .doc-header-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .doc-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 9px;
+            min-height: 43px;
+            padding: 11px 17px;
+            border: 1px solid var(--doc-border);
+            border-radius: 10px;
+            background: rgba(15, 23, 42, 0.75);
+            color: #cbd5e1;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition:
+                background 0.25s ease,
+                border-color 0.25s ease,
+                transform 0.25s ease;
+        }
+
+        .doc-btn:hover {
+            transform: translateY(-2px);
+            border-color: rgba(0, 229, 153, 0.45);
+            background: rgba(0, 229, 153, 0.07);
+            color: var(--doc-accent);
+        }
+
+        .doc-btn-primary {
+            border-color: rgba(0, 229, 153, 0.4);
+            background: rgba(0, 229, 153, 0.10);
+            color: var(--doc-accent);
+        }
+
+        /* Overview Cards */
+
+        .doc-overview-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 18px;
+            margin-bottom: 35px;
+        }
+
+        .doc-stat-card {
+            position: relative;
+            overflow: hidden;
+            min-width: 0;
+            padding: 22px;
+            border: 1px solid var(--doc-border);
+            border-radius: 15px;
+            background: var(--doc-panel);
+            transition:
+                border-color 0.25s ease,
+                transform 0.25s ease;
+        }
+
+        .doc-stat-card::after {
+            position: absolute;
+            right: -30px;
+            bottom: -50px;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: rgba(0, 229, 153, 0.035);
+            content: "";
+            pointer-events: none;
+        }
+
+        .doc-stat-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(0, 229, 153, 0.3);
+        }
+
+        .doc-stat-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .doc-stat-label {
+            color: var(--doc-muted);
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .doc-stat-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 43px;
+            height: 43px;
+            border: 1px solid rgba(0, 229, 153, 0.16);
+            border-radius: 12px;
+            background: var(--doc-accent-soft);
+            color: var(--doc-accent);
+            font-size: 20px;
+        }
+
+        .doc-stat-value {
+            margin-bottom: 7px;
+            color: #f8fafc;
+            font-size: 29px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .doc-stat-description {
+            color: #64748b;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        /* Section Layout */
+
+        .doc-section {
+            margin-bottom: 35px;
+            scroll-margin-top: 100px;
+        }
+
+        .doc-section-header {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 18px;
+            margin-bottom: 20px;
+        }
+
+        .doc-section-heading {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+        }
+
+        .doc-section-number {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            width: 39px;
+            height: 39px;
+            border: 1px solid rgba(0, 229, 153, 0.2);
+            border-radius: 11px;
+            background: var(--doc-accent-soft);
+            color: var(--doc-accent);
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .doc-section-title {
+            margin: 0 0 7px;
+            color: #f1f5f9;
+            font-size: 21px;
+            font-weight: 750;
+        }
+
+        .doc-section-subtitle {
+            margin: 0;
+            color: var(--doc-muted);
+            font-size: 13px;
+            line-height: 1.7;
+        }
+
+        .doc-panel {
+            padding: 25px;
+            border: 1px solid var(--doc-border);
+            border-radius: 16px;
+            background: var(--doc-panel);
+        }
+
+        /* Search */
+
+        .doc-search-panel {
+            margin-bottom: 35px;
+        }
+
+        .doc-search-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            width: 100%;
+            min-height: 58px;
+            padding: 0 18px;
+            border: 1px solid var(--doc-border);
+            border-radius: 12px;
+            background: rgba(2, 6, 23, 0.4);
+            transition:
+                border-color 0.25s ease,
+                box-shadow 0.25s ease;
+        }
+
+        .doc-search-wrapper:focus-within {
+            border-color: rgba(0, 229, 153, 0.5);
+            box-shadow: 0 0 0 3px rgba(0, 229, 153, 0.05);
+        }
+
+        .doc-search-icon {
+            color: var(--doc-accent);
+            font-size: 21px;
+            flex-shrink: 0;
+        }
+
+        .doc-search-input {
+            width: 100%;
+            min-width: 0;
+            border: none;
+            outline: none;
+            background: transparent;
+            color: #f1f5f9;
+            font-family: inherit;
+            font-size: 14px;
+        }
+
+        .doc-search-input::placeholder {
+            color: #64748b;
+        }
+
+        .doc-search-shortcut {
+            flex-shrink: 0;
+            padding: 5px 9px;
+            border: 1px solid var(--doc-border);
+            border-radius: 6px;
+            color: #64748b;
+            font-size: 11px;
+        }
+
+        .doc-filter-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 18px;
+        }
+
+        .doc-filter-btn {
+            padding: 9px 15px;
+            border: 1px solid var(--doc-border);
+            border-radius: 9px;
+            background: rgba(15, 23, 42, 0.5);
+            color: #94a3b8;
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .doc-filter-btn:hover,
+        .doc-filter-btn.active {
+            border-color: rgba(0, 229, 153, 0.35);
+            background: var(--doc-accent-soft);
+            color: var(--doc-accent);
+        }
+
+        .doc-search-results {
+            margin-top: 15px;
+            color: #64748b;
+            font-size: 12px;
+        }
+
+        /* Category Cards */
+
+        .doc-category-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .doc-category-card {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            padding: 23px;
+            border: 1px solid var(--doc-border);
+            border-radius: 15px;
+            background: var(--doc-panel);
+            transition:
+                transform 0.25s ease,
+                border-color 0.25s ease,
+                background 0.25s ease;
+        }
+
+        .doc-category-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(0, 229, 153, 0.35);
+            background: rgba(15, 23, 42, 0.95);
+        }
+
+        .doc-category-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .doc-category-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 46px;
+            height: 46px;
+            border: 1px solid rgba(0, 229, 153, 0.16);
+            border-radius: 12px;
+            background: var(--doc-accent-soft);
+            color: var(--doc-accent);
+            font-size: 21px;
+        }
+
+        .doc-category-count {
+            padding: 6px 9px;
+            border: 1px solid var(--doc-border);
+            border-radius: 7px;
+            color: #64748b;
+            font-size: 11px;
+        }
+
+        .doc-category-card h3 {
+            margin: 0 0 10px;
+            color: #e2e8f0;
+            font-size: 16px;
+            font-weight: 750;
+        }
+
+        .doc-category-description {
+            flex: 1;
+            margin: 0 0 22px;
+            color: var(--doc-muted);
+            font-size: 12px;
+            line-height: 1.8;
+        }
+
+        .doc-category-meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 18px;
+            color: #64748b;
+            font-size: 11px;
+        }
+
+        .doc-category-meta span {
+            color: var(--doc-accent);
+        }
+
+        .doc-category-link {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding-top: 16px;
+            border-top: 1px solid var(--doc-border);
+            color: var(--doc-accent);
+            font-size: 12px;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .doc-category-link:hover {
+            color: #6ee7b7;
+        }
+
+        .doc-category-card[hidden] {
+            display: none !important;
+        }
+
+        .doc-empty-state {
+            display: none;
+            padding: 45px 20px;
+            border: 1px dashed var(--doc-border);
+            border-radius: 14px;
+            color: #64748b;
+            text-align: center;
+        }
+
+        .doc-empty-state h3 {
+            margin: 0 0 10px;
+            color: #cbd5e1;
+            font-size: 16px;
+        }
+
+        .doc-empty-state p {
+            margin: 0;
+            font-size: 13px;
+            line-height: 1.7;
+        }
+
+        /* Documentation List */
+
+        .doc-list-panel {
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .doc-list-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 15px;
+            padding: 20px 22px;
+            border-bottom: 1px solid var(--doc-border);
+        }
+
+        .doc-list-toolbar h3 {
+            margin: 0;
+            color: #e2e8f0;
+            font-size: 14px;
+        }
+
+        .doc-list-count {
+            color: #64748b;
+            font-size: 12px;
+        }
+
+        .doc-list-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            padding: 19px 22px;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+            transition: background 0.2s ease;
+        }
+
+        .doc-list-item:last-child {
+            border-bottom: none;
+        }
+
+        .doc-list-item:hover {
+            background: rgba(0, 229, 153, 0.025);
+        }
+
+        .doc-list-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            min-width: 0;
+        }
+
+        .doc-file-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            width: 42px;
+            height: 42px;
+            border: 1px solid var(--doc-border);
+            border-radius: 11px;
+            background: rgba(30, 41, 59, 0.6);
+            color: #a5b4fc;
+            font-size: 18px;
+        }
+
+        .doc-list-info h4 {
+            margin: 0 0 6px;
+            color: #e2e8f0;
+            font-size: 13px;
+            font-weight: 650;
+        }
+
+        .doc-list-info p {
+            margin: 0;
+            color: #64748b;
+            font-size: 11px;
+            line-height: 1.7;
+        }
+
+        .doc-open-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            flex-shrink: 0;
+            padding: 9px 13px;
+            border: 1px solid var(--doc-border);
+            border-radius: 8px;
+            background: rgba(15, 23, 42, 0.5);
+            color: #94a3b8;
+            font-size: 12px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .doc-open-link:hover {
+            border-color: rgba(0, 229, 153, 0.35);
+            background: var(--doc-accent-soft);
+            color: var(--doc-accent);
+        }
+
+        /* Getting Started */
+
+        .doc-start-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .doc-start-card {
+            padding: 23px;
+            border: 1px solid var(--doc-border);
+            border-radius: 14px;
+            background: var(--doc-panel);
+        }
+
+        .doc-start-number {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            margin-bottom: 18px;
+            border: 1px solid rgba(0, 229, 153, 0.2);
+            border-radius: 10px;
+            background: var(--doc-accent-soft);
+            color: var(--doc-accent);
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .doc-start-card h3 {
+            margin: 0 0 10px;
+            color: #e2e8f0;
+            font-size: 15px;
+        }
+
+        .doc-start-card p {
+            margin: 0 0 18px;
+            color: var(--doc-muted);
+            font-size: 12px;
+            line-height: 1.8;
+        }
+
+        .doc-start-card a {
+            color: var(--doc-accent);
+            font-size: 12px;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .doc-start-card a:hover {
+            text-decoration: underline;
+        }
+
+        /* Footer */
+
+        .doc-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 45px;
+            padding: 25px 0 10px;
+            border-top: 1px solid var(--doc-border);
+            color: #64748b;
+            font-size: 12px;
+        }
+
+        .doc-footer a {
+            color: var(--doc-accent);
+            text-decoration: none;
+        }
+
+        .doc-footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive */
+
+        @media (max-width: 1100px) {
+            .doc-overview-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .doc-category-grid,
+            .doc-start-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .documentation-page {
+                padding: 22px 16px;
+            }
+
+            .doc-page-title {
+                font-size: 32px;
+                letter-spacing: -0.8px;
+            }
+
+            .doc-page-description {
+                font-size: 14px;
+            }
+
+            .doc-header-actions {
+                width: 100%;
+            }
+
+            .doc-header-actions .doc-btn {
+                flex: 1;
+            }
+
+            .doc-category-grid,
+            .doc-start-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .doc-panel {
+                padding: 18px;
+            }
+
+            .doc-section-title {
+                font-size: 19px;
+            }
+
+            .doc-search-shortcut {
+                display: none;
+            }
+
+            .doc-footer {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .doc-overview-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .doc-stat-card {
+                padding: 19px;
+            }
+
+            .doc-stat-value {
+                font-size: 26px;
+            }
+
+            .doc-section-header {
+                align-items: flex-start;
+            }
+
+            .doc-breadcrumb {
+                font-size: 12px;
+            }
+
+            .doc-list-item {
+                align-items: flex-start;
+                flex-direction: column;
+                gap: 15px;
+                padding: 18px;
+            }
+
+            .doc-open-link {
+                margin-left: 57px;
+            }
+
+            .doc-search-wrapper {
+                padding: 0 13px;
+            }
+
+            .doc-filter-list {
+                gap: 8px;
+            }
+
+            .doc-filter-btn {
+                padding: 8px 11px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- =========================================
+         NAVBAR - SAME SHARED LAYOUT
+    ========================================== -->
+
+    <header class="navbar" id="navbar">
+
+        <div class="navbar-left">
+
+            <button
+                class="menu-toggle"
+                id="menuToggle"
+                type="button"
+                aria-label="Toggle sidebar"
+                aria-expanded="false"
+                aria-controls="sidebar">
+
+                <span></span>
+                <span></span>
+                <span></span>
+
+            </button>
+
+            <a href="../index.html" class="navbar-brand">
+
+                <img
+                    src="../assets/images/logo.svg"
+                    alt="Wazuh SOC Lab Logo"
+                    class="navbar-logo">
+
+                <span class="brand-text">
+                    WAZUH <span class="brand-highlight">SOC LAB</span>
+                </span>
+
+            </a>
+
+        </div>
+
+        <div class="navbar-right">
+
+            <div class="navbar-status">
+
+                <span class="status-dot"></span>
+
+                <span>Home Lab</span>
+
+            </div>
+
+            <a
+                href="../index.html"
+                class="navbar-home"
+                aria-label="Return to homepage">
+
+                <span>Home</span>
+
+            </a>
+
+        </div>
+
+    </header>
+
+
+    <!-- =========================================
+         SIDEBAR - SAME SHARED LAYOUT
+    ========================================== -->
+
+    <aside class="sidebar" id="sidebar">
+
+        <div class="sidebar-header">
+
+            <span class="sidebar-section-label">
+                MAIN MENU
+            </span>
+
+        </div>
+
+        <nav class="sidebar-nav" aria-label="Main navigation">
+
+            <a href="../index.html" class="nav-link">
+
+                <span class="nav-icon">⌂</span>
+
+                <span class="nav-text">Overview</span>
+
+            </a>
+
+            <div class="sidebar-divider"></div>
+
+            <span class="sidebar-section-label">
+                SOC LAB
+            </span>
+
+            <a href="architecture.html" class="nav-link">
+
+                <span class="nav-icon">⌘</span>
+
+                <span class="nav-text">Architecture</span>
+
+            </a>
+
+            <a
+                href="documentation.html"
+                class="nav-link active"
+                aria-current="page">
+
+                <span class="nav-icon">▤</span>
+
+                <span class="nav-text">Documentation</span>
+
+            </a>
+
+            <a href="detection-rules.html" class="nav-link">
+
+                <span class="nav-icon">⚙</span>
+
+                <span class="nav-text">Detection Rules</span>
+
+            </a>
+
+            <a href="log-analysis.html" class="nav-link">
+
+                <span class="nav-icon">⌕</span>
+
+                <span class="nav-text">Log Analysis</span>
+
+            </a>
+
+            <a href="threat-detection.html" class="nav-link">
+
+                <span class="nav-icon">⚠</span>
+
+                <span class="nav-text">Threat Detection</span>
+
+            </a>
+
+            <a href="incident-response.html" class="nav-link">
+
+                <span class="nav-icon">◎</span>
+
+                <span class="nav-text">Incident Response</span>
+
+            </a>
+
+            <div class="sidebar-divider"></div>
+
+            <span class="sidebar-section-label">
+                RESOURCES
+            </span>
+
+            <a href="dashboards.html" class="nav-link">
+
+                <span class="nav-icon">▦</span>
+
+                <span class="nav-text">Dashboards</span>
+
+            </a>
+
+            <a href="scripts.html" class="nav-link">
+
+                <span class="nav-icon">⌘</span>
+
+                <span class="nav-text">Scripts</span>
+
+            </a>
+
+            <a href="reports.html" class="nav-link">
+
+                <span class="nav-icon">▧</span>
+
+                <span class="nav-text">Reports</span>
+
+            </a>
+
+        </nav>
+
+        <div class="sidebar-footer">
+
+            <div class="sidebar-footer-indicator">
+
+                <span class="status-dot"></span>
+
+                <span>Personal Lab Environment</span>
+
+            </div>
+
+            <p>Wazuh SOC Home Lab</p>
+
+        </div>
+
+    </aside>
+
+
+    <!-- =========================================
+         MAIN CONTENT
+    ========================================== -->
+
+    <main class="main-content documentation-page">
+
+        <div class="doc-container">
+
+            <!-- Breadcrumb -->
+
+            <nav class="doc-breadcrumb" aria-label="Breadcrumb">
+
+                <a href="../index.html">Home</a>
+
+                <span>/</span>
+
+                <span class="current">
+                    Documentation
+                </span>
+
+            </nav>
+
+
+            <!-- =====================================
+                 PAGE HEADER
+            ====================================== -->
+
+            <section class="doc-page-header">
+
+                <div class="doc-heading-content">
+
+                    <div class="doc-eyebrow">
+
+                        <span class="doc-eyebrow-dot"></span>
+
+                        Knowledge Base &amp; Technical Guides
+
+                    </div>
+
+                    <h1 class="doc-page-title">
+
+                        SOC Lab <span>Documentation</span>
+
+                    </h1>
+
+                    <p class="doc-page-description">
+
+                        A centralized technical knowledge base for my
+                        Wazuh SOC Home Lab. Explore installation guides,
+                        system configurations, agent deployment,
+                        troubleshooting procedures, and infrastructure
+                        documentation.
+
+                    </p>
+
+                </div>
+
+                <div class="doc-header-actions">
+
+                    <a
+                        href="../content/docs/project-overview.html"
+                        class="doc-btn doc-btn-primary"
+                        target="_blank"
+                        rel="noopener">
+
+                        <span>↗</span>
+
+                        Project Overview
+
+                    </a>
+
+                    <a
+                        href="#documentation-library"
+                        class="doc-btn">
+
+                        <span>▤</span>
+
+                        Browse Docs
+
+                    </a>
+
+                </div>
+
+            </section>
+
+
+            <!-- =====================================
+                 DOCUMENTATION OVERVIEW
+            ====================================== -->
+
+            <section class="doc-overview-grid"
+                aria-label="Documentation overview">
+
+                <article class="doc-stat-card">
+
+                    <div class="doc-stat-top">
+
+                        <span class="doc-stat-label">
+                            Documentation Categories
+                        </span>
+
+                        <div class="doc-stat-icon">▤</div>
+
+                    </div>
+
+                    <div class="doc-stat-value">06</div>
+
+                    <div class="doc-stat-description">
+                        Infrastructure and system setup categories
+                    </div>
+
+                </article>
+
+
+                <article class="doc-stat-card">
+
+                    <div class="doc-stat-top">
+
+                        <span class="doc-stat-label">
+                            Technical Guides
+                        </span>
+
+                        <div class="doc-stat-icon">⌘</div>
+
+                    </div>
+
+                    <div class="doc-stat-value">14+</div>
+
+                    <div class="doc-stat-description">
+                        Installation, configuration, and reference guides
+                    </div>
+
+                </article>
+
+
+                <article class="doc-stat-card">
+
+                    <div class="doc-stat-top">
+
+                        <span class="doc-stat-label">
+                            Documentation Format
+                        </span>
+
+                        <div class="doc-stat-icon">▧</div>
+
+                    </div>
+
+                    <div class="doc-stat-value">Markdown</div>
+
+                    <div class="doc-stat-description">
+                        Version-controlled technical documentation
+                    </div>
+
+                </article>
+
+
+                <article class="doc-stat-card">
+
+                    <div class="doc-stat-top">
+
+                        <span class="doc-stat-label">
+                            Knowledge Base
+                        </span>
+
+                        <div class="doc-stat-icon">◎</div>
+
+                    </div>
+
+                    <div class="doc-stat-value">GitHub</div>
+
+                    <div class="doc-stat-description">
+                        Project documentation maintained with source files
+                    </div>
+
+                </article>
+
+            </section>
+
+
+            <!-- =====================================
+                 SEARCH AND FILTERS
+            ====================================== -->
+
+            <section class="doc-section" id="documentation-library">
+
+                <div class="doc-section-header">
+
+                    <div class="doc-section-heading">
+
+                        <div class="doc-section-number">
+                            01
+                        </div>
+
+                        <div>
+
+                            <h2 class="doc-section-title">
+                                Documentation Library
+                            </h2>
+
+                            <p class="doc-section-subtitle">
+                                Search and explore the technical
+                                documentation organized by category.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="doc-panel doc-search-panel">
+
+                    <label
+                        class="doc-search-wrapper"
+                        for="docSearch">
+
+                        <span class="doc-search-icon">⌕</span>
+
+                        <input
+                            type="search"
+                            id="docSearch"
+                            class="doc-search-input"
+                            placeholder="Search documentation, installation, agents, networking..."
+                            autocomplete="off"
+                            aria-label="Search documentation">
+
+                        <span class="doc-search-shortcut">
+                            SEARCH
+                        </span>
+
+                    </label>
+
+                    <div class="doc-filter-list"
+                        role="group"
+                        aria-label="Filter documentation categories">
+
+                        <button
+                            type="button"
+                            class="doc-filter-btn active"
+                            data-filter="all"
+                            aria-pressed="true">
+
+                            All Documents
+
+                        </button>
+
+                        <button
+                            type="button"
+                            class="doc-filter-btn"
+                            data-filter="general"
+                            aria-pressed="false">
+
+                            General
+
+                        </button>
+
+                        <button
+                            type="button"
+                            class="doc-filter-btn"
+                            data-filter="server"
+                            aria-pressed="false">
+
+                            Server
+
+                        </button>
+
+                        <button
+                            type="button"
+                            class="doc-filter-btn"
+                            data-filter="agents"
+                            aria-pressed="false">
+
+                            Agents
+
+                        </button>
+
+                        <button
+                            type="button"
+                            class="doc-filter-btn"
+                            data-filter="endpoints"
+                            aria-pressed="false">
+
+                            Endpoints
+
+                        </button>
+
+                        <button
+                            type="button"
+                            class="doc-filter-btn"
+                            data-filter="troubleshooting"
+                            aria-pressed="false">
+
+                            Troubleshooting
+
+                        </button>
+
+                    </div>
+
+                    <div
+                        class="doc-search-results"
+                        id="docSearchResults"
+                        aria-live="polite">
+
+                        Showing all documentation categories.
+
+                    </div>
+
+                </div>
+
+
+                <!-- DOCUMENTATION CATEGORY CARDS -->
+
+                <div class="doc-category-grid" id="docCategoryGrid">
+
+                    <!-- General Documentation -->
+
+                    <article
+                        class="doc-category-card"
+                        data-category="general"
+                        data-search="general project overview lab architecture network configuration installation guide">
+
+                        <div class="doc-category-top">
+
+                            <div class="doc-category-icon">
+                                ◈
+                            </div>
+
+                            <span class="doc-category-count">
+                                5 Guides
+                            </span>
+
+                        </div>
+
+                        <h3>General Documentation</h3>
+
+                        <p class="doc-category-description">
+
+                            Understand the project's objectives,
+                            overall infrastructure, network design,
+                            installation sequence, and general
+                            troubleshooting procedures.
+
+                        </p>
+
+                        <div class="doc-category-meta">
+
+                            <span>●</span>
+
+                            Project fundamentals
+
+                        </div>
+
+                        <a
+                            href="../content/docs/project-overview.html"
+                            class="doc-category-link"
+                            target="_blank"
+                            rel="noopener">
+
+                            <span>Explore Documentation</span>
+
+                            <span>↗</span>
+
+                        </a>
+
+                    </article>
+
+
+                    <!-- Ubuntu Server -->
+
+                    <article
+                        class="doc-category-card"
+                        data-category="server"
+                        data-search="ubuntu server installation configuration hostname ip ssh permissions updates">
+
+                        <div class="doc-category-top">
+
+                            <div class="doc-category-icon">
+                                ▤
+                            </div>
+
+                            <span class="doc-category-count">
+                                2 Guides
+                            </span>
+
+                        </div>
+
+                        <h3>Ubuntu Server</h3>
+
+                        <p class="doc-category-description">
+
+                            Installation and initial server
+                            configuration, including hostname,
+                            network settings, SSH, users,
+                            permissions, and system updates.
+
+                        </p>
+
+                        <div class="doc-category-meta">
+
+                            <span>●</span>
+
+                            Linux infrastructure
+
+                        </div>
+
+                        <a
+                            href="../content/setup/ubuntu-server/installation.md"
+                            class="doc-category-link"
+                            target="_blank"
+                            rel="noopener">
+
+                            <span>Explore Documentation</span>
+
+                            <span>↗</span>
+
+                        </a>
+
+                    </article>
+
+
+                    <!-- Wazuh Server -->
+
+                    <article
+                        class="doc-category-card"
+                        data-category="server"
+                        data-search="wazuh server manager indexer dashboard installation configuration">
+
+                        <div class="doc-category-top">
+
+                            <div class="doc-category-icon">
+                                ◉
+                            </div>
+
+                            <span class="doc-category-count">
+                                3 Guides
+                            </span>
+
+                        </div>
+
+                        <h3>Wazuh Server</h3>
+
+                        <p class="doc-category-description">
+
+                            Wazuh installation, Manager configuration,
+                            Indexer and Dashboard services, and
+                            initial dashboard setup procedures.
+
+                        </p>
+
+                        <div class="doc-category-meta">
+
+                            <span>●</span>
+
+                            SIEM infrastructure
+
+                        </div>
+
+                        <a
+                            href="../content/setup/wazuh-server/installation.md"
+                            class="doc-category-link"
+                            target="_blank"
+                            rel="noopener">
+
+                            <span>Explore Documentation</span>
+
+                            <span>↗</span>
+
+                        </a>
+
+                    </article>
+
+
+                    <!-- Wazuh Agents -->
+
+                    <article
+                        class="doc-category-card"
+                        data-category="agents"
+                        data-search="wazuh agent windows linux enrollment registration connectivity troubleshooting">
+
+                        <div class="doc-category-top">
+
+                            <div class="doc-category-icon">
+                                ⌘
+                            </div>
+
+                            <span class="doc-category-count">
+                                3 Guides
+                            </span>
+
+                        </div>
+
+                        <h3>Wazuh Agent Deployment</h3>
+
+                        <p class="doc-category-description">
+
+                            Windows and Linux agent installation,
+                            enrollment, Manager connectivity,
+                            and agent troubleshooting procedures.
+
+                        </p>
+
+                        <div class="doc-category-meta">
+
+                            <span>●</span>
+
+                            Endpoint monitoring
+
+                        </div>
+
+                        <a
+                            href="../content/setup/wazuh-agent/windows-agent.md"
+                            class="doc-category-link"
+                            target="_blank"
+                            rel="noopener">
+
+                            <span>Explore Documentation</span>
+
+                            <span>↗</span>
+
+                        </a>
+
+                    </article>
+
+
+                    <!-- Windows -->
+
+                    <article
+                        class="doc-category-card"
+                        data-category="endpoints"
+                        data-search="windows installation sysmon event log configuration security auditing">
+
+                        <div class="doc-category-top">
+
+                            <div class="doc-category-icon">
+                                ▣
+                            </div>
+
+                            <span class="doc-category-count">
+                                3 Guides
+                            </span>
+
+                        </div>
+
+                        <h3>Windows Endpoint</h3>
+
+                        <p class="doc-category-description">
+
+                            Windows installation, Sysmon deployment,
+                            event collection, security auditing,
+                            and endpoint monitoring configuration.
+
+                        </p>
+
+                        <div class="doc-category-meta">
+
+                            <span>●</span>
+
+                            Windows security
+
+                        </div>
+
+                        <a
+                            href="../content/setup/windows/installation.md"
+                            class="doc-category-link"
+                            target="_blank"
+                            rel="noopener">
+
+                            <span>Explore Documentation</span>
+
+                            <span>↗</span>
+
+                        </a>
+
+                    </article>
+
+
+                    <!-- Windows Server -->
+
+                    <article
+                        class="doc-category-card"
+                        data-category="endpoints"
+                        data-search="windows server installation configuration active directory domain controller users groups">
+
+                        <div class="doc-category-top">
+
+                            <div class="doc-category-icon">
+                                ▦
+                            </div>
+
+                            <span class="doc-category-count">
+                                3 Guides
+                            </span>
+
+                        </div>
+
+                        <h3>Windows Server</h3>
+
+                        <p class="doc-category-description">
+
+                            Server installation, server roles,
+                            configuration, Active Directory,
+                            domain controllers, users, and groups.
+
+                        </p>
+
+                        <div class="doc-category-meta">
+
+                            <span>●</span>
+
+                            Server administration
+
+                        </div>
+
+                        <a
+                            href="../content/setup/windows-server/installation.md"
+                            class="doc-category-link"
+                            target="_blank"
+                            rel="noopener">
+
+                            <span>Explore Documentation</span>
+
+                            <span>↗</span>
+
+                        </a>
+
+                    </article>
+
+
+                    <!-- Kali Linux -->
+
+                    <article
+                        class="doc-category-card"
+                        data-category="endpoints"
+                        data-search="kali linux installation virtualbox lab configuration security testing">
+
+                        <div class="doc-category-top">
+
+                            <div class="doc-category-icon">
+                                ⌘
+                            </div>
+
+                            <span class="doc-category-count">
+                                2 Guides
+                            </span>
+
+                        </div>
+
+                        <h3>Kali Linux</h3>
+
+                        <p class="doc-category-description">
+
+                            Kali Linux installation, VirtualBox
+                            networking, lab configuration, and
+                            controlled security testing setup.
+
+                        </p>
+
+                        <div class="doc-category-meta">
+
+                            <span>●</span>
+
+                            Security testing
+
+                        </div>
+
+                        <a
+                            href="../content/setup/kali-linux/installation.md"
+                            class="doc-category-link"
+                            target="_blank"
+                            rel="noopener">
+
+                            <span>Explore Documentation</span>
+
+                            <span>↗</span>
+
+                        </a>
+
+                    </article>
+
+
+                    <!-- Troubleshooting -->
+
+                    <article
+                        class="doc-category-card"
+                        data-category="troubleshooting"
+                        data-search="troubleshooting installation networking agent connectivity wazuh service">
+
+                        <div class="doc-category-top">
+
+                            <div class="doc-category-icon">
+                                ⚙
+                            </div>
+
+                            <span class="doc-category-count">
+                                Reference
+                            </span>
+
+                        </div>
+
+                        <h3>Troubleshooting</h3>
+
+                        <p class="doc-category-description">
+
+                            Common lab deployment issues,
+                            network connectivity problems,
+                            Wazuh service errors, and
+                            agent troubleshooting.
+
+                        </p>
+
+                        <div class="doc-category-meta">
+
+                            <span>●</span>
+
+                            Technical reference
+
+                        </div>
+
+                        <a
+                            href="../content/docs/troubleshooting.md"
+                            class="doc-category-link"
+                            target="_blank"
+                            rel="noopener">
+
+                            <span>Explore Documentation</span>
+
+                            <span>↗</span>
+
+                        </a>
+
+                    </article>
+
+
+                    <!-- Network Configuration -->
+
+                    <article
+                        class="doc-category-card"
+                        data-category="general"
+                        data-search="network configuration virtualbox adapters ip addressing subnet gateway connectivity">
+
+                        <div class="doc-category-top">
+
+                            <div class="doc-category-icon">
+                                ⇄
+                            </div>
+
+                            <span class="doc-category-count">
+                                Reference
+                            </span>
+
+                        </div>
+
+                        <h3>Network Configuration</h3>
+
+                        <p class="doc-category-description">
+
+                            VirtualBox network adapters,
+                            IP addressing, subnet configuration,
+                            VM connectivity, and network
+                            communication documentation.
+
+                        </p>
+
+                        <div class="doc-category-meta">
+
+                            <span>●</span>
+
+                            Network infrastructure
+
+                        </div>
+
+                        <a
+                            href="../content/docs/network-configuration.md"
+                            class="doc-category-link"
+                            target="_blank"
+                            rel="noopener">
+
+                            <span>Explore Documentation</span>
+
+                            <span>↗</span>
+
+                        </a>
+
+                    </article>
+
+                </div>
+
+
+                <div class="doc-empty-state" id="docEmptyState">
+
+                    <h3>No Documentation Found</h3>
+
+                    <p>
+                        No matching documents were found.
+                        Try another search term or select
+                        a different category.
+                    </p>
+
+                </div>
+
+            </section>
+
+
+            <!-- =====================================
+                 QUICK ACCESS DOCUMENTATION
+            ====================================== -->
+
+            <section class="doc-section" id="quick-access">
+
+                <div class="doc-section-header">
+
+                    <div class="doc-section-heading">
+
+                        <div class="doc-section-number">
+                            02
+                        </div>
+
+                        <div>
+
+                            <h2 class="doc-section-title">
+                                Quick Access
+                            </h2>
+
+                            <p class="doc-section-subtitle">
+                                Frequently referenced technical
+                                documents for the SOC lab.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="doc-panel doc-list-panel">
+
+                    <div class="doc-list-toolbar">
+
+                        <h3>Technical Reference Documents</h3>
+
+                        <span class="doc-list-count">
+                            Markdown Resources
+                        </span>
+
+                    </div>
+
+
+                    <!-- Project Overview -->
+
+                    <div class="doc-list-item">
+
+                        <div class="doc-list-info">
+
+                            <div class="doc-file-icon">
+                                ▤
+                            </div>
+
+                            <div>
+
+                                <h4>Project Overview</h4>
+
+                                <p>
+                                    Objectives, project scope,
+                                    technologies, and components.
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                        <a
+                            href="../content/docs/project-overview.html"
+                            class="doc-open-link"
+                            target="_blank"
+                            rel="noopener">
+
+                            Open ↗
+
+                        </a>
+
+                    </div>
+
+
+                    <!-- Lab Architecture -->
+
+                    <div class="doc-list-item">
+
+                        <div class="doc-list-info">
+
+                            <div class="doc-file-icon">
+                                ◈
+                            </div>
+
+                            <div>
+
+                                <h4>Lab Architecture</h4>
+
+                                <p>
+                                    System design, infrastructure,
+                                    and monitoring workflow.
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                        <a
+                            href="../content/docs/lab-architecture.html"
+                            class="doc-open-link"
+                            target="_blank"
+                            rel="noopener">
+
+                            Open ↗
+
+                        </a>
+
+                    </div>
+
+
+                    <!-- Installation Guide -->
+
+                    <div class="doc-list-item">
+
+                        <div class="doc-list-info">
+
+                            <div class="doc-file-icon">
+                                ⌘
+                            </div>
+
+                            <div>
+
+                                <h4>Installation Guide</h4>
+
+                                <p>
+                                    Overall sequence for deploying
+                                    the SOC home lab.
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                        <a
+                            href="../content/docs/installation-guide.md"
+                            class="doc-open-link"
+                            target="_blank"
+                            rel="noopener">
+
+                            Open ↗
+
+                        </a>
+
+                    </div>
+
+
+                    <!-- Troubleshooting -->
+
+                    <div class="doc-list-item">
+
+                        <div class="doc-list-info">
+
+                            <div class="doc-file-icon">
+                                ⚙
+                            </div>
+
+                            <div>
+
+                                <h4>Troubleshooting Guide</h4>
+
+                                <p>
+                                    Common deployment and
+                                    connectivity issues.
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                        <a
+                            href="../content/docs/troubleshooting.md"
+                            class="doc-open-link"
+                            target="_blank"
+                            rel="noopener">
+
+                            Open ↗
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =====================================
+                 GETTING STARTED
+            ====================================== -->
+
+            <section class="doc-section" id="getting-started">
+
+                <div class="doc-section-header">
+
+                    <div class="doc-section-heading">
+
+                        <div class="doc-section-number">
+                            03
+                        </div>
+
+                        <div>
+
+                            <h2 class="doc-section-title">
+                                Getting Started
+                            </h2>
+
+                            <p class="doc-section-subtitle">
+                                Follow the documentation in a
+                                logical order to understand the lab.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="doc-start-grid">
+
+                    <article class="doc-start-card">
+
+                        <div class="doc-start-number">
+                            01
+                        </div>
+
+                        <h3>Understand the Architecture</h3>
+
+                        <p>
+
+                            Start with the project overview,
+                            VM inventory, and network
+                            architecture to understand
+                            the lab components.
+
+                        </p>
+
+                        <a href="architecture.html">
+
+                            View Architecture →
+
+                        </a>
+
+                    </article>
+
+
+                    <article class="doc-start-card">
+
+                        <div class="doc-start-number">
+                            02
+                        </div>
+
+                        <h3>Configure the Infrastructure</h3>
+
+                        <p>
+
+                            Review the installation guides
+                            for Ubuntu Server, Wazuh,
+                            Windows endpoints, and
+                            the required agents.
+
+                        </p>
+
+                        <a href="../content/docs/installation-guide.md"
+                            target="_blank"
+                            rel="noopener">
+
+                            Read Installation Guide →
+
+                        </a>
+
+                    </article>
+
+
+                    <article class="doc-start-card">
+
+                        <div class="doc-start-number">
+                            03
+                        </div>
+
+                        <h3>Explore Security Operations</h3>
+
+                        <p>
+
+                            Continue with detection rules,
+                            log analysis, threat scenarios,
+                            and incident response
+                            documentation.
+
+                        </p>
+
+                        <a href="detection-rules.html">
+
+                            Explore Detection Rules →
+
+                        </a>
+
+                    </article>
+
+                </div>
+
+            </section>
+
+
+            <!-- =====================================
+                 FOOTER
+            ====================================== -->
+
+            <footer class="doc-footer">
+
+                <div>
+
+                    Wazuh SOC Home Lab
+
+                    <span> | </span>
+
+                    Documentation
+
+                </div>
+
+                <div>
+
+                    <a href="architecture.html">
+                        Architecture
+                    </a>
+
+                    <span> · </span>
+
+                    <a href="detection-rules.html">
+                        Detection Rules
+                    </a>
+
+                    <span> · </span>
+
+                    <a href="../index.html">
+                        Back to Home
+                    </a>
+
+                </div>
+
+            </footer>
+
+        </div>
+
+    </main>
+
+
+    <!-- =========================================
+         MOBILE SIDEBAR OVERLAY
+    ========================================== -->
+
+    <div
+        class="sidebar-overlay"
+        id="sidebarOverlay"
+        aria-hidden="true">
+    </div>
+
+
+    <!-- =========================================
+         SHARED JAVASCRIPT
+    ========================================== -->
+
+    <script src="../assets/js/navigation.js"></script>
+    <script src="../assets/js/main.js"></script>
+
+    <!-- Documentation Search and Category Filters -->
+
+    <script src="../assets/js/search.js"></script>
+    <script src="../assets/js/documentation.js"></script>
+    <script src="../assets/js/viewer.js"></script>
+
+    <!-- Page-specific search functionality -->
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const searchInput =
+                document.getElementById("docSearch");
+
+            const filterButtons =
+                document.querySelectorAll(".doc-filter-btn");
+
+            const categoryCards =
+                document.querySelectorAll(".doc-category-card");
+
+            const emptyState =
+                document.getElementById("docEmptyState");
+
+            const resultsText =
+                document.getElementById("docSearchResults");
+
+            let activeFilter = "all";
+
+            function filterDocumentation() {
+
+                const searchTerm =
+                    searchInput.value.trim().toLowerCase();
+
+                let visibleCount = 0;
+
+                categoryCards.forEach(function (card) {
+
+                    const category =
+                        card.dataset.category || "";
+
+                    const searchableText =
+                        (
+                            card.dataset.search +
+                            " " +
+                            card.textContent
+                        ).toLowerCase();
+
+                    const matchesCategory =
+                        activeFilter === "all" ||
+                        category === activeFilter;
+
+                    const matchesSearch =
+                        searchableText.includes(searchTerm);
+
+                    const isVisible =
+                        matchesCategory && matchesSearch;
+
+                    card.hidden = !isVisible;
+
+                    if (isVisible) {
+                        visibleCount++;
+                    }
+
+                });
+
+                emptyState.style.display =
+                    visibleCount === 0 ? "block" : "none";
+
+                if (searchTerm) {
+
+                    resultsText.textContent =
+                        "Showing " + visibleCount +
+                        " matching documentation categories.";
+
+                } else if (activeFilter !== "all") {
+
+                    resultsText.textContent =
+                        "Showing " + visibleCount +
+                        " categories in the selected filter.";
+
+                } else {
+
+                    resultsText.textContent =
+                        "Showing all " + visibleCount +
+                        " documentation categories.";
+
+                }
+
+            }
+
+            searchInput.addEventListener(
+                "input",
+                filterDocumentation
+            );
+
+            filterButtons.forEach(function (button) {
+
+                button.addEventListener("click", function () {
+
+                    filterButtons.forEach(function (btn) {
+
+                        btn.classList.remove("active");
+
+                        btn.setAttribute(
+                            "aria-pressed",
+                            "false"
+                        );
+
+                    });
+
+                    button.classList.add("active");
+
+                    button.setAttribute(
+                        "aria-pressed",
+                        "true"
+                    );
+
+                    activeFilter = button.dataset.filter;
+
+                    filterDocumentation();
+
+                });
+
+            });
+
+            filterDocumentation();
+
+        });
+    </script>
+    
+</body>
+</html>

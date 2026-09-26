@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Linux, Windows, and SOC utility scripts for the Wazuh SOC Home Lab, including safe examples, usage notes, and testing guidance.">
+    <meta name="theme-color" content="#080d18">
+    <title>Scripts | Wazuh SOC Home Lab</title>
+
+    <!-- Shared website styles -->
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/responsive.css">
+    <link rel="stylesheet" href="../assets/css/animations.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <!-- Scripts page styles: consistent with the Architecture and Dashboards page treatment -->
+    <style>
+        .scripts-page {
+            --scr-accent: #00e599;
+            --scr-accent-soft: rgba(0,229,153,.10);
+            --scr-border: rgba(148,163,184,.14);
+            --scr-muted: #8492a6;
+            --scr-panel: rgba(15,23,42,.78);
+            padding:30px;
+            color:#e2e8f0;
+        }
+        .scripts-page * { box-sizing:border-box; }
+        .scr-container { max-width:1500px; margin:0 auto; }
+        .scr-breadcrumb { display:flex; align-items:center; flex-wrap:wrap; gap:9px; margin-bottom:25px; color:var(--scr-muted); font-size:13px; }
+        .scr-breadcrumb a { color:var(--scr-muted); text-decoration:none; transition:color .2s ease; }
+        .scr-breadcrumb a:hover,.scr-breadcrumb .current { color:var(--scr-accent); }
+        .scr-page-header { display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:24px; margin-bottom:32px; }
+        .scr-heading-content { max-width:780px; }
+        .scr-eyebrow { display:inline-flex; align-items:center; gap:8px; margin-bottom:16px; padding:7px 12px; border:1px solid rgba(0,229,153,.22); border-radius:30px; background:var(--scr-accent-soft); color:var(--scr-accent); font-size:11px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase; }
+        .scr-eyebrow-dot { width:7px; height:7px; border-radius:50%; background:var(--scr-accent); box-shadow:0 0 10px rgba(0,229,153,.7); }
+        .scr-page-title { margin:0 0 16px; color:#f8fafc; font-size:clamp(30px,4vw,46px); font-weight:800; line-height:1.15; letter-spacing:-1.5px; }
+        .scr-page-title span { color:var(--scr-accent); }
+        .scr-page-description { max-width:720px; margin:0; color:#94a3b8; font-size:15px; line-height:1.85; }
+        .scr-header-actions { display:flex; flex-wrap:wrap; align-items:center; gap:12px; }
+        .scr-btn { display:inline-flex; align-items:center; justify-content:center; gap:9px; min-height:43px; padding:11px 17px; border:1px solid var(--scr-border); border-radius:10px; background:rgba(15,23,42,.75); color:#cbd5e1; font-family:inherit; font-size:13px; font-weight:600; text-decoration:none; cursor:pointer; transition:background .25s ease,border-color .25s ease,transform .25s ease; }
+        .scr-btn:hover { transform:translateY(-2px); border-color:rgba(0,229,153,.45); background:rgba(0,229,153,.07); color:var(--scr-accent); }
+        .scr-btn-primary { border-color:rgba(0,229,153,.4); background:rgba(0,229,153,.10); color:var(--scr-accent); }
+        .scr-section { margin-top:34px; }
+        .scr-section-header { display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:15px; margin-bottom:18px; }
+        .scr-section-kicker { display:block; margin-bottom:7px; color:var(--scr-accent); font-size:10px; font-weight:800; letter-spacing:1.5px; text-transform:uppercase; }
+        .scr-section-title { margin:0; color:#f1f5f9; font-size:clamp(20px,2.4vw,26px); font-weight:750; letter-spacing:-.5px; }
+        .scr-section-description { margin:8px 0 0; color:#94a3b8; font-size:13px; line-height:1.7; }
+        .scr-panel { min-width:0; overflow:hidden; border:1px solid var(--scr-border); border-radius:16px; background:var(--scr-panel); box-shadow:0 12px 35px rgba(0,0,0,.12); }
+        .scr-panel-head { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; padding:19px 21px; border-bottom:1px solid var(--scr-border); }
+        .scr-panel-title { display:flex; align-items:center; gap:10px; margin:0; color:#e2e8f0; font-size:14px; font-weight:700; }
+        .scr-panel-title i { color:var(--scr-accent); }
+        .scr-panel-body { padding:21px; }
+        .scr-badge { display:inline-flex; align-items:center; gap:6px; padding:6px 9px; border:1px solid var(--scr-border); border-radius:30px; color:#94a3b8; font-size:10px; font-weight:700; white-space:nowrap; }
+        .scr-badge.green { border-color:rgba(0,229,153,.2); background:rgba(0,229,153,.07); color:#00e599; }
+        .scr-badge.amber { border-color:rgba(251,191,36,.2); background:rgba(251,191,36,.07); color:#fbbf24; }
+        .scr-badge.blue { border-color:rgba(96,165,250,.2); background:rgba(96,165,250,.07); color:#93c5fd; }
+        .scr-stats-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:16px; }
+        .scr-stat-card { padding:21px; border:1px solid var(--scr-border); border-radius:15px; background:linear-gradient(145deg,rgba(15,23,42,.92),rgba(10,16,29,.78)); transition:transform .25s ease,border-color .25s ease; }
+        .scr-stat-card:hover { transform:translateY(-3px); border-color:rgba(0,229,153,.3); }
+        .scr-stat-top { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:20px; }
+        .scr-stat-icon { display:grid; place-items:center; width:42px; height:42px; border:1px solid rgba(0,229,153,.18); border-radius:12px; background:var(--scr-accent-soft); color:var(--scr-accent); font-size:17px; }
+        .scr-stat-label { color:#94a3b8; font-size:12px; font-weight:600; }
+        .scr-stat-value { margin:8px 0 7px; color:#f8fafc; font-size:30px; font-weight:800; letter-spacing:-1px; }
+        .scr-stat-note { color:#64748b; font-size:11px; line-height:1.6; }
+        .scr-stat-note i { margin-right:5px; color:var(--scr-accent); }
+        .scr-filter-bar { display:flex; align-items:center; flex-wrap:wrap; gap:10px; }
+        .scr-search { flex:1 1 240px; position:relative; }
+        .scr-search i { position:absolute; top:50%; left:14px; transform:translateY(-50%); color:#64748b; font-size:13px; }
+        .scr-search input { width:100%; min-height:43px; padding:11px 14px 11px 39px; border:1px solid var(--scr-border); border-radius:10px; outline:none; background:rgba(2,6,23,.4); color:#e2e8f0; font:13px inherit; }
+        .scr-search input:focus { border-color:rgba(0,229,153,.45); box-shadow:0 0 0 3px rgba(0,229,153,.06); }
+        .scr-filter-buttons { display:flex; flex-wrap:wrap; gap:8px; }
+        .scr-filter { padding:10px 13px; border:1px solid var(--scr-border); border-radius:9px; background:rgba(15,23,42,.7); color:#94a3b8; font:600 11px inherit; cursor:pointer; transition:all .2s ease; }
+        .scr-filter:hover,.scr-filter.active { border-color:rgba(0,229,153,.35); background:rgba(0,229,153,.08); color:var(--scr-accent); }
+        .scr-script-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:17px; }
+        .scr-script-card { display:flex; flex-direction:column; min-width:0; border:1px solid var(--scr-border); border-radius:15px; overflow:hidden; background:rgba(15,23,42,.72); transition:transform .25s ease,border-color .25s ease; }
+        .scr-script-card:hover { transform:translateY(-3px); border-color:rgba(0,229,153,.32); }
+        .scr-script-card[hidden] { display:none !important; }
+        .scr-script-card-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; padding:19px 19px 14px; }
+        .scr-script-icon { display:grid; place-items:center; flex:0 0 40px; height:40px; border:1px solid rgba(0,229,153,.18); border-radius:11px; background:var(--scr-accent-soft); color:var(--scr-accent); }
+        .scr-script-card h3 { margin:0 0 7px; color:#e2e8f0; font-size:14px; line-height:1.45; }
+        .scr-script-card .scr-script-path { display:block; overflow-wrap:anywhere; color:#64748b; font:11px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace; }
+        .scr-script-card-body { flex:1; padding:0 19px 17px; }
+        .scr-script-card-body p { margin:0 0 15px; color:#94a3b8; font-size:12px; line-height:1.75; }
+        .scr-tag-row { display:flex; flex-wrap:wrap; gap:7px; }
+        .scr-tag { padding:5px 8px; border:1px solid rgba(148,163,184,.12); border-radius:6px; color:#94a3b8; font-size:10px; }
+        .scr-script-card-footer { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:13px 19px; border-top:1px solid rgba(148,163,184,.09); }
+        .scr-script-card-footer span { color:#64748b; font-size:10px; }
+        .scr-text-link { display:inline-flex; align-items:center; gap:7px; color:var(--scr-accent); font-size:11px; font-weight:700; text-decoration:none; }
+        .scr-text-link:hover { color:#a7f3d0; }
+        .scr-empty { display:none; padding:30px; border:1px dashed var(--scr-border); border-radius:13px; color:#94a3b8; text-align:center; font-size:13px; }
+        .scr-empty.show { display:block; }
+        .scr-grid-two { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; }
+        .scr-code-window { overflow:hidden; border:1px solid rgba(148,163,184,.14); border-radius:12px; background:#070c16; }
+        .scr-code-top { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:12px 15px; border-bottom:1px solid rgba(148,163,184,.12); background:rgba(15,23,42,.75); }
+        .scr-code-dots { display:flex; gap:6px; }
+        .scr-code-dots span { width:7px; height:7px; border-radius:50%; background:#475569; }
+        .scr-code-filename { color:#94a3b8; font:11px ui-monospace,SFMono-Regular,Menlo,monospace; }
+        .scr-code-window pre { overflow-x:auto; margin:0; padding:18px; color:#a7f3d0; font:12px/1.8 ui-monospace,SFMono-Regular,Menlo,monospace; tab-size:4; }
+        .scr-code-caption { margin:12px 0 0; color:#64748b; font-size:11px; line-height:1.7; }
+        .scr-table-wrap { overflow-x:auto; }
+        .scr-table { width:100%; border-collapse:collapse; min-width:650px; }
+        .scr-table th { padding:14px 18px; background:rgba(15,23,42,.65); color:#64748b; font-size:10px; font-weight:800; letter-spacing:.8px; text-align:left; text-transform:uppercase; white-space:nowrap; }
+        .scr-table td { padding:15px 18px; border-top:1px solid rgba(148,163,184,.09); color:#cbd5e1; font-size:12px; line-height:1.65; vertical-align:top; }
+        .scr-table code { padding:4px 7px; border:1px solid var(--scr-border); border-radius:6px; background:rgba(2,6,23,.5); color:#a7f3d0; font-size:11px; }
+        .scr-callout { display:flex; align-items:flex-start; gap:14px; padding:19px 21px; border:1px solid rgba(251,191,36,.18); border-radius:13px; background:rgba(251,191,36,.045); }
+        .scr-callout > i { margin-top:3px; color:#fbbf24; font-size:17px; }
+        .scr-callout strong { display:block; margin-bottom:5px; color:#fcd34d; font-size:13px; }
+        .scr-callout p { margin:0; color:#a8b3c4; font-size:12px; line-height:1.75; }
+        .scr-workflow { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; }
+        .scr-step { padding:20px; border:1px solid var(--scr-border); border-radius:14px; background:rgba(15,23,42,.65); }
+        .scr-step-num { display:grid; place-items:center; width:34px; height:34px; margin-bottom:16px; border:1px solid rgba(0,229,153,.25); border-radius:10px; background:var(--scr-accent-soft); color:var(--scr-accent); font-size:12px; font-weight:800; }
+        .scr-step h3 { margin:0 0 8px; color:#e2e8f0; font-size:14px; }
+        .scr-step p { margin:0; color:#94a3b8; font-size:12px; line-height:1.75; }
+        .scr-footer { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px; margin-top:38px; padding-top:22px; border-top:1px solid var(--scr-border); color:#64748b; font-size:11px; }
+        .scr-footer a { color:var(--scr-accent); text-decoration:none; }
+        @media(max-width:1200px) { .scr-script-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .scr-stats-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .scr-workflow { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+        @media(max-width:900px) { .scripts-page { padding:24px; } .scr-grid-two { grid-template-columns:1fr; } }
+        @media(max-width:640px) {
+            .scripts-page { padding:20px 15px; }
+            .scr-page-header { gap:18px; margin-bottom:26px; }
+            .scr-header-actions { width:100%; }
+            .scr-header-actions .scr-btn { flex:1; }
+            .scr-stats-grid,.scr-script-grid,.scr-workflow { grid-template-columns:1fr; }
+            .scr-stat-card { padding:19px; }
+            .scr-stat-value { font-size:27px; }
+            .scr-panel-head,.scr-panel-body { padding:17px; }
+            .scr-section-header { align-items:flex-start; }
+            .scr-footer { align-items:flex-start; flex-direction:column; }
+            .scr-filter-bar { align-items:stretch; }
+            .scr-filter-buttons { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); }
+            .scr-filter { text-align:center; }
+        }
+        @media(prefers-reduced-motion:reduce) {
+            .scripts-page *, .scripts-page *::before, .scripts-page *::after { scroll-behavior:auto !important; animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Shared top navigation -->
+    <header class="navbar" id="navbar">
+        <div class="navbar-left">
+            <button class="menu-toggle" id="menuToggle" type="button" aria-label="Toggle sidebar" aria-expanded="false" aria-controls="sidebar">
+                <span></span><span></span><span></span>
+            </button>
+            <a href="../index.html" class="navbar-brand">
+                <img src="../assets/images/logo.svg" alt="Wazuh SOC Lab Logo" class="navbar-logo">
+                <span class="brand-text">WAZUH <span class="brand-highlight">SOC LAB</span></span>
+            </a>
+        </div>
+        <div class="navbar-right">
+            <div class="navbar-status"><span class="status-dot"></span><span>Home Lab</span></div>
+            <a href="../index.html" class="navbar-home" aria-label="Return to homepage"><span>Home</span></a>
+        </div>
+    </header>
+
+    <!-- Shared sidebar navigation -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header"><span class="sidebar-section-label">MAIN MENU</span></div>
+        <nav class="sidebar-nav" aria-label="Main navigation">
+            <a href="../index.html" class="nav-link"><span class="nav-icon">⌂</span><span class="nav-text">Overview</span></a>
+            <div class="sidebar-divider"></div>
+            <span class="sidebar-section-label">SOC LAB</span>
+            <a href="architecture.html" class="nav-link"><span class="nav-icon">⌘</span><span class="nav-text">Architecture</span></a>
+            <a href="documentation.html" class="nav-link"><span class="nav-icon">▤</span><span class="nav-text">Documentation</span></a>
+            <a href="detection-rules.html" class="nav-link"><span class="nav-icon">⚙</span><span class="nav-text">Detection Rules</span></a>
+            <a href="log-analysis.html" class="nav-link"><span class="nav-icon">⌕</span><span class="nav-text">Log Analysis</span></a>
+            <a href="threat-detection.html" class="nav-link"><span class="nav-icon">⚠</span><span class="nav-text">Threat Detection</span></a>
+            <a href="incident-response.html" class="nav-link"><span class="nav-icon">◎</span><span class="nav-text">Incident Response</span></a>
+            <div class="sidebar-divider"></div>
+            <span class="sidebar-section-label">RESOURCES</span>
+            <a href="dashboards.html" class="nav-link"><span class="nav-icon">▦</span><span class="nav-text">Dashboards</span></a>
+            <a href="scripts.html" class="nav-link active" aria-current="page"><span class="nav-icon">⌘</span><span class="nav-text">Scripts</span></a>
+            <a href="reports.html" class="nav-link"><span class="nav-icon">▧</span><span class="nav-text">Reports</span></a>
+        </nav>
+        <div class="sidebar-footer"><p>Personal Lab Environment</p><span>Wazuh SOC Home Lab</span></div>
+    </aside>
+
+    <main class="main-content scripts-page">
+        <div class="scr-container">
+            <nav class="scr-breadcrumb" aria-label="Breadcrumb">
+                <a href="../index.html">Home</a><i class="fa-solid fa-chevron-right"></i>
+                <span>Resources</span><i class="fa-solid fa-chevron-right"></i>
+                <span class="current">Scripts</span>
+            </nav>
+
+            <section class="scr-page-header">
+                <div class="scr-heading-content">
+                    <div class="scr-eyebrow"><span class="scr-eyebrow-dot"></span> AUTOMATION &amp; SOC UTILITIES</div>
+                    <h1 class="scr-page-title">SOC Lab <span>Scripts</span></h1>
+                    <p class="scr-page-description">A structured library for the small, auditable scripts used to support your Wazuh lab: Linux and Windows host checks, log collection helpers, lab validation, and investigation utilities. Each entry includes its purpose, location, and safe-use notes.</p>
+                </div>
+                <div class="scr-header-actions">
+                    <a href="../content/scripts/README.md" class="scr-btn scr-btn-primary"><i class="fa-solid fa-book-open"></i> Scripts README</a>
+                    <a href="documentation.html" class="scr-btn"><i class="fa-solid fa-book"></i> Documentation</a>
+                </div>
+            </section>
+
+            <section class="scr-stats-grid" aria-label="Scripts library overview">
+                <article class="scr-stat-card"><div class="scr-stat-top"><div class="scr-stat-icon"><i class="fa-brands fa-linux"></i></div><span class="scr-badge">Library</span></div><div class="scr-stat-label">Linux Utilities</div><div class="scr-stat-value">03</div><div class="scr-stat-note">Host, service, and authentication-log checks.</div></article>
+                <article class="scr-stat-card"><div class="scr-stat-top"><div class="scr-stat-icon"><i class="fa-brands fa-windows"></i></div><span class="scr-badge">Library</span></div><div class="scr-stat-label">Windows Utilities</div><div class="scr-stat-value">03</div><div class="scr-stat-note">Event log and endpoint validation helpers.</div></article>
+                <article class="scr-stat-card"><div class="scr-stat-top"><div class="scr-stat-icon"><i class="fa-solid fa-magnifying-glass-chart"></i></div><span class="scr-badge">Library</span></div><div class="scr-stat-label">SOC / Investigation</div><div class="scr-stat-value">03</div><div class="scr-stat-note">Checks and report preparation helpers.</div></article>
+                <article class="scr-stat-card"><div class="scr-stat-top"><div class="scr-stat-icon"><i class="fa-solid fa-shield-halved"></i></div><span class="scr-badge green">Safe-by-design</span></div><div class="scr-stat-label">Destructive actions</div><div class="scr-stat-value">0</div><div class="scr-stat-note">Catalog examples avoid persistence, evasion, and destructive behavior.</div></article>
+            </section>
+
+            <section class="scr-section">
+                <div class="scr-section-header"><div><span class="scr-section-kicker">SCRIPT CATALOG</span><h2 class="scr-section-title">Browse the script library</h2><p class="scr-section-description">Search by script name, purpose, platform, or category. The catalog describes planned files; add the actual script files to your repository before treating an entry as executable project code.</p></div><span class="scr-badge"><i class="fa-solid fa-code"></i> 9 catalog entries</span></div>
+                <div class="scr-panel">
+                    <div class="scr-panel-body">
+                        <div class="scr-filter-bar">
+                            <label class="scr-search"><i class="fa-solid fa-magnifying-glass"></i><input id="scriptSearch" type="search" placeholder="Search scripts, tasks, or platforms..." aria-label="Search scripts"></label>
+                            <div class="scr-filter-buttons" role="group" aria-label="Filter scripts by category">
+                                <button class="scr-filter active" type="button" data-filter="all" aria-pressed="true">All Scripts</button>
+                                <button class="scr-filter" type="button" data-filter="linux" aria-pressed="false">Linux</button>
+                                <button class="scr-filter" type="button" data-filter="windows" aria-pressed="false">Windows</button>
+                                <button class="scr-filter" type="button" data-filter="soc" aria-pressed="false">SOC Utilities</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="scr-script-grid" id="scriptGrid" style="margin-top:17px">
+                    <article class="scr-script-card" data-category="linux" data-search="linux system information host inventory cpu memory disk os uptime">
+                        <div class="scr-script-card-head"><div><h3>Linux System Inventory</h3><span class="scr-script-path">scripts/linux/system-inventory.sh</span></div><span class="scr-script-icon"><i class="fa-brands fa-linux"></i></span></div>
+                        <div class="scr-script-card-body"><p>Collects basic host facts such as hostname, OS release, uptime, CPU and memory summary, disk usage, and network interfaces for lab documentation.</p><div class="scr-tag-row"><span class="scr-tag">Bash</span><span class="scr-tag">Read-only</span><span class="scr-tag">Inventory</span></div></div>
+                        <div class="scr-script-card-footer"><span>Linux · Host audit</span><a class="scr-text-link" href="../content/scripts/linux/system-inventory.sh">View file <i class="fa-solid fa-arrow-right"></i></a></div>
+                    </article>
+                    <article class="scr-script-card" data-category="linux" data-search="linux wazuh agent service status systemctl troubleshooting">
+                        <div class="scr-script-card-head"><div><h3>Wazuh Agent Health Check</h3><span class="scr-script-path">scripts/linux/wazuh-agent-health.sh</span></div><span class="scr-script-icon"><i class="fa-solid fa-heart-pulse"></i></span></div>
+                        <div class="scr-script-card-body"><p>Checks whether the Wazuh agent service is present and reports its current systemd status to support connectivity troubleshooting.</p><div class="scr-tag-row"><span class="scr-tag">Bash</span><span class="scr-tag">Service status</span><span class="scr-tag">Triage</span></div></div>
+                        <div class="scr-script-card-footer"><span>Linux · Agent validation</span><a class="scr-text-link" href="../content/scripts/linux/wazuh-agent-health.sh">View file <i class="fa-solid fa-arrow-right"></i></a></div>
+                    </article>
+                    <article class="scr-script-card" data-category="linux" data-search="linux ssh authentication logs failed login journalctl auth.log grep">
+                        <div class="scr-script-card-head"><div><h3>SSH Authentication Review</h3><span class="scr-script-path">scripts/linux/ssh-auth-review.sh</span></div><span class="scr-script-icon"><i class="fa-solid fa-terminal"></i></span></div>
+                        <div class="scr-script-card-body"><p>Displays a bounded set of recent SSH authentication log entries for manual review. It does not block accounts or change firewall rules.</p><div class="scr-tag-row"><span class="scr-tag">Bash</span><span class="scr-tag">Log review</span><span class="scr-tag">Read-only</span></div></div>
+                        <div class="scr-script-card-footer"><span>Linux · Authentication</span><a class="scr-text-link" href="../content/scripts/linux/ssh-auth-review.sh">View file <i class="fa-solid fa-arrow-right"></i></a></div>
+                    </article>
+                    <article class="scr-script-card" data-category="windows" data-search="windows powershell system inventory computer name os memory disk ipconfig">
+                        <div class="scr-script-card-head"><div><h3>Windows Host Inventory</h3><span class="scr-script-path">scripts/windows/system-inventory.ps1</span></div><span class="scr-script-icon"><i class="fa-brands fa-windows"></i></span></div>
+                        <div class="scr-script-card-body"><p>Reports computer name, Windows version, uptime, storage summary, and network configuration to help maintain an accurate endpoint inventory.</p><div class="scr-tag-row"><span class="scr-tag">PowerShell</span><span class="scr-tag">Inventory</span><span class="scr-tag">Read-only</span></div></div>
+                        <div class="scr-script-card-footer"><span>Windows · Host audit</span><a class="scr-text-link" href="../content/scripts/windows/system-inventory.ps1">View file <i class="fa-solid fa-arrow-right"></i></a></div>
+                    </article>
+                    <article class="scr-script-card" data-category="windows" data-search="windows powershell wazuh agent service status Get-Service troubleshooting">
+                        <div class="scr-script-card-head"><div><h3>Wazuh Agent Service Check</h3><span class="scr-script-path">scripts/windows/wazuh-agent-health.ps1</span></div><span class="scr-script-icon"><i class="fa-solid fa-heart-pulse"></i></span></div>
+                        <div class="scr-script-card-body"><p>Checks the Wazuh agent Windows service and reports its state. Use the output alongside the Wazuh dashboard agent status.</p><div class="scr-tag-row"><span class="scr-tag">PowerShell</span><span class="scr-tag">Service status</span><span class="scr-tag">Triage</span></div></div>
+                        <div class="scr-script-card-footer"><span>Windows · Agent validation</span><a class="scr-text-link" href="../content/scripts/windows/wazuh-agent-health.ps1">View file <i class="fa-solid fa-arrow-right"></i></a></div>
+                    </article>
+                    <article class="scr-script-card" data-category="windows" data-search="windows powershell event viewer security failed logon event id 4625 Get-WinEvent">
+                        <div class="scr-script-card-head"><div><h3>Failed Logon Event Review</h3><span class="scr-script-path">scripts/windows/failed-logons.ps1</span></div><span class="scr-script-icon"><i class="fa-solid fa-file-shield"></i></span></div>
+                        <div class="scr-script-card-body"><p>Queries a limited time window of Windows Security event 4625 records for review of failed logon activity. Requires appropriate event-log permissions.</p><div class="scr-tag-row"><span class="scr-tag">PowerShell</span><span class="scr-tag">Event ID 4625</span><span class="scr-tag">Log review</span></div></div>
+                        <div class="scr-script-card-footer"><span>Windows · Authentication</span><a class="scr-text-link" href="../content/scripts/windows/failed-logons.ps1">View file <i class="fa-solid fa-arrow-right"></i></a></div>
+                    </article>
+                    <article class="scr-script-card" data-category="soc" data-search="soc lab preflight checklist network dns time connectivity validation">
+                        <div class="scr-script-card-head"><div><h3>Lab Preflight Checklist</h3><span class="scr-script-path">scripts/lab-preflight.sh</span></div><span class="scr-script-icon"><i class="fa-solid fa-list-check"></i></span></div>
+                        <div class="scr-script-card-body"><p>A checklist-oriented helper to record basic host, DNS, time synchronization, and expected lab connectivity checks before a detection exercise.</p><div class="scr-tag-row"><span class="scr-tag">Shell</span><span class="scr-tag">Validation</span><span class="scr-tag">Lab setup</span></div></div>
+                        <div class="scr-script-card-footer"><span>SOC · Lab validation</span><a class="scr-text-link" href="../content/scripts/lab-preflight.sh">View file <i class="fa-solid fa-arrow-right"></i></a></div>
+                    </article>
+                    <article class="scr-script-card" data-category="soc" data-search="soc incident evidence collection manifest timestamp hostname sha256sum file hashes">
+                        <div class="scr-script-card-head"><div><h3>Evidence Manifest Generator</h3><span class="scr-script-path">scripts/evidence-manifest.sh</span></div><span class="scr-script-icon"><i class="fa-solid fa-fingerprint"></i></span></div>
+                        <div class="scr-script-card-body"><p>Creates a simple file listing and SHA-256 hash manifest for a specified evidence folder. It does not collect data from remote systems or alter evidence files.</p><div class="scr-tag-row"><span class="scr-tag">Bash</span><span class="scr-tag">SHA-256</span><span class="scr-tag">Evidence</span></div></div>
+                        <div class="scr-script-card-footer"><span>SOC · Evidence handling</span><a class="scr-text-link" href="../content/scripts/evidence-manifest.sh">View file <i class="fa-solid fa-arrow-right"></i></a></div>
+                    </article>
+                    <article class="scr-script-card" data-category="soc" data-search="soc alert report template incident summary CSV markdown report preparation">
+                        <div class="scr-script-card-head"><div><h3>Investigation Report Starter</h3><span class="scr-script-path">scripts/investigation-report-template.md</span></div><span class="scr-script-icon"><i class="fa-solid fa-file-lines"></i></span></div>
+                        <div class="scr-script-card-body"><p>A reusable report template for documenting alert context, timeline, evidence, analysis, disposition, and follow-up actions for lab investigations.</p><div class="scr-tag-row"><span class="scr-tag">Markdown</span><span class="scr-tag">Documentation</span><span class="scr-tag">Incident response</span></div></div>
+                        <div class="scr-script-card-footer"><span>SOC · Reporting</span><a class="scr-text-link" href="../content/scripts/investigation-report-template.md">View file <i class="fa-solid fa-arrow-right"></i></a></div>
+                    </article>
+                </div>
+                <div class="scr-empty" id="scriptEmpty">No scripts match your search. Try a different keyword or select another category.</div>
+            </section>
+
+            <section class="scr-section">
+                <div class="scr-section-header"><div><span class="scr-section-kicker">QUICK REFERENCE</span><h2 class="scr-section-title">Example safe checks</h2><p class="scr-section-description">These small snippets demonstrate read-only checks. They are examples for reference, not a substitute for reviewing the full script, permissions, and target environment.</p></div><span class="scr-badge green"><i class="fa-solid fa-eye"></i> Read-only examples</span></div>
+                <div class="scr-grid-two">
+                    <article class="scr-panel">
+                        <div class="scr-panel-head"><h3 class="scr-panel-title"><i class="fa-brands fa-linux"></i> Linux · Wazuh agent status</h3><span class="scr-badge">Bash</span></div>
+                        <div class="scr-panel-body">
+                            <div class="scr-code-window"><div class="scr-code-top"><div class="scr-code-dots"><span></span><span></span><span></span></div><span class="scr-code-filename">agent-status.sh</span></div><pre><code>#!/usr/bin/env bash
+# Read-only service status check
+if command -v systemctl >/dev/null 2>&1; then
+    systemctl is-active wazuh-agent
+    systemctl --no-pager --full status wazuh-agent
+else
+    echo "systemctl is not available on this host."
+fi</code></pre></div>
+                            <p class="scr-code-caption">Run on a Linux endpoint where systemd and the Wazuh agent package are installed. The command reports service state; it does not start, stop, or restart the service.</p>
+                        </div>
+                    </article>
+                    <article class="scr-panel">
+                        <div class="scr-panel-head"><h3 class="scr-panel-title"><i class="fa-brands fa-windows"></i> Windows · Wazuh agent status</h3><span class="scr-badge">PowerShell</span></div>
+                        <div class="scr-panel-body">
+                            <div class="scr-code-window"><div class="scr-code-top"><div class="scr-code-dots"><span></span><span></span><span></span></div><span class="scr-code-filename">agent-status.ps1</span></div><pre><code># Read-only service status check
+$service = Get-Service -Name "WazuhSvc" `
+    -ErrorAction SilentlyContinue
+
+if ($null -ne $service) {
+    $service |
+        Select-Object Name, DisplayName, Status
+} else {
+    Write-Output "Wazuh agent service not found."
+}</code></pre></div>
+                            <p class="scr-code-caption">Run in PowerShell on the Windows endpoint. Service naming can vary by package/version; confirm the installed service name if this example returns no result.</p>
+                        </div>
+                    </article>
+                </div>
+            </section>
+
+            <section class="scr-section">
+                <div class="scr-section-header"><div><span class="scr-section-kicker">EXECUTION CHECKLIST</span><h2 class="scr-section-title">Before running any script</h2><p class="scr-section-description">Use a controlled workflow so that script output is reproducible, attributable, and safe for your lab.</p></div></div>
+                <div class="scr-panel">
+                    <div class="scr-table-wrap">
+                        <table class="scr-table">
+                            <thead><tr><th>Step</th><th>What to verify</th><th>Why it matters</th></tr></thead>
+                            <tbody>
+                                <tr><td><span class="scr-badge green">01 · Scope</span></td><td>Confirm the script target is your own lab VM or an explicitly authorized system.</td><td>Prevents unintended activity on systems outside the lab.</td></tr>
+                                <tr><td><span class="scr-badge green">02 · Inspect</span></td><td>Read the entire script and identify commands that write files, change services, or require elevated permissions.</td><td>Understand side effects before execution.</td></tr>
+                                <tr><td><span class="scr-badge green">03 · Test</span></td><td>Use a snapshot or test VM first; record OS and script version.</td><td>Supports recovery and reproducible results.</td></tr>
+                                <tr><td><span class="scr-badge green">04 · Capture</span></td><td>Save output, execution time, host name, and relevant screenshots without exposing credentials or secrets.</td><td>Provides useful evidence for reports and troubleshooting.</td></tr>
+                                <tr><td><span class="scr-badge green">05 · Review</span></td><td>Compare the output with Wazuh agent status, alerts, and the relevant logs.</td><td>Corroborates script output with telemetry rather than assuming success.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <section class="scr-section">
+                <div class="scr-section-header"><div><span class="scr-section-kicker">SCRIPT WORKFLOW</span><h2 class="scr-section-title">From script to documented result</h2><p class="scr-section-description">A repeatable process for building a credible SOC portfolio entry.</p></div></div>
+                <div class="scr-workflow">
+                    <article class="scr-step"><div class="scr-step-num">01</div><h3>Define the task</h3><p>Write down the operational problem, target host, expected output, and whether the script is read-only or makes changes.</p></article>
+                    <article class="scr-step"><div class="scr-step-num">02</div><h3>Develop &amp; review</h3><p>Keep scripts small, readable, commented, and free of hard-coded passwords, tokens, or private information.</p></article>
+                    <article class="scr-step"><div class="scr-step-num">03</div><h3>Test in the lab</h3><p>Run against a disposable or snapshotted VM, check exit status, and compare the output with system and Wazuh records.</p></article>
+                    <article class="scr-step"><div class="scr-step-num">04</div><h3>Record evidence</h3><p>Document prerequisites, usage, sample sanitized output, limitations, and links to related investigation notes.</p></article>
+                </div>
+            </section>
+
+            <section class="scr-section">
+                <div class="scr-callout"><i class="fa-solid fa-triangle-exclamation"></i><div><strong>Repository and safety note</strong><p>The catalog links point to the planned paths under <code>content/scripts/</code>. Those files must be created in your repository before the links will open. Review each script before running it, use it only on systems you own or are authorized to administer, and never commit passwords, API keys, tokens, private IP details you do not want public, or unredacted security logs to a public repository.</p></div></div>
+            </section>
+
+            <section class="scr-section">
+                <div class="scr-section-header"><div><span class="scr-section-kicker">RELATED RESOURCES</span><h2 class="scr-section-title">Continue working in the lab</h2><p class="scr-section-description">Connect automation work to the rest of your SOC documentation.</p></div></div>
+                <div class="scr-grid-two">
+                    <a href="dashboards.html" class="scr-panel" style="display:flex;align-items:center;gap:16px;padding:20px;text-decoration:none;transition:border-color .2s ease">
+                        <span class="scr-stat-icon"><i class="fa-solid fa-table-cells-large"></i></span><span><strong style="display:block;color:#e2e8f0;font-size:13px;margin-bottom:6px">Dashboards &amp; Monitoring</strong><span style="color:#94a3b8;font-size:12px;line-height:1.7">Validate script results against Wazuh agent health and collected events.</span></span><i class="fa-solid fa-arrow-right" style="margin-left:auto;color:var(--scr-accent)"></i>
+                    </a>
+                    <a href="incident-response.html" class="scr-panel" style="display:flex;align-items:center;gap:16px;padding:20px;text-decoration:none;transition:border-color .2s ease">
+                        <span class="scr-stat-icon"><i class="fa-solid fa-bullseye"></i></span><span><strong style="display:block;color:#e2e8f0;font-size:13px;margin-bottom:6px">Incident Response</strong><span style="color:#94a3b8;font-size:12px;line-height:1.7">Use collected evidence and repeatable checks in investigation documentation.</span></span><i class="fa-solid fa-arrow-right" style="margin-left:auto;color:var(--scr-accent)"></i>
+                    </a>
+                </div>
+            </section>
+
+            <footer class="scr-footer">
+                <span>Wazuh SOC Home Lab · Scripts &amp; Automation</span>
+                <span><a href="../index.html">Return to Overview</a> · Personal lab documentation</span>
+            </footer>
+        </div>
+    </main>
+
+    <!-- Script catalog search and category filter -->
+    <script>
+        (() => {
+            "use strict";
+            const searchInput = document.getElementById("scriptSearch");
+            const filterButtons = [...document.querySelectorAll(".scr-filter")];
+            const cards = [...document.querySelectorAll(".scr-script-card")];
+            const emptyState = document.getElementById("scriptEmpty");
+            let activeCategory = "all";
+
+            function filterScripts() {
+                const query = searchInput.value.trim().toLowerCase();
+                let visibleCount = 0;
+
+                cards.forEach(card => {
+                    const categoryMatch = activeCategory === "all" || card.dataset.category === activeCategory;
+                    const searchMatch = (card.dataset.search + " " + card.textContent).toLowerCase().includes(query);
+                    const show = categoryMatch && searchMatch;
+                    card.hidden = !show;
+                    if (show) visibleCount++;
+                });
+
+                emptyState.classList.toggle("show", visibleCount === 0);
+            }
+
+            filterButtons.forEach(button => {
+                button.addEventListener("click", () => {
+                    activeCategory = button.dataset.filter;
+                    filterButtons.forEach(item => {
+                        const isActive = item === button;
+                        item.classList.toggle("active", isActive);
+                        item.setAttribute("aria-pressed", String(isActive));
+                    });
+                    filterScripts();
+                });
+            });
+
+            searchInput.addEventListener("input", filterScripts);
+        })();
+    </script>
+
+    <!-- Shared navigation behavior -->
+    <script src="../assets/js/main.js"></script>
+    <script src="../assets/js/navigation.js"></script>
+    <script src="../assets/js/search.js"></script>
+    <script src="../assets/js/viewer.js"></script>
+</body>
+</html>

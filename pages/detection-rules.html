@@ -1,0 +1,2433 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="description"
+        content="Wazuh SOC Home Lab detection rules, custom XML rules, MITRE ATT&CK mapping, and security detection testing.">
+
+    <meta name="theme-color" content="#080d18">
+
+    <title>Detection Rules | Wazuh SOC Home Lab</title>
+
+    <!-- Shared CSS -->
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/responsive.css">
+    <link rel="stylesheet" href="../assets/css/animations.css">
+
+    <!-- Page-specific CSS -->
+    <style>
+        /* =========================================
+           DETECTION RULES PAGE
+        ========================================= */
+
+        .detection-page {
+            --det-accent: #00e599;
+            --det-accent-soft: rgba(0, 229, 153, 0.09);
+            --det-border: rgba(148, 163, 184, 0.14);
+            --det-muted: #8492a6;
+            --det-panel: rgba(15, 23, 42, 0.78);
+
+            padding: 30px;
+            color: #e2e8f0;
+        }
+
+        .detection-page * {
+            box-sizing: border-box;
+        }
+
+        .det-container {
+            max-width: 1500px;
+            margin: 0 auto;
+        }
+
+        /* Breadcrumb */
+
+        .det-breadcrumb {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 9px;
+            margin-bottom: 25px;
+            color: var(--det-muted);
+            font-size: 13px;
+        }
+
+        .det-breadcrumb a {
+            color: var(--det-muted);
+            text-decoration: none;
+        }
+
+        .det-breadcrumb a:hover,
+        .det-breadcrumb .current {
+            color: var(--det-accent);
+        }
+
+        /* Header */
+
+        .det-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .det-header-content {
+            max-width: 800px;
+        }
+
+        .det-eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+            padding: 7px 12px;
+            border: 1px solid rgba(0, 229, 153, 0.22);
+            border-radius: 30px;
+            background: var(--det-accent-soft);
+            color: var(--det-accent);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .det-live-dot {
+            width: 7px;
+            height: 7px;
+            flex-shrink: 0;
+            border-radius: 50%;
+            background: var(--det-accent);
+            box-shadow: 0 0 10px rgba(0, 229, 153, 0.6);
+        }
+
+        .det-title {
+            margin: 0 0 16px;
+            color: #f8fafc;
+            font-size: clamp(30px, 4vw, 46px);
+            font-weight: 800;
+            line-height: 1.15;
+            letter-spacing: -1.4px;
+        }
+
+        .det-title span {
+            color: var(--det-accent);
+        }
+
+        .det-description {
+            max-width: 760px;
+            margin: 0;
+            color: #94a3b8;
+            font-size: 15px;
+            line-height: 1.85;
+        }
+
+        .det-header-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .det-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 9px;
+            min-height: 43px;
+            padding: 11px 17px;
+            border: 1px solid var(--det-border);
+            border-radius: 10px;
+            background: rgba(15, 23, 42, 0.75);
+            color: #cbd5e1;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .det-btn:hover {
+            transform: translateY(-2px);
+            border-color: rgba(0, 229, 153, 0.4);
+            color: var(--det-accent);
+        }
+
+        .det-btn-primary {
+            border-color: rgba(0, 229, 153, 0.3);
+            background: var(--det-accent-soft);
+            color: var(--det-accent);
+        }
+
+        /* Overview statistics */
+
+        .det-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 18px;
+            margin-bottom: 35px;
+        }
+
+        .det-stat-card {
+            position: relative;
+            overflow: hidden;
+            padding: 22px;
+            border: 1px solid var(--det-border);
+            border-radius: 15px;
+            background: var(--det-panel);
+            transition: transform 0.25s ease,
+                border-color 0.25s ease;
+        }
+
+        .det-stat-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(0, 229, 153, 0.3);
+        }
+
+        .det-stat-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .det-stat-label {
+            color: var(--det-muted);
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .det-stat-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 43px;
+            height: 43px;
+            border: 1px solid rgba(0, 229, 153, 0.16);
+            border-radius: 12px;
+            background: var(--det-accent-soft);
+            color: var(--det-accent);
+            font-size: 20px;
+        }
+
+        .det-stat-value {
+            margin-bottom: 7px;
+            color: #f8fafc;
+            font-size: 28px;
+            font-weight: 800;
+        }
+
+        .det-stat-description {
+            color: #64748b;
+            font-size: 12px;
+            line-height: 1.7;
+        }
+
+        /* Section layout */
+
+        .det-section {
+            margin-bottom: 35px;
+            scroll-margin-top: 100px;
+        }
+
+        .det-section-header {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 18px;
+            margin-bottom: 20px;
+        }
+
+        .det-section-heading {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+        }
+
+        .det-section-number {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            width: 39px;
+            height: 39px;
+            border: 1px solid rgba(0, 229, 153, 0.2);
+            border-radius: 11px;
+            background: var(--det-accent-soft);
+            color: var(--det-accent);
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .det-section-title {
+            margin: 0 0 7px;
+            color: #f1f5f9;
+            font-size: 21px;
+            font-weight: 750;
+        }
+
+        .det-section-subtitle {
+            margin: 0;
+            color: var(--det-muted);
+            font-size: 13px;
+            line-height: 1.7;
+        }
+
+        .det-panel {
+            padding: 25px;
+            border: 1px solid var(--det-border);
+            border-radius: 16px;
+            background: var(--det-panel);
+        }
+
+        /* Search */
+
+        .det-search-box {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            min-height: 56px;
+            padding: 0 18px;
+            border: 1px solid var(--det-border);
+            border-radius: 12px;
+            background: rgba(2, 6, 23, 0.4);
+            transition: border-color 0.25s ease;
+        }
+
+        .det-search-box:focus-within {
+            border-color: rgba(0, 229, 153, 0.5);
+            box-shadow: 0 0 0 3px rgba(0, 229, 153, 0.05);
+        }
+
+        .det-search-icon {
+            color: var(--det-accent);
+            font-size: 21px;
+        }
+
+        .det-search-input {
+            width: 100%;
+            min-width: 0;
+            border: none;
+            outline: none;
+            background: transparent;
+            color: #f1f5f9;
+            font-family: inherit;
+            font-size: 14px;
+        }
+
+        .det-search-input::placeholder {
+            color: #64748b;
+        }
+
+        .det-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 18px;
+        }
+
+        .det-filter-btn {
+            padding: 9px 15px;
+            border: 1px solid var(--det-border);
+            border-radius: 9px;
+            background: rgba(15, 23, 42, 0.5);
+            color: #94a3b8;
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .det-filter-btn:hover,
+        .det-filter-btn.active {
+            border-color: rgba(0, 229, 153, 0.35);
+            background: var(--det-accent-soft);
+            color: var(--det-accent);
+        }
+
+        .det-results-count {
+            margin-top: 15px;
+            color: #64748b;
+            font-size: 12px;
+        }
+
+        /* Rule cards */
+
+        .det-rules-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .det-rule-card {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            padding: 23px;
+            border: 1px solid var(--det-border);
+            border-radius: 15px;
+            background: var(--det-panel);
+            transition: transform 0.25s ease,
+                border-color 0.25s ease;
+        }
+
+        .det-rule-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(0, 229, 153, 0.32);
+        }
+
+        .det-rule-card[hidden] {
+            display: none !important;
+        }
+
+        .det-rule-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 19px;
+        }
+
+        .det-rule-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 45px;
+            height: 45px;
+            flex-shrink: 0;
+            border: 1px solid rgba(0, 229, 153, 0.16);
+            border-radius: 12px;
+            background: var(--det-accent-soft);
+            color: var(--det-accent);
+            font-size: 21px;
+        }
+
+        .det-severity {
+            padding: 6px 10px;
+            border: 1px solid var(--det-border);
+            border-radius: 7px;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .det-severity.high {
+            border-color: rgba(248, 113, 113, 0.25);
+            background: rgba(248, 113, 113, 0.08);
+            color: #f87171;
+        }
+
+        .det-severity.medium {
+            border-color: rgba(251, 191, 36, 0.25);
+            background: rgba(251, 191, 36, 0.08);
+            color: #fbbf24;
+        }
+
+        .det-severity.low {
+            border-color: rgba(96, 165, 250, 0.25);
+            background: rgba(96, 165, 250, 0.08);
+            color: #60a5fa;
+        }
+
+        .det-severity.info {
+            border-color: rgba(148, 163, 184, 0.2);
+            background: rgba(148, 163, 184, 0.07);
+            color: #94a3b8;
+        }
+
+        .det-rule-card h3 {
+            margin: 0 0 10px;
+            color: #e2e8f0;
+            font-size: 16px;
+            font-weight: 750;
+        }
+
+        .det-rule-description {
+            flex: 1;
+            margin: 0 0 20px;
+            color: var(--det-muted);
+            font-size: 13px;
+            line-height: 1.8;
+        }
+
+        .det-rule-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .det-tag {
+            padding: 6px 9px;
+            border: 1px solid var(--det-border);
+            border-radius: 6px;
+            color: #94a3b8;
+            font-size: 10px;
+        }
+
+        .det-rule-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding-top: 16px;
+            border-top: 1px solid var(--det-border);
+        }
+
+        .det-rule-id {
+            color: #64748b;
+            font-family: monospace;
+            font-size: 12px;
+        }
+
+        .det-rule-link {
+            color: var(--det-accent);
+            font-size: 12px;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .det-rule-link:hover {
+            color: #6ee7b7;
+        }
+
+        .det-empty-state {
+            display: none;
+            padding: 40px 20px;
+            border: 1px dashed var(--det-border);
+            border-radius: 14px;
+            color: #64748b;
+            text-align: center;
+        }
+
+        .det-empty-state h3 {
+            margin: 0 0 10px;
+            color: #cbd5e1;
+        }
+
+        .det-empty-state p {
+            margin: 0;
+            font-size: 13px;
+        }
+
+        /* MITRE ATT&CK */
+
+        .det-mitre-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+        .det-mitre-card {
+            padding: 22px;
+            border: 1px solid var(--det-border);
+            border-radius: 13px;
+            background: rgba(2, 6, 23, 0.25);
+            transition: border-color 0.25s ease;
+        }
+
+        .det-mitre-card:hover {
+            border-color: rgba(0, 229, 153, 0.3);
+        }
+
+        .det-mitre-id {
+            display: inline-block;
+            margin-bottom: 13px;
+            padding: 6px 9px;
+            border: 1px solid rgba(0, 229, 153, 0.2);
+            border-radius: 6px;
+            background: var(--det-accent-soft);
+            color: var(--det-accent);
+            font-family: monospace;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .det-mitre-card h3 {
+            margin: 0 0 9px;
+            color: #e2e8f0;
+            font-size: 15px;
+        }
+
+        .det-mitre-card p {
+            margin: 0 0 15px;
+            color: var(--det-muted);
+            font-size: 12px;
+            line-height: 1.8;
+        }
+
+        .det-mitre-category {
+            color: #64748b;
+            font-size: 11px;
+        }
+
+        .det-mitre-note {
+            margin-top: 20px;
+            padding: 16px;
+            border: 1px solid rgba(0, 229, 153, 0.16);
+            border-radius: 10px;
+            background: var(--det-accent-soft);
+            color: #94a3b8;
+            font-size: 12px;
+            line-height: 1.8;
+        }
+
+        .det-mitre-note strong {
+            color: var(--det-accent);
+        }
+
+        /* XML code panel */
+
+        .det-code-panel {
+            overflow: hidden;
+            padding: 0;
+        }
+
+        .det-code-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 15px;
+            padding: 18px 22px;
+            border-bottom: 1px solid var(--det-border);
+        }
+
+        .det-code-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .det-code-title h3 {
+            margin: 0;
+            color: #e2e8f0;
+            font-size: 14px;
+        }
+
+        .det-code-title span {
+            color: #64748b;
+            font-size: 11px;
+        }
+
+        .det-copy-btn {
+            padding: 9px 13px;
+            border: 1px solid var(--det-border);
+            border-radius: 8px;
+            background: rgba(15, 23, 42, 0.7);
+            color: #94a3b8;
+            font-family: inherit;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .det-copy-btn:hover {
+            border-color: rgba(0, 229, 153, 0.4);
+            color: var(--det-accent);
+        }
+
+        .det-code-body {
+            overflow-x: auto;
+            padding: 24px;
+            background: rgba(2, 6, 23, 0.55);
+        }
+
+        .det-code-body pre {
+            margin: 0;
+            color: #a5f3fc;
+            font-family: "Consolas", "Courier New", monospace;
+            font-size: 13px;
+            line-height: 1.9;
+            white-space: pre;
+        }
+
+        .det-code-caption {
+            padding: 15px 22px;
+            border-top: 1px solid var(--det-border);
+            color: #64748b;
+            font-size: 12px;
+            line-height: 1.7;
+        }
+
+        /* Testing workflow */
+
+        .det-workflow {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 15px;
+        }
+
+        .det-workflow-card {
+            padding: 21px;
+            border: 1px solid var(--det-border);
+            border-radius: 13px;
+            background: var(--det-panel);
+        }
+
+        .det-workflow-number {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 35px;
+            height: 35px;
+            margin-bottom: 17px;
+            border: 1px solid rgba(0, 229, 153, 0.2);
+            border-radius: 10px;
+            background: var(--det-accent-soft);
+            color: var(--det-accent);
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .det-workflow-card h3 {
+            margin: 0 0 10px;
+            color: #e2e8f0;
+            font-size: 14px;
+        }
+
+        .det-workflow-card p {
+            margin: 0;
+            color: var(--det-muted);
+            font-size: 12px;
+            line-height: 1.8;
+        }
+
+        /* Resources */
+
+        .det-resource-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .det-resource-card {
+            padding: 22px;
+            border: 1px solid var(--det-border);
+            border-radius: 14px;
+            background: var(--det-panel);
+        }
+
+        .det-resource-card h3 {
+            margin: 0 0 10px;
+            color: #e2e8f0;
+            font-size: 15px;
+        }
+
+        .det-resource-card p {
+            margin: 0 0 20px;
+            color: var(--det-muted);
+            font-size: 12px;
+            line-height: 1.8;
+        }
+
+        .det-resource-card a {
+            color: var(--det-accent);
+            font-size: 12px;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .det-resource-card a:hover {
+            text-decoration: underline;
+        }
+
+        /* Footer */
+
+        .det-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 45px;
+            padding: 25px 0 10px;
+            border-top: 1px solid var(--det-border);
+            color: #64748b;
+            font-size: 12px;
+        }
+
+        .det-footer a {
+            color: var(--det-accent);
+            text-decoration: none;
+        }
+
+        .det-footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive */
+
+        @media (max-width: 1200px) {
+            .det-stats-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .det-mitre-grid,
+            .det-resource-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .det-workflow {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .detection-page {
+                padding: 22px 16px;
+            }
+
+            .det-title {
+                font-size: 32px;
+                letter-spacing: -0.8px;
+            }
+
+            .det-description {
+                font-size: 14px;
+            }
+
+            .det-header-actions {
+                width: 100%;
+            }
+
+            .det-header-actions .det-btn {
+                flex: 1;
+            }
+
+            .det-rules-grid,
+            .det-mitre-grid,
+            .det-resource-grid,
+            .det-workflow {
+                grid-template-columns: 1fr;
+            }
+
+            .det-panel {
+                padding: 18px;
+            }
+
+            .det-section-title {
+                font-size: 19px;
+            }
+
+            .det-footer {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .det-stats-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .det-stat-card {
+                padding: 19px;
+            }
+
+            .det-stat-value {
+                font-size: 25px;
+            }
+
+            .det-filter-btn {
+                padding: 8px 11px;
+            }
+
+            .det-code-body {
+                padding: 16px;
+            }
+
+            .det-code-body pre {
+                font-size: 11px;
+            }
+
+            .det-section-header {
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- =========================================
+         NAVBAR
+    ========================================== -->
+
+    <header class="navbar" id="navbar">
+
+        <div class="navbar-left">
+
+            <button
+                class="menu-toggle"
+                id="menuToggle"
+                type="button"
+                aria-label="Toggle sidebar"
+                aria-expanded="false"
+                aria-controls="sidebar">
+
+                <span></span>
+                <span></span>
+                <span></span>
+
+            </button>
+
+            <a href="../index.html" class="navbar-brand">
+
+                <img
+                    src="../assets/images/logo.svg"
+                    alt="Wazuh SOC Lab Logo"
+                    class="navbar-logo">
+
+                <span class="brand-text">
+                    WAZUH <span class="brand-highlight">SOC LAB</span>
+                </span>
+
+            </a>
+
+        </div>
+
+        <div class="navbar-right">
+
+            <div class="navbar-status">
+
+                <span class="status-dot"></span>
+
+                <span>Home Lab</span>
+
+            </div>
+
+            <a href="../index.html"
+                class="navbar-home"
+                aria-label="Return to homepage">
+
+                <span>Home</span>
+
+            </a>
+
+        </div>
+
+    </header>
+
+
+    <!-- =========================================
+         SIDEBAR
+    ========================================== -->
+
+    <aside class="sidebar" id="sidebar">
+
+        <div class="sidebar-header">
+
+            <span class="sidebar-section-label">
+                MAIN MENU
+            </span>
+
+        </div>
+
+        <nav class="sidebar-nav" aria-label="Main navigation">
+
+            <a href="../index.html" class="nav-link">
+
+                <span class="nav-icon">⌂</span>
+
+                <span class="nav-text">Overview</span>
+
+            </a>
+
+            <div class="sidebar-divider"></div>
+
+            <span class="sidebar-section-label">
+                SOC LAB
+            </span>
+
+            <a href="architecture.html" class="nav-link">
+
+                <span class="nav-icon">⌘</span>
+
+                <span class="nav-text">Architecture</span>
+
+            </a>
+
+            <a href="documentation.html" class="nav-link">
+
+                <span class="nav-icon">▤</span>
+
+                <span class="nav-text">Documentation</span>
+
+            </a>
+
+            <a href="detection-rules.html"
+                class="nav-link active"
+                aria-current="page">
+
+                <span class="nav-icon">⚙</span>
+
+                <span class="nav-text">Detection Rules</span>
+
+            </a>
+
+            <a href="log-analysis.html" class="nav-link">
+
+                <span class="nav-icon">⌕</span>
+
+                <span class="nav-text">Log Analysis</span>
+
+            </a>
+
+            <a href="threat-detection.html" class="nav-link">
+
+                <span class="nav-icon">⚠</span>
+
+                <span class="nav-text">Threat Detection</span>
+
+            </a>
+
+            <a href="incident-response.html" class="nav-link">
+
+                <span class="nav-icon">◎</span>
+
+                <span class="nav-text">Incident Response</span>
+
+            </a>
+
+            <div class="sidebar-divider"></div>
+
+            <span class="sidebar-section-label">
+                RESOURCES
+            </span>
+
+            <a href="dashboards.html" class="nav-link">
+
+                <span class="nav-icon">▦</span>
+
+                <span class="nav-text">Dashboards</span>
+
+            </a>
+
+            <a href="scripts.html" class="nav-link">
+
+                <span class="nav-icon">⌘</span>
+
+                <span class="nav-text">Scripts</span>
+
+            </a>
+
+            <a href="reports.html" class="nav-link">
+
+                <span class="nav-icon">▧</span>
+
+                <span class="nav-text">Reports</span>
+
+            </a>
+
+        </nav>
+
+        <div class="sidebar-footer">
+
+            <div class="sidebar-footer-indicator">
+
+                <span class="status-dot"></span>
+
+                <span>Personal Lab Environment</span>
+
+            </div>
+
+            <p>Wazuh SOC Home Lab</p>
+
+        </div>
+
+    </aside>
+
+
+    <!-- =========================================
+         MAIN CONTENT
+    ========================================== -->
+
+    <main class="main-content detection-page">
+
+        <div class="det-container">
+
+            <!-- Breadcrumb -->
+
+            <nav class="det-breadcrumb" aria-label="Breadcrumb">
+
+                <a href="../index.html">Home</a>
+
+                <span>/</span>
+
+                <span class="current">Detection Rules</span>
+
+            </nav>
+
+
+            <!-- =====================================
+                 PAGE HEADER
+            ====================================== -->
+
+            <section class="det-header">
+
+                <div class="det-header-content">
+
+                    <div class="det-eyebrow">
+
+                        <span class="det-live-dot"></span>
+
+                        Security Detection &amp; Rule Engineering
+
+                    </div>
+
+                    <h1 class="det-title">
+
+                        Detection <span>Rules</span>
+
+                    </h1>
+
+                    <p class="det-description">
+
+                        Centralized detection engineering workspace
+                        for the Wazuh SOC Home Lab. Explore custom
+                        XML rules, authentication monitoring,
+                        suspicious activity detection, MITRE ATT&amp;CK
+                        mapping, and rule validation procedures.
+
+                    </p>
+
+                </div>
+
+                <div class="det-header-actions">
+
+                    <a
+                        href="../content/detection-rules/custom-rules.xml"
+                        class="det-btn det-btn-primary"
+                        target="_blank"
+                        rel="noopener">
+
+                        <span>⌘</span>
+                        Custom Rules
+
+                    </a>
+
+                    <a
+                        href="#detection-library"
+                        class="det-btn">
+
+                        <span>▤</span>
+                        Browse Rules
+
+                    </a>
+
+                </div>
+
+            </section>
+
+
+            <!-- =====================================
+                 STATISTICS
+            ====================================== -->
+
+            <section class="det-stats-grid"
+                aria-label="Detection rule overview">
+
+                <article class="det-stat-card">
+
+                    <div class="det-stat-top">
+
+                        <span class="det-stat-label">
+                            Detection Categories
+                        </span>
+
+                        <div class="det-stat-icon">⚙</div>
+
+                    </div>
+
+                    <div class="det-stat-value">05</div>
+
+                    <div class="det-stat-description">
+                        Authentication, processes, FIM, and network
+                    </div>
+
+                </article>
+
+                <article class="det-stat-card">
+
+                    <div class="det-stat-top">
+
+                        <span class="det-stat-label">
+                            Rule Format
+                        </span>
+
+                        <div class="det-stat-icon">⌘</div>
+
+                    </div>
+
+                    <div class="det-stat-value">XML</div>
+
+                    <div class="det-stat-description">
+                        Wazuh custom detection rule definitions
+                    </div>
+
+                </article>
+
+                <article class="det-stat-card">
+
+                    <div class="det-stat-top">
+
+                        <span class="det-stat-label">
+                            Detection Framework
+                        </span>
+
+                        <div class="det-stat-icon">◎</div>
+
+                    </div>
+
+                    <div class="det-stat-value">MITRE</div>
+
+                    <div class="det-stat-description">
+                        ATT&amp;CK technique and tactic references
+                    </div>
+
+                </article>
+
+                <article class="det-stat-card">
+
+                    <div class="det-stat-top">
+
+                        <span class="det-stat-label">
+                            Rule Validation
+                        </span>
+
+                        <div class="det-stat-icon">✓</div>
+
+                    </div>
+
+                    <div class="det-stat-value">Testing</div>
+
+                    <div class="det-stat-description">
+                        Rule validation and controlled lab testing
+                    </div>
+
+                </article>
+
+            </section>
+
+
+            <!-- =====================================
+                 DETECTION LIBRARY
+            ====================================== -->
+
+            <section class="det-section" id="detection-library">
+
+                <div class="det-section-header">
+
+                    <div class="det-section-heading">
+
+                        <div class="det-section-number">01</div>
+
+                        <div>
+
+                            <h2 class="det-section-title">
+                                Detection Rule Library
+                            </h2>
+
+                            <p class="det-section-subtitle">
+                                Search and filter the detection scenarios
+                                documented in this home lab.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="det-panel" style="margin-bottom:22px;">
+
+                    <label class="det-search-box" for="detSearch">
+
+                        <span class="det-search-icon">⌕</span>
+
+                        <input
+                            type="search"
+                            id="detSearch"
+                            class="det-search-input"
+                            placeholder="Search rules, brute force, login, Sysmon, FIM..."
+                            autocomplete="off"
+                            aria-label="Search detection rules">
+
+                    </label>
+
+                    <div class="det-filters"
+                        role="group"
+                        aria-label="Filter detection rules">
+
+                        <button
+                            type="button"
+                            class="det-filter-btn active"
+                            data-filter="all"
+                            aria-pressed="true">
+
+                            All Rules
+
+                        </button>
+
+                        <button
+                            type="button"
+                            class="det-filter-btn"
+                            data-filter="authentication"
+                            aria-pressed="false">
+
+                            Authentication
+
+                        </button>
+
+                        <button
+                            type="button"
+                            class="det-filter-btn"
+                            data-filter="process"
+                            aria-pressed="false">
+
+                            Processes
+
+                        </button>
+
+                        <button
+                            type="button"
+                            class="det-filter-btn"
+                            data-filter="fim"
+                            aria-pressed="false">
+
+                            File Integrity
+
+                        </button>
+
+                        <button
+                            type="button"
+                            class="det-filter-btn"
+                            data-filter="network"
+                            aria-pressed="false">
+
+                            Network
+
+                        </button>
+
+                    </div>
+
+                    <div class="det-results-count"
+                        id="detResultsCount"
+                        aria-live="polite">
+
+                        Showing all detection scenarios.
+
+                    </div>
+
+                </div>
+
+
+                <div class="det-rules-grid" id="detRulesGrid">
+
+                    <!-- Brute Force -->
+
+                    <article
+                        class="det-rule-card"
+                        data-category="authentication"
+                        data-search="brute force ssh windows failed authentication repeated login attempts">
+
+                        <div class="det-rule-top">
+
+                            <div class="det-rule-icon">⌁</div>
+
+                            <span class="det-severity high">
+                                High
+                            </span>
+
+                        </div>
+
+                        <h3>Brute-Force Detection</h3>
+
+                        <p class="det-rule-description">
+
+                            Identify repeated authentication failures
+                            that may indicate password guessing
+                            against monitored Linux or Windows
+                            endpoints.
+
+                        </p>
+
+                        <div class="det-rule-meta">
+
+                            <span class="det-tag">Authentication</span>
+
+                            <span class="det-tag">SSH / Windows</span>
+
+                            <span class="det-tag">MITRE T1110</span>
+
+                        </div>
+
+                        <div class="det-rule-footer">
+
+                            <span class="det-rule-id">DET-001</span>
+
+                            <a
+                                href="../content/threat-detection/brute-force-detection.md"
+                                class="det-rule-link"
+                                target="_blank"
+                                rel="noopener">
+
+                                View Details ↗
+
+                            </a>
+
+                        </div>
+
+                    </article>
+
+
+                    <!-- Suspicious Login -->
+
+                    <article
+                        class="det-rule-card"
+                        data-category="authentication"
+                        data-search="suspicious login authentication unusual login time account security">
+
+                        <div class="det-rule-top">
+
+                            <div class="det-rule-icon">◎</div>
+
+                            <span class="det-severity medium">
+                                Medium
+                            </span>
+
+                        </div>
+
+                        <h3>Suspicious Login Activity</h3>
+
+                        <p class="det-rule-description">
+
+                            Investigate unusual authentication
+                            patterns, unexpected account access,
+                            and login events requiring additional
+                            analyst review.
+
+                        </p>
+
+                        <div class="det-rule-meta">
+
+                            <span class="det-tag">Authentication</span>
+
+                            <span class="det-tag">Account Monitoring</span>
+
+                            <span class="det-tag">MITRE T1078</span>
+
+                        </div>
+
+                        <div class="det-rule-footer">
+
+                            <span class="det-rule-id">DET-002</span>
+
+                            <a
+                                href="../content/threat-detection/suspicious-login.md"
+                                class="det-rule-link"
+                                target="_blank"
+                                rel="noopener">
+
+                                View Details ↗
+
+                            </a>
+
+                        </div>
+
+                    </article>
+
+
+                    <!-- Suspicious Processes -->
+
+                    <article
+                        class="det-rule-card"
+                        data-category="process"
+                        data-search="suspicious processes process creation windows sysmon powershell command execution">
+
+                        <div class="det-rule-top">
+
+                            <div class="det-rule-icon">⌘</div>
+
+                            <span class="det-severity high">
+                                High
+                            </span>
+
+                        </div>
+
+                        <h3>Suspicious Process Execution</h3>
+
+                        <p class="det-rule-description">
+
+                            Examine process creation events,
+                            command-line activity, and unusual
+                            execution patterns collected through
+                            Windows Sysmon and endpoint logs.
+
+                        </p>
+
+                        <div class="det-rule-meta">
+
+                            <span class="det-tag">Process Monitoring</span>
+
+                            <span class="det-tag">Sysmon</span>
+
+                            <span class="det-tag">MITRE T1059</span>
+
+                        </div>
+
+                        <div class="det-rule-footer">
+
+                            <span class="det-rule-id">DET-003</span>
+
+                            <a
+                                href="../content/threat-detection/suspicious-processes.md"
+                                class="det-rule-link"
+                                target="_blank"
+                                rel="noopener">
+
+                                View Details ↗
+
+                            </a>
+
+                        </div>
+
+                    </article>
+
+
+                    <!-- File Integrity -->
+
+                    <article
+                        class="det-rule-card"
+                        data-category="fim"
+                        data-search="file integrity monitoring FIM unauthorized file changes modification deletion">
+
+                        <div class="det-rule-top">
+
+                            <div class="det-rule-icon">▤</div>
+
+                            <span class="det-severity medium">
+                                Medium
+                            </span>
+
+                        </div>
+
+                        <h3>File Integrity Monitoring</h3>
+
+                        <p class="det-rule-description">
+
+                            Monitor configured files and
+                            directories for changes, modifications,
+                            and deletions using Wazuh
+                            File Integrity Monitoring.
+
+                        </p>
+
+                        <div class="det-rule-meta">
+
+                            <span class="det-tag">File Integrity</span>
+
+                            <span class="det-tag">FIM</span>
+
+                            <span class="det-tag">MITRE T1565</span>
+
+                        </div>
+
+                        <div class="det-rule-footer">
+
+                            <span class="det-rule-id">DET-004</span>
+
+                            <a
+                                href="../content/threat-detection/file-integrity-monitoring.md"
+                                class="det-rule-link"
+                                target="_blank"
+                                rel="noopener">
+
+                                View Details ↗
+
+                            </a>
+
+                        </div>
+
+                    </article>
+
+
+                    <!-- Network Activity -->
+
+                    <article
+                        class="det-rule-card"
+                        data-category="network"
+                        data-search="network activity suspicious connections traffic network monitoring">
+
+                        <div class="det-rule-top">
+
+                            <div class="det-rule-icon">⇄</div>
+
+                            <span class="det-severity medium">
+                                Medium
+                            </span>
+
+                        </div>
+
+                        <h3>Suspicious Network Activity</h3>
+
+                        <p class="det-rule-description">
+
+                            Review network-related security events
+                            and investigate unexpected connections
+                            or activity recorded by monitored
+                            systems.
+
+                        </p>
+
+                        <div class="det-rule-meta">
+
+                            <span class="det-tag">Network</span>
+
+                            <span class="det-tag">Traffic Analysis</span>
+
+                            <span class="det-tag">MITRE T1046</span>
+
+                        </div>
+
+                        <div class="det-rule-footer">
+
+                            <span class="det-rule-id">DET-005</span>
+
+                            <a
+                                href="../content/threat-detection/network-activity.md"
+                                class="det-rule-link"
+                                target="_blank"
+                                rel="noopener">
+
+                                View Details ↗
+
+                            </a>
+
+                        </div>
+
+                    </article>
+
+
+                    <!-- SSH Authentication -->
+
+                    <article
+                        class="det-rule-card"
+                        data-category="authentication"
+                        data-search="linux ssh authentication failed login unauthorized access sshd">
+
+                        <div class="det-rule-top">
+
+                            <div class="det-rule-icon">⌕</div>
+
+                            <span class="det-severity low">
+                                Monitoring
+                            </span>
+
+                        </div>
+
+                        <h3>SSH Authentication Monitoring</h3>
+
+                        <p class="det-rule-description">
+
+                            Analyze Linux SSH authentication
+                            logs to investigate successful
+                            and failed login attempts
+                            and related account activity.
+
+                        </p>
+
+                        <div class="det-rule-meta">
+
+                            <span class="det-tag">Linux</span>
+
+                            <span class="det-tag">SSH Logs</span>
+
+                            <span class="det-tag">MITRE T1021.004</span>
+
+                        </div>
+
+                        <div class="det-rule-footer">
+
+                            <span class="det-rule-id">DET-006</span>
+
+                            <a
+                                href="../content/log-analysis/linux/ssh-authentication.md"
+                                class="det-rule-link"
+                                target="_blank"
+                                rel="noopener">
+
+                                View Details ↗
+
+                            </a>
+
+                        </div>
+
+                    </article>
+
+                </div>
+
+
+                <div class="det-empty-state" id="detEmptyState">
+
+                    <h3>No Detection Rules Found</h3>
+
+                    <p>
+                        Try another search term or select
+                        a different detection category.
+                    </p>
+
+                </div>
+
+            </section>
+
+
+            <!-- =====================================
+                 CUSTOM XML RULES
+            ====================================== -->
+
+            <section class="det-section" id="custom-rules">
+
+                <div class="det-section-header">
+
+                    <div class="det-section-heading">
+
+                        <div class="det-section-number">02</div>
+
+                        <div>
+
+                            <h2 class="det-section-title">
+                                Custom Wazuh Rules
+                            </h2>
+
+                            <p class="det-section-subtitle">
+                                Example XML rule structure for
+                                local detection engineering.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                    <a
+                        href="../content/detection-rules/custom-rules.xml"
+                        class="det-btn"
+                        target="_blank"
+                        rel="noopener">
+
+                        View XML File ↗
+
+                    </a>
+
+                </div>
+
+
+                <div class="det-panel det-code-panel">
+
+                    <div class="det-code-header">
+
+                        <div class="det-code-title">
+
+                            <div class="det-rule-icon">⌘</div>
+
+                            <div>
+
+                                <h3>Example Custom Detection Rule</h3>
+
+                                <span>
+                                    XML · Wazuh Local Rules
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                        <button
+                            type="button"
+                            class="det-copy-btn"
+                            id="copyRuleBtn">
+
+                            Copy XML
+
+                        </button>
+
+                    </div>
+
+
+                    <div class="det-code-body">
+
+                        <pre><code id="xmlRuleCode">&lt;!-- Example: Detect repeated SSH authentication failures --&gt;
+
+&lt;group name="local,authentication,sshd,"&gt;
+
+    &lt;rule id="100100" level="10" frequency="5" timeframe="120"&gt;
+
+        &lt;if_matched_sid&gt;5710&lt;/if_matched_sid&gt;
+
+        &lt;same_source_ip /&gt;
+
+        &lt;description&gt;
+            Multiple SSH authentication failures from
+            the same source IP address.
+        &lt;/description&gt;
+
+        &lt;mitre&gt;
+            &lt;id&gt;T1110&lt;/id&gt;
+        &lt;/mitre&gt;
+
+    &lt;/rule&gt;
+
+&lt;/group&gt;</code></pre>
+
+                    </div>
+
+                    <div class="det-code-caption">
+
+                        Example only. Verify the parent rule ID,
+                        event decoder, and rule compatibility
+                        against the installed Wazuh version
+                        and actual lab events before deployment.
+                        Custom rules belong in the Wazuh local
+                        rules configuration.
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =====================================
+                 MITRE ATT&CK MAPPING
+            ====================================== -->
+
+            <section class="det-section" id="mitre-mapping">
+
+                <div class="det-section-header">
+
+                    <div class="det-section-heading">
+
+                        <div class="det-section-number">03</div>
+
+                        <div>
+
+                            <h2 class="det-section-title">
+                                MITRE ATT&amp;CK Mapping
+                            </h2>
+
+                            <p class="det-section-subtitle">
+                                Map documented detection scenarios
+                                to relevant ATT&amp;CK techniques.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                    <a
+                        href="../content/detection-rules/mitre-attack-mapping.md"
+                        class="det-btn"
+                        target="_blank"
+                        rel="noopener">
+
+                        Full Mapping ↗
+
+                    </a>
+
+                </div>
+
+
+                <div class="det-panel">
+
+                    <div class="det-mitre-grid">
+
+                        <article class="det-mitre-card">
+
+                            <span class="det-mitre-id">
+                                T1110
+                            </span>
+
+                            <h3>Brute Force</h3>
+
+                            <p>
+                                Repeated authentication attempts
+                                against accounts to identify
+                                valid credentials.
+                            </p>
+
+                            <div class="det-mitre-category">
+                                Tactic: Credential Access
+                            </div>
+
+                        </article>
+
+
+                        <article class="det-mitre-card">
+
+                            <span class="det-mitre-id">
+                                T1078
+                            </span>
+
+                            <h3>Valid Accounts</h3>
+
+                            <p>
+                                Investigate potential misuse
+                                of legitimate accounts
+                                and authentication events.
+                            </p>
+
+                            <div class="det-mitre-category">
+                                Tactic: Initial Access / Persistence
+                            </div>
+
+                        </article>
+
+
+                        <article class="det-mitre-card">
+
+                            <span class="det-mitre-id">
+                                T1059
+                            </span>
+
+                            <h3>Command and Scripting Interpreter</h3>
+
+                            <p>
+                                Examine command interpreters
+                                and scripting activity
+                                using endpoint telemetry.
+                            </p>
+
+                            <div class="det-mitre-category">
+                                Tactic: Execution
+                            </div>
+
+                        </article>
+
+
+                        <article class="det-mitre-card">
+
+                            <span class="det-mitre-id">
+                                T1565
+                            </span>
+
+                            <h3>Data Manipulation</h3>
+
+                            <p>
+                                Investigate potential
+                                unauthorized changes to
+                                files and monitored data.
+                            </p>
+
+                            <div class="det-mitre-category">
+                                Tactic: Impact
+                            </div>
+
+                        </article>
+
+
+                        <article class="det-mitre-card">
+
+                            <span class="det-mitre-id">
+                                T1046
+                            </span>
+
+                            <h3>Network Service Discovery</h3>
+
+                            <p>
+                                Review network discovery
+                                and service enumeration
+                                activity in the lab.
+                            </p>
+
+                            <div class="det-mitre-category">
+                                Tactic: Discovery
+                            </div>
+
+                        </article>
+
+
+                        <article class="det-mitre-card">
+
+                            <span class="det-mitre-id">
+                                T1021.004
+                            </span>
+
+                            <h3>SSH</h3>
+
+                            <p>
+                                Analyze remote service
+                                authentication and SSH
+                                connection activity.
+                            </p>
+
+                            <div class="det-mitre-category">
+                                Tactic: Lateral Movement
+                            </div>
+
+                        </article>
+
+                    </div>
+
+
+                    <div class="det-mitre-note">
+
+                        <strong>Mapping note:</strong>
+
+                        ATT&amp;CK mappings are reference
+                        associations for the documented scenarios.
+                        Confirm the exact technique and tactic
+                        against the current MITRE ATT&amp;CK
+                        knowledge base and the telemetry
+                        actually collected in your lab.
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =====================================
+                 RULE TESTING WORKFLOW
+            ====================================== -->
+
+            <section class="det-section" id="rule-testing">
+
+                <div class="det-section-header">
+
+                    <div class="det-section-heading">
+
+                        <div class="det-section-number">04</div>
+
+                        <div>
+
+                            <h2 class="det-section-title">
+                                Rule Testing &amp; Validation
+                            </h2>
+
+                            <p class="det-section-subtitle">
+                                Document the detection lifecycle
+                                before treating a rule as validated.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                    <a
+                        href="../content/detection-rules/rule-testing.md"
+                        class="det-btn"
+                        target="_blank"
+                        rel="noopener">
+
+                        Testing Guide ↗
+
+                    </a>
+
+                </div>
+
+
+                <div class="det-workflow">
+
+                    <article class="det-workflow-card">
+
+                        <div class="det-workflow-number">01</div>
+
+                        <h3>Prepare</h3>
+
+                        <p>
+                            Review the rule logic, source event,
+                            decoder, and required log
+                            collection configuration.
+                        </p>
+
+                    </article>
+
+
+                    <article class="det-workflow-card">
+
+                        <div class="det-workflow-number">02</div>
+
+                        <h3>Generate Events</h3>
+
+                        <p>
+                            Generate controlled test events
+                            in your isolated lab environment
+                            and confirm they reach Wazuh.
+                        </p>
+
+                    </article>
+
+
+                    <article class="det-workflow-card">
+
+                        <div class="det-workflow-number">03</div>
+
+                        <h3>Validate Alerts</h3>
+
+                        <p>
+                            Check the matched rule ID,
+                            severity, event fields,
+                            and alert output.
+                        </p>
+
+                    </article>
+
+
+                    <article class="det-workflow-card">
+
+                        <div class="det-workflow-number">04</div>
+
+                        <h3>Document Results</h3>
+
+                        <p>
+                            Record expected and actual
+                            results, false positives,
+                            and required rule adjustments.
+                        </p>
+
+                    </article>
+
+                </div>
+
+            </section>
+
+
+            <!-- =====================================
+                 RELATED RESOURCES
+            ====================================== -->
+
+            <section class="det-section" id="related-resources">
+
+                <div class="det-section-header">
+
+                    <div class="det-section-heading">
+
+                        <div class="det-section-number">05</div>
+
+                        <div>
+
+                            <h2 class="det-section-title">
+                                Related Resources
+                            </h2>
+
+                            <p class="det-section-subtitle">
+                                Continue with log analysis,
+                                threat detection, and
+                                incident investigations.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="det-resource-grid">
+
+                    <article class="det-resource-card">
+
+                        <h3>Log Analysis</h3>
+
+                        <p>
+                            Investigate authentication,
+                            process creation, Sysmon,
+                            and Linux security events.
+                        </p>
+
+                        <a href="log-analysis.html">
+                            Explore Log Analysis →
+                        </a>
+
+                    </article>
+
+
+                    <article class="det-resource-card">
+
+                        <h3>Threat Detection</h3>
+
+                        <p>
+                            Explore the documented threat
+                            scenarios and associated
+                            detection procedures.
+                        </p>
+
+                        <a href="threat-detection.html">
+                            Explore Threat Detection →
+                        </a>
+
+                    </article>
+
+
+                    <article class="det-resource-card">
+
+                        <h3>Incident Response</h3>
+
+                        <p>
+                            Review incident investigations,
+                            evidence collection, and
+                            response documentation.
+                        </p>
+
+                        <a href="incident-response.html">
+                            Explore Incident Response →
+                        </a>
+
+                    </article>
+
+                </div>
+
+            </section>
+
+
+            <!-- =====================================
+                 FOOTER
+            ====================================== -->
+
+            <footer class="det-footer">
+
+                <div>
+                    Wazuh SOC Home Lab
+                    <span> | </span>
+                    Detection Engineering
+                </div>
+
+                <div>
+
+                    <a href="architecture.html">
+                        Architecture
+                    </a>
+
+                    <span> · </span>
+
+                    <a href="documentation.html">
+                        Documentation
+                    </a>
+
+                    <span> · </span>
+
+                    <a href="../index.html">
+                        Back to Home
+                    </a>
+
+                </div>
+
+            </footer>
+
+        </div>
+
+    </main>
+
+
+    <!-- Sidebar overlay -->
+
+    <div
+        class="sidebar-overlay"
+        id="sidebarOverlay"
+        aria-hidden="true">
+    </div>
+
+
+    <!-- Shared JavaScript -->
+
+    <script src="../assets/js/navigation.js"></script>
+    <script src="../assets/js/main.js"></script>
+    <script src="../assets/js/search.js"></script>
+    <script src="../assets/js/viewer.js"></script>
+
+    <!-- =========================================
+         DETECTION PAGE JAVASCRIPT
+    ========================================== -->
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            /* =====================================
+               1. DETECTION SEARCH AND FILTERS
+            ====================================== */
+
+            const searchInput =
+                document.getElementById("detSearch");
+
+            const filterButtons =
+                document.querySelectorAll(".det-filter-btn");
+
+            const ruleCards =
+                document.querySelectorAll(".det-rule-card");
+
+            const emptyState =
+                document.getElementById("detEmptyState");
+
+            const resultsCount =
+                document.getElementById("detResultsCount");
+
+            let activeFilter = "all";
+
+            function filterRules() {
+
+                const searchTerm =
+                    searchInput.value.trim().toLowerCase();
+
+                let visibleCount = 0;
+
+                ruleCards.forEach(function (card) {
+
+                    const category =
+                        card.dataset.category || "";
+
+                    const searchableText =
+                        (
+                            card.dataset.search +
+                            " " +
+                            card.textContent
+                        ).toLowerCase();
+
+                    const matchesCategory =
+                        activeFilter === "all" ||
+                        category === activeFilter;
+
+                    const matchesSearch =
+                        searchableText.includes(searchTerm);
+
+                    const visible =
+                        matchesCategory && matchesSearch;
+
+                    card.hidden = !visible;
+
+                    if (visible) {
+                        visibleCount++;
+                    }
+
+                });
+
+                emptyState.style.display =
+                    visibleCount === 0 ? "block" : "none";
+
+                resultsCount.textContent =
+                    "Showing " + visibleCount +
+                    " detection scenario" +
+                    (visibleCount === 1 ? "" : "s") + ".";
+
+            }
+
+            searchInput.addEventListener(
+                "input",
+                filterRules
+            );
+
+            filterButtons.forEach(function (button) {
+
+                button.addEventListener("click", function () {
+
+                    filterButtons.forEach(function (btn) {
+
+                        btn.classList.remove("active");
+
+                        btn.setAttribute(
+                            "aria-pressed",
+                            "false"
+                        );
+
+                    });
+
+                    button.classList.add("active");
+
+                    button.setAttribute(
+                        "aria-pressed",
+                        "true"
+                    );
+
+                    activeFilter = button.dataset.filter;
+
+                    filterRules();
+
+                });
+
+            });
+
+            filterRules();
+
+
+            /* =====================================
+               2. COPY XML RULE
+            ====================================== */
+
+            const copyButton =
+                document.getElementById("copyRuleBtn");
+
+            const xmlCode =
+                document.getElementById("xmlRuleCode");
+
+            copyButton.addEventListener("click", async function () {
+
+                const text =
+                    xmlCode.textContent;
+
+                try {
+
+                    await navigator.clipboard.writeText(text);
+
+                    copyButton.textContent = "Copied!";
+
+                    setTimeout(function () {
+
+                        copyButton.textContent = "Copy XML";
+
+                    }, 1800);
+
+                } catch (error) {
+
+                    const textarea =
+                        document.createElement("textarea");
+
+                    textarea.value = text;
+
+                    textarea.style.position = "fixed";
+                    textarea.style.opacity = "0";
+
+                    document.body.appendChild(textarea);
+
+                    textarea.select();
+
+                    try {
+
+                        document.execCommand("copy");
+
+                        copyButton.textContent = "Copied!";
+
+                    } catch (copyError) {
+
+                        copyButton.textContent = "Copy failed";
+
+                    }
+
+                    textarea.remove();
+
+                    setTimeout(function () {
+
+                        copyButton.textContent = "Copy XML";
+
+                    }, 1800);
+
+                }
+
+            });
+
+        });
+    </script>
+
+</body>
+</html>

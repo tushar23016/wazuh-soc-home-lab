@@ -1,0 +1,2192 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="description"
+        content="Explore the Wazuh SOC Home Lab architecture, virtual machine infrastructure, network topology, and security monitoring environment.">
+
+    <meta name="theme-color" content="#080d18">
+
+    <title>Lab Architecture | Wazuh SOC Home Lab</title>
+
+    <!-- =========================================
+         SHARED CSS
+    ========================================== -->
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/responsive.css">
+    <link rel="stylesheet" href="../assets/css/animations.css">
+
+    <!-- Architecture Page Specific Styles -->
+    <style>
+        /* =========================================
+           ARCHITECTURE PAGE
+           Uses the shared SOC design system
+        ========================================== */
+
+        .architecture-page {
+            --arch-accent: #00e599;
+            --arch-accent-soft: rgba(0, 229, 153, 0.10);
+            --arch-border: rgba(148, 163, 184, 0.14);
+            --arch-muted: #8492a6;
+            --arch-panel: rgba(15, 23, 42, 0.78);
+
+            padding: 30px;
+            color: #e2e8f0;
+        }
+
+        .architecture-page * {
+            box-sizing: border-box;
+        }
+
+        .arch-container {
+            max-width: 1500px;
+            margin: 0 auto;
+        }
+
+        /* Breadcrumb */
+
+        .arch-breadcrumb {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 9px;
+            margin-bottom: 25px;
+            color: var(--arch-muted);
+            font-size: 13px;
+        }
+
+        .arch-breadcrumb a {
+            color: var(--arch-muted);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .arch-breadcrumb a:hover {
+            color: var(--arch-accent);
+        }
+
+        .arch-breadcrumb .current {
+            color: var(--arch-accent);
+        }
+
+        /* Page Heading */
+
+        .arch-page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .arch-heading-content {
+            max-width: 780px;
+        }
+
+        .arch-eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+            padding: 7px 12px;
+            border: 1px solid rgba(0, 229, 153, 0.22);
+            border-radius: 30px;
+            background: var(--arch-accent-soft);
+            color: var(--arch-accent);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+        }
+
+        .arch-eyebrow-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--arch-accent);
+            box-shadow: 0 0 10px rgba(0, 229, 153, 0.7);
+        }
+
+        .arch-page-title {
+            margin: 0 0 16px;
+            color: #f8fafc;
+            font-size: clamp(30px, 4vw, 46px);
+            font-weight: 800;
+            line-height: 1.15;
+            letter-spacing: -1.5px;
+        }
+
+        .arch-page-title span {
+            color: var(--arch-accent);
+        }
+
+        .arch-page-description {
+            max-width: 720px;
+            margin: 0;
+            color: #94a3b8;
+            font-size: 15px;
+            line-height: 1.85;
+        }
+
+        .arch-header-actions {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .arch-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 9px;
+            min-height: 43px;
+            padding: 11px 17px;
+            border: 1px solid var(--arch-border);
+            border-radius: 10px;
+            background: rgba(15, 23, 42, 0.75);
+            color: #cbd5e1;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition:
+                background 0.25s ease,
+                border-color 0.25s ease,
+                transform 0.25s ease;
+        }
+
+        .arch-btn:hover {
+            transform: translateY(-2px);
+            border-color: rgba(0, 229, 153, 0.45);
+            background: rgba(0, 229, 153, 0.07);
+            color: var(--arch-accent);
+        }
+
+        .arch-btn-primary {
+            border-color: rgba(0, 229, 153, 0.4);
+            background: rgba(0, 229, 153, 0.10);
+            color: var(--arch-accent);
+        }
+
+        /* Overview Cards */
+
+        .arch-overview-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 18px;
+            margin-bottom: 35px;
+        }
+
+        .arch-stat-card {
+            position: relative;
+            overflow: hidden;
+            min-width: 0;
+            padding: 22px;
+            border: 1px solid var(--arch-border);
+            border-radius: 15px;
+            background: var(--arch-panel);
+            transition:
+                border-color 0.25s ease,
+                transform 0.25s ease;
+        }
+
+        .arch-stat-card::after {
+            position: absolute;
+            right: -30px;
+            bottom: -50px;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: rgba(0, 229, 153, 0.035);
+            content: "";
+            pointer-events: none;
+        }
+
+        .arch-stat-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(0, 229, 153, 0.3);
+        }
+
+        .arch-stat-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .arch-stat-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 43px;
+            height: 43px;
+            border: 1px solid rgba(0, 229, 153, 0.16);
+            border-radius: 12px;
+            background: var(--arch-accent-soft);
+            color: var(--arch-accent);
+            font-size: 20px;
+        }
+
+        .arch-stat-label {
+            color: var(--arch-muted);
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .arch-stat-value {
+            margin-bottom: 7px;
+            color: #f8fafc;
+            font-size: 29px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .arch-stat-description {
+            color: #64748b;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        /* Section Layout */
+
+        .arch-section {
+            margin-bottom: 35px;
+            scroll-margin-top: 100px;
+        }
+
+        .arch-section-header {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 18px;
+            margin-bottom: 20px;
+        }
+
+        .arch-section-heading {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+        }
+
+        .arch-section-number {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            width: 39px;
+            height: 39px;
+            border: 1px solid rgba(0, 229, 153, 0.2);
+            border-radius: 11px;
+            background: var(--arch-accent-soft);
+            color: var(--arch-accent);
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .arch-section-title {
+            margin: 0 0 7px;
+            color: #f1f5f9;
+            font-size: 21px;
+            font-weight: 750;
+        }
+
+        .arch-section-subtitle {
+            margin: 0;
+            color: var(--arch-muted);
+            font-size: 13px;
+            line-height: 1.7;
+        }
+
+        .arch-panel {
+            padding: 25px;
+            border: 1px solid var(--arch-border);
+            border-radius: 16px;
+            background: var(--arch-panel);
+        }
+
+        /* Architecture Diagram */
+
+        .arch-diagram-panel {
+            overflow: hidden;
+        }
+
+        .arch-diagram-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .arch-diagram-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #cbd5e1;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .arch-diagram-label span {
+            color: var(--arch-accent);
+        }
+
+        .arch-diagram-badge {
+            padding: 7px 11px;
+            border: 1px solid var(--arch-border);
+            border-radius: 8px;
+            color: #94a3b8;
+            font-size: 11px;
+        }
+
+        .arch-diagram-image {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 300px;
+            overflow: hidden;
+            padding: 20px;
+            border: 1px dashed rgba(148, 163, 184, 0.22);
+            border-radius: 13px;
+            background:
+                radial-gradient(
+                    ellipse at center,
+                    rgba(0, 229, 153, 0.045),
+                    transparent 70%
+                ),
+                rgba(2, 6, 23, 0.45);
+        }
+
+        .arch-diagram-image img {
+            display: block;
+            width: 100%;
+            max-width: 1050px;
+            height: auto;
+            border-radius: 8px;
+            object-fit: contain;
+        }
+
+        .arch-image-placeholder {
+            max-width: 450px;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .arch-placeholder-icon {
+            margin-bottom: 18px;
+            color: #475569;
+            font-size: 43px;
+        }
+
+        .arch-image-placeholder h3 {
+            margin: 0 0 12px;
+            color: #cbd5e1;
+            font-size: 17px;
+        }
+
+        .arch-image-placeholder p {
+            margin: 0;
+            color: #64748b;
+            font-size: 13px;
+            line-height: 1.8;
+        }
+
+        .arch-diagram-caption {
+            margin: 18px 0 0;
+            color: #64748b;
+            font-size: 12px;
+            line-height: 1.7;
+            text-align: center;
+        }
+
+        /* VM Inventory */
+
+        .arch-inventory-panel {
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .arch-table-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 15px;
+            padding: 20px 22px;
+            border-bottom: 1px solid var(--arch-border);
+        }
+
+        .arch-table-toolbar h3 {
+            margin: 0;
+            color: #e2e8f0;
+            font-size: 14px;
+        }
+
+        .arch-table-count {
+            color: #64748b;
+            font-size: 12px;
+        }
+
+        .arch-table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .arch-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            white-space: nowrap;
+        }
+
+        .arch-table th {
+            padding: 16px 20px;
+            background: rgba(2, 6, 23, 0.35);
+            color: #64748b;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.7px;
+            text-transform: uppercase;
+        }
+
+        .arch-table td {
+            padding: 18px 20px;
+            border-top: 1px solid rgba(148, 163, 184, 0.08);
+            color: #94a3b8;
+            font-size: 13px;
+        }
+
+        .arch-table tbody tr {
+            transition: background 0.2s ease;
+        }
+
+        .arch-table tbody tr:hover {
+            background: rgba(0, 229, 153, 0.025);
+        }
+
+        .arch-vm-name {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #e2e8f0;
+            font-weight: 650;
+        }
+
+        .arch-vm-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            width: 36px;
+            height: 36px;
+            border: 1px solid var(--arch-border);
+            border-radius: 10px;
+            background: rgba(30, 41, 59, 0.6);
+            font-size: 17px;
+        }
+
+        .arch-vm-subtitle {
+            display: block;
+            margin-top: 4px;
+            color: #64748b;
+            font-size: 11px;
+            font-weight: 400;
+        }
+
+        .arch-role-badge {
+            display: inline-flex;
+            padding: 6px 10px;
+            border: 1px solid rgba(0, 229, 153, 0.15);
+            border-radius: 7px;
+            background: rgba(0, 229, 153, 0.06);
+            color: #6ee7b7;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .arch-role-badge.neutral {
+            border-color: rgba(148, 163, 184, 0.15);
+            background: rgba(148, 163, 184, 0.05);
+            color: #94a3b8;
+        }
+
+        .arch-ip-address {
+            color: #a5b4fc;
+            font-family: monospace;
+            font-size: 12px;
+        }
+
+        .arch-table-note {
+            padding: 16px 22px;
+            border-top: 1px solid var(--arch-border);
+            color: #64748b;
+            font-size: 12px;
+            line-height: 1.7;
+        }
+
+        /* Network Topology */
+
+        .arch-topology-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 20px;
+        }
+
+        .arch-topology-card {
+            padding: 23px;
+            border: 1px solid var(--arch-border);
+            border-radius: 15px;
+            background: var(--arch-panel);
+        }
+
+        .arch-topology-card h3 {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 0 0 15px;
+            color: #e2e8f0;
+            font-size: 15px;
+        }
+
+        .arch-topology-card h3 span {
+            color: var(--arch-accent);
+            font-size: 19px;
+        }
+
+        .arch-topology-card p {
+            margin: 0;
+            color: var(--arch-muted);
+            font-size: 13px;
+            line-height: 1.8;
+        }
+
+        .arch-network-image {
+            display: block;
+            width: 100%;
+            height: auto;
+            margin-top: 18px;
+            border: 1px solid var(--arch-border);
+            border-radius: 10px;
+        }
+
+        .arch-network-placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 150px;
+            margin-top: 18px;
+            padding: 20px;
+            border: 1px dashed rgba(148, 163, 184, 0.2);
+            border-radius: 10px;
+            color: #64748b;
+            font-size: 12px;
+            text-align: center;
+        }
+
+        /* Communication Flow */
+
+        .arch-flow-panel {
+            padding: 28px;
+        }
+
+        .arch-flow-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            max-width: 850px;
+            margin: 0 auto;
+        }
+
+        .arch-flow-step {
+            display: grid;
+            grid-template-columns: 48px 1fr;
+            gap: 18px;
+        }
+
+        .arch-flow-marker {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .arch-flow-number {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            flex-shrink: 0;
+            border: 1px solid rgba(0, 229, 153, 0.25);
+            border-radius: 12px;
+            background: var(--arch-accent-soft);
+            color: var(--arch-accent);
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .arch-flow-line {
+            width: 1px;
+            min-height: 35px;
+            flex: 1;
+            background: linear-gradient(
+                to bottom,
+                rgba(0, 229, 153, 0.4),
+                rgba(148, 163, 184, 0.1)
+            );
+        }
+
+        .arch-flow-content {
+            padding: 6px 0 30px;
+        }
+
+        .arch-flow-content h3 {
+            margin: 0 0 9px;
+            color: #e2e8f0;
+            font-size: 15px;
+        }
+
+        .arch-flow-content p {
+            margin: 0;
+            color: var(--arch-muted);
+            font-size: 13px;
+            line-height: 1.8;
+        }
+
+        .arch-flow-step:last-child .arch-flow-content {
+            padding-bottom: 0;
+        }
+
+        .arch-flow-step:last-child .arch-flow-line {
+            display: none;
+        }
+
+        /* Documentation Links */
+
+        .arch-docs-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .arch-doc-card {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            padding: 23px;
+            border: 1px solid var(--arch-border);
+            border-radius: 14px;
+            background: var(--arch-panel);
+            text-decoration: none;
+            transition:
+                transform 0.25s ease,
+                border-color 0.25s ease,
+                background 0.25s ease;
+        }
+
+        .arch-doc-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(0, 229, 153, 0.35);
+            background: rgba(15, 23, 42, 0.95);
+        }
+
+        .arch-doc-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 43px;
+            height: 43px;
+            margin-bottom: 19px;
+            border: 1px solid rgba(0, 229, 153, 0.15);
+            border-radius: 12px;
+            background: var(--arch-accent-soft);
+            color: var(--arch-accent);
+            font-size: 20px;
+        }
+
+        .arch-doc-card h3 {
+            margin: 0 0 10px;
+            color: #e2e8f0;
+            font-size: 15px;
+        }
+
+        .arch-doc-card p {
+            flex: 1;
+            margin: 0 0 20px;
+            color: var(--arch-muted);
+            font-size: 12px;
+            line-height: 1.8;
+        }
+
+        .arch-doc-link {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            color: var(--arch-accent);
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        /* Footer */
+
+        .arch-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 45px;
+            padding: 25px 0 10px;
+            border-top: 1px solid var(--arch-border);
+            color: #64748b;
+            font-size: 12px;
+        }
+
+        .arch-footer a {
+            color: var(--arch-accent);
+            text-decoration: none;
+        }
+
+        .arch-footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive Architecture Layout */
+
+        @media (max-width: 1100px) {
+            .arch-overview-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .arch-docs-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .architecture-page {
+                padding: 22px 16px;
+            }
+
+            .arch-page-header {
+                gap: 20px;
+            }
+
+            .arch-page-title {
+                font-size: 32px;
+                letter-spacing: -0.8px;
+            }
+
+            .arch-page-description {
+                font-size: 14px;
+            }
+
+            .arch-header-actions {
+                width: 100%;
+            }
+
+            .arch-header-actions .arch-btn {
+                flex: 1;
+            }
+
+            .arch-topology-grid,
+            .arch-docs-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .arch-panel {
+                padding: 18px;
+            }
+
+            .arch-diagram-image {
+                min-height: 220px;
+                padding: 12px;
+            }
+
+            .arch-flow-panel {
+                padding: 20px 16px;
+            }
+
+            .arch-section-title {
+                font-size: 19px;
+            }
+
+            .arch-footer {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .arch-overview-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .arch-stat-card {
+                padding: 19px;
+            }
+
+            .arch-stat-value {
+                font-size: 26px;
+            }
+
+            .arch-section-header {
+                align-items: flex-start;
+            }
+
+            .arch-breadcrumb {
+                font-size: 12px;
+            }
+
+            .arch-table th,
+            .arch-table td {
+                padding: 14px 16px;
+            }
+
+            .arch-diagram-toolbar {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .arch-flow-step {
+                grid-template-columns: 38px 1fr;
+                gap: 12px;
+            }
+
+            .arch-flow-number {
+                width: 35px;
+                height: 35px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- =========================================
+         SHARED WEBSITE NAVIGATION
+         Controlled by main.js and navigation.js
+    ========================================== -->
+
+    <header class="navbar" id="navbar">
+
+        <div class="navbar-left">
+
+            <button
+                class="menu-toggle"
+                id="menuToggle"
+                type="button"
+                aria-label="Toggle sidebar"
+                aria-expanded="false"
+                aria-controls="sidebar">
+
+                <span></span>
+                <span></span>
+                <span></span>
+
+            </button>
+
+            <a href="../index.html" class="navbar-brand">
+
+                <img
+                    src="../assets/images/logo.svg"
+                    alt="Wazuh SOC Lab Logo"
+                    class="navbar-logo">
+
+                <span class="brand-text">
+                    WAZUH <span class="brand-highlight">SOC LAB</span>
+                </span>
+
+            </a>
+
+        </div>
+
+        <div class="navbar-right">
+
+            <div class="navbar-status">
+
+                <span class="status-dot"></span>
+
+                <span>Home Lab</span>
+
+            </div>
+
+            <a
+                href="../index.html"
+                class="navbar-home"
+                aria-label="Return to homepage">
+
+                <span>Home</span>
+
+            </a>
+
+        </div>
+
+    </header>
+
+
+    <!-- =========================================
+         SIDEBAR NAVIGATION
+    ========================================== -->
+
+    <aside class="sidebar" id="sidebar">
+
+        <div class="sidebar-header">
+
+            <span class="sidebar-section-label">
+                MAIN MENU
+            </span>
+
+        </div>
+
+        <nav class="sidebar-nav" aria-label="Main navigation">
+
+            <a href="../index.html" class="nav-link">
+
+                <span class="nav-icon">⌂</span>
+
+                <span class="nav-text">Overview</span>
+
+            </a>
+
+            <div class="sidebar-divider"></div>
+
+            <span class="sidebar-section-label">
+                SOC LAB
+            </span>
+
+            <a
+                href="architecture.html"
+                class="nav-link active"
+                aria-current="page">
+
+                <span class="nav-icon">⌘</span>
+
+                <span class="nav-text">Architecture</span>
+
+            </a>
+
+            <a href="documentation.html" class="nav-link">
+
+                <span class="nav-icon">▤</span>
+
+                <span class="nav-text">Documentation</span>
+
+            </a>
+
+            <a href="detection-rules.html" class="nav-link">
+
+                <span class="nav-icon">⚙</span>
+
+                <span class="nav-text">Detection Rules</span>
+
+            </a>
+
+            <a href="log-analysis.html" class="nav-link">
+
+                <span class="nav-icon">⌕</span>
+
+                <span class="nav-text">Log Analysis</span>
+
+            </a>
+
+            <a href="threat-detection.html" class="nav-link">
+
+                <span class="nav-icon">⚠</span>
+
+                <span class="nav-text">Threat Detection</span>
+
+            </a>
+
+            <a href="incident-response.html" class="nav-link">
+
+                <span class="nav-icon">◎</span>
+
+                <span class="nav-text">Incident Response</span>
+
+            </a>
+
+            <div class="sidebar-divider"></div>
+
+            <span class="sidebar-section-label">
+                RESOURCES
+            </span>
+
+            <a href="dashboards.html" class="nav-link">
+
+                <span class="nav-icon">▦</span>
+
+                <span class="nav-text">Dashboards</span>
+
+            </a>
+
+            <a href="scripts.html" class="nav-link">
+
+                <span class="nav-icon">⌘</span>
+
+                <span class="nav-text">Scripts</span>
+
+            </a>
+
+            <a href="reports.html" class="nav-link">
+
+                <span class="nav-icon">▧</span>
+
+                <span class="nav-text">Reports</span>
+
+            </a>
+
+        </nav>
+
+        <div class="sidebar-footer">
+
+            <div class="sidebar-footer-indicator">
+
+                <span class="status-dot"></span>
+
+                <span>Personal Lab Environment</span>
+
+            </div>
+
+            <p>Wazuh SOC Home Lab</p>
+
+        </div>
+
+    </aside>
+
+
+    <!-- =========================================
+         MAIN CONTENT
+    ========================================== -->
+
+    <main class="main-content architecture-page">
+
+        <div class="arch-container">
+
+            <!-- Breadcrumb -->
+
+            <nav class="arch-breadcrumb" aria-label="Breadcrumb">
+
+                <a href="../index.html">Home</a>
+
+                <span>/</span>
+
+                <span class="current">
+                    Lab Architecture
+                </span>
+
+            </nav>
+
+
+            <!-- =====================================
+                 PAGE HEADER
+            ====================================== -->
+
+            <section class="arch-page-header">
+
+                <div class="arch-heading-content">
+
+                    <div class="arch-eyebrow">
+
+                        <span class="arch-eyebrow-dot"></span>
+
+                        Infrastructure &amp; Design
+
+                    </div>
+
+                    <h1 class="arch-page-title">
+
+                        SOC Lab <span>Architecture</span>
+
+                    </h1>
+
+                    <p class="arch-page-description">
+
+                        Explore the architecture of my Wazuh Security
+                        Operations Center home lab. This section documents
+                        the virtualized infrastructure, security monitoring
+                        components, network topology, and communication
+                        flow used to build and operate the environment.
+
+                    </p>
+
+                </div>
+
+                <div class="arch-header-actions">
+
+                    <a
+                        href="../content/docs/lab-architecture.html"
+                        class="arch-btn arch-btn-primary"
+                        target="_blank"
+                        rel="noopener">
+
+                        <span>↗</span>
+
+                        Architecture Docs
+
+                    </a>
+
+                    <a
+                        href="#vm-inventory"
+                        class="arch-btn">
+
+                        <span>▦</span>
+
+                        VM Inventory
+
+                    </a>
+
+                </div>
+
+            </section>
+
+
+            <!-- =====================================
+                 INFRASTRUCTURE OVERVIEW
+            ====================================== -->
+
+            <section class="arch-overview-grid"
+                aria-label="Infrastructure overview">
+
+                <article class="arch-stat-card">
+
+                    <div class="arch-stat-top">
+
+                        <span class="arch-stat-label">
+                            Virtual Machines
+                        </span>
+
+                        <div class="arch-stat-icon">▣</div>
+
+                    </div>
+
+                    <div class="arch-stat-value">05</div>
+
+                    <div class="arch-stat-description">
+                        Planned lab infrastructure components
+                    </div>
+
+                </article>
+
+
+                <article class="arch-stat-card">
+
+                    <div class="arch-stat-top">
+
+                        <span class="arch-stat-label">
+                            SIEM Platform
+                        </span>
+
+                        <div class="arch-stat-icon">◈</div>
+
+                    </div>
+
+                    <div class="arch-stat-value">Wazuh</div>
+
+                    <div class="arch-stat-description">
+                        Centralized security monitoring and alert analysis
+                    </div>
+
+                </article>
+
+
+                <article class="arch-stat-card">
+
+                    <div class="arch-stat-top">
+
+                        <span class="arch-stat-label">
+                            Virtualization
+                        </span>
+
+                        <div class="arch-stat-icon">▤</div>
+
+                    </div>
+
+                    <div class="arch-stat-value">VirtualBox</div>
+
+                    <div class="arch-stat-description">
+                        Virtualized lab environment
+                    </div>
+
+                </article>
+
+
+                <article class="arch-stat-card">
+
+                    <div class="arch-stat-top">
+
+                        <span class="arch-stat-label">
+                            Monitoring Scope
+                        </span>
+
+                        <div class="arch-stat-icon">⌕</div>
+
+                    </div>
+
+                    <div class="arch-stat-value">Multi-OS</div>
+
+                    <div class="arch-stat-description">
+                        Windows and Linux endpoint monitoring
+                    </div>
+
+                </article>
+
+            </section>
+
+
+            <!-- =====================================
+                 SECTION 01 - LAB ARCHITECTURE
+            ====================================== -->
+
+            <section class="arch-section" id="lab-architecture">
+
+                <div class="arch-section-header">
+
+                    <div class="arch-section-heading">
+
+                        <div class="arch-section-number">
+                            01
+                        </div>
+
+                        <div>
+
+                            <h2 class="arch-section-title">
+                                Lab Architecture Diagram
+                            </h2>
+
+                            <p class="arch-section-subtitle">
+                                High-level overview of the SOC lab
+                                infrastructure and its components.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="arch-panel arch-diagram-panel">
+
+                    <div class="arch-diagram-toolbar">
+
+                        <div class="arch-diagram-label">
+
+                            <span>◈</span>
+
+                            Infrastructure Overview
+
+                        </div>
+
+                        <div class="arch-diagram-badge">
+                            Architecture Diagram
+                        </div>
+
+                    </div>
+
+                    <div class="arch-diagram-image">
+
+                        <img
+                            src="../content/architecture/soc-lab-architecture.png"
+                            alt="Wazuh SOC Home Lab architecture diagram showing the Wazuh server, monitored endpoints, and Kali Linux"
+                            onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+
+                        <div
+                            class="arch-image-placeholder"
+                            style="display:none;">
+
+                            <div class="arch-placeholder-icon">
+                                ◈
+                            </div>
+
+                            <h3>Architecture Diagram Not Added</h3>
+
+                            <p>
+                                Add your SOC lab architecture image to
+                                <strong>
+                                    content/architecture/soc-lab-architecture.png
+                                </strong>
+                                to display it here.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                    <p class="arch-diagram-caption">
+
+                        Figure 1. Wazuh SOC Home Lab architecture.
+                        Replace this placeholder with your actual
+                        infrastructure diagram.
+
+                    </p>
+
+                </div>
+
+            </section>
+
+
+            <!-- =====================================
+                 SECTION 02 - VM INVENTORY
+            ====================================== -->
+
+            <section class="arch-section" id="vm-inventory">
+
+                <div class="arch-section-header">
+
+                    <div class="arch-section-heading">
+
+                        <div class="arch-section-number">
+                            02
+                        </div>
+
+                        <div>
+
+                            <h2 class="arch-section-title">
+                                Virtual Machine Inventory
+                            </h2>
+
+                            <p class="arch-section-subtitle">
+                                Overview of the virtual machines,
+                                their responsibilities, and operating systems.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                    <a
+                        href="../content/architecture/vm-inventory.md"
+                        class="arch-btn"
+                        target="_blank"
+                        rel="noopener">
+
+                        View Inventory Docs ↗
+
+                    </a>
+
+                </div>
+
+
+                <div class="arch-panel arch-inventory-panel">
+
+                    <div class="arch-table-toolbar">
+
+                        <h3>Infrastructure Components</h3>
+
+                        <span class="arch-table-count">
+                            Planned configuration
+                        </span>
+
+                    </div>
+
+                    <div class="arch-table-wrapper">
+
+                        <table class="arch-table">
+
+                            <thead>
+
+                                <tr>
+
+                                    <th>Virtual Machine</th>
+
+                                    <th>Operating System</th>
+
+                                    <th>Primary Role</th>
+
+                                    <th>IP Address</th>
+
+                                    <th>Status</th>
+
+                                </tr>
+
+                            </thead>
+
+                            <tbody>
+
+                                <tr>
+
+                                    <td>
+
+                                        <div class="arch-vm-name">
+
+                                            <div class="arch-vm-icon">
+                                                ◈
+                                            </div>
+
+                                            <div>
+
+                                                Wazuh Server
+
+                                                <span class="arch-vm-subtitle">
+                                                    Central SIEM
+                                                </span>
+
+                                            </div>
+
+                                        </div>
+
+                                    </td>
+
+                                    <td>Ubuntu Server</td>
+
+                                    <td>
+                                        <span class="arch-role-badge">
+                                            SIEM &amp; Analysis
+                                        </span>
+                                    </td>
+
+                                    <td class="arch-ip-address">
+                                        To be documented
+                                    </td>
+
+                                    <td>
+                                        <span class="arch-role-badge neutral">
+                                            Installed
+                                        </span>
+                                    </td>
+
+                                </tr>
+
+
+                                <tr>
+
+                                    <td>
+
+                                        <div class="arch-vm-name">
+
+                                            <div class="arch-vm-icon">
+                                                ▣
+                                            </div>
+
+                                            <div>
+
+                                                Windows Endpoint
+
+                                                <span class="arch-vm-subtitle">
+                                                    Monitored client
+                                                </span>
+
+                                            </div>
+
+                                        </div>
+
+                                    </td>
+
+                                    <td>Windows</td>
+
+                                    <td>
+                                        <span class="arch-role-badge">
+                                            Endpoint Monitoring
+                                        </span>
+                                    </td>
+
+                                    <td class="arch-ip-address">
+                                        To be documented
+                                    </td>
+
+                                    <td>
+                                        <span class="arch-role-badge neutral">
+                                            Planned
+                                        </span>
+                                    </td>
+
+                                </tr>
+
+
+                                <tr>
+
+                                    <td>
+
+                                        <div class="arch-vm-name">
+
+                                            <div class="arch-vm-icon">
+                                                ▤
+                                            </div>
+
+                                            <div>
+
+                                                Windows Server
+
+                                                <span class="arch-vm-subtitle">
+                                                    Server environment
+                                                </span>
+
+                                            </div>
+
+                                        </div>
+
+                                    </td>
+
+                                    <td>Windows Server</td>
+
+                                    <td>
+                                        <span class="arch-role-badge">
+                                            Server Monitoring
+                                        </span>
+                                    </td>
+
+                                    <td class="arch-ip-address">
+                                        To be documented
+                                    </td>
+
+                                    <td>
+                                        <span class="arch-role-badge neutral">
+                                            Planned
+                                        </span>
+                                    </td>
+
+                                </tr>
+
+
+                                <tr>
+
+                                    <td>
+
+                                        <div class="arch-vm-name">
+
+                                            <div class="arch-vm-icon">
+                                                ⌘
+                                            </div>
+
+                                            <div>
+
+                                                Kali Linux
+
+                                                <span class="arch-vm-subtitle">
+                                                    Security testing
+                                                </span>
+
+                                            </div>
+
+                                        </div>
+
+                                    </td>
+
+                                    <td>Kali Linux</td>
+
+                                    <td>
+                                        <span class="arch-role-badge">
+                                            Attack Simulation
+                                        </span>
+                                    </td>
+
+                                    <td class="arch-ip-address">
+                                        To be documented
+                                    </td>
+
+                                    <td>
+                                        <span class="arch-role-badge neutral">
+                                            Installed
+                                        </span>
+                                    </td>
+
+                                </tr>
+
+
+                                <tr>
+
+                                    <td>
+
+                                        <div class="arch-vm-name">
+
+                                            <div class="arch-vm-icon">
+                                                ◉
+                                            </div>
+
+                                            <div>
+
+                                                Linux Endpoint
+
+                                                <span class="arch-vm-subtitle">
+                                                    Monitored Linux host
+                                                </span>
+
+                                            </div>
+
+                                        </div>
+
+                                    </td>
+
+                                    <td>Linux</td>
+
+                                    <td>
+                                        <span class="arch-role-badge">
+                                            Linux Monitoring
+                                        </span>
+                                    </td>
+
+                                    <td class="arch-ip-address">
+                                        To be documented
+                                    </td>
+
+                                    <td>
+                                        <span class="arch-role-badge neutral">
+                                            Planned
+                                        </span>
+                                    </td>
+
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                    <div class="arch-table-note">
+
+                        Note: The inventory is an initial project template.
+                        Update operating systems, IP addresses, resources,
+                        and status values to match your actual VirtualBox
+                        environment. Planned machines are not represented
+                        as deployed or connected.
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =====================================
+                 SECTION 03 - NETWORK TOPOLOGY
+            ====================================== -->
+
+            <section class="arch-section" id="network-topology">
+
+                <div class="arch-section-header">
+
+                    <div class="arch-section-heading">
+
+                        <div class="arch-section-number">
+                            03
+                        </div>
+
+                        <div>
+
+                            <h2 class="arch-section-title">
+                                Network Topology
+                            </h2>
+
+                            <p class="arch-section-subtitle">
+                                Virtual networking, host communication,
+                                and connectivity between lab components.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="arch-topology-grid">
+
+                    <article class="arch-topology-card">
+
+                        <h3>
+
+                            <span>⌘</span>
+
+                            Network Configuration
+
+                        </h3>
+
+                        <p>
+
+                            The lab uses a virtualized network to connect
+                            the Wazuh server, monitored endpoints, and
+                            security testing machine. Document the actual
+                            VirtualBox adapter configuration and network
+                            addressing used in your environment.
+
+                        </p>
+
+                        <div class="arch-network-placeholder">
+
+                            Network configuration diagram will appear here.
+
+                        </div>
+
+                    </article>
+
+
+                    <article class="arch-topology-card">
+
+                        <h3>
+
+                            <span>⇄</span>
+
+                            Network Communication
+
+                        </h3>
+
+                        <p>
+
+                            Monitored agents communicate with the Wazuh
+                            Manager to forward security events. The
+                            management dashboard provides access to
+                            collected alerts and monitoring information.
+
+                        </p>
+
+                        <div class="arch-network-placeholder">
+
+                            Add your network topology image here.
+
+                        </div>
+
+                    </article>
+
+                </div>
+
+
+                <div class="arch-panel" style="margin-top:20px;">
+
+                    <div class="arch-diagram-toolbar">
+
+                        <div class="arch-diagram-label">
+
+                            <span>▤</span>
+
+                            Network Topology Diagram
+
+                        </div>
+
+                        <div class="arch-diagram-badge">
+                            VirtualBox Network
+                        </div>
+
+                    </div>
+
+                    <div class="arch-diagram-image">
+
+                        <img
+                            src="../content/architecture/network-topology.png"
+                            alt="Wazuh SOC Home Lab network topology"
+                            onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+
+                        <div
+                            class="arch-image-placeholder"
+                            style="display:none;">
+
+                            <div class="arch-placeholder-icon">
+                                ⇄
+                            </div>
+
+                            <h3>Network Topology Not Added</h3>
+
+                            <p>
+                                Add your network diagram to
+                                <strong>
+                                    content/architecture/network-topology.png
+                                </strong>.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                    <p class="arch-diagram-caption">
+
+                        Figure 2. Virtual network topology.
+                        Replace the placeholder with the actual
+                        network configuration of your lab.
+
+                    </p>
+
+                </div>
+
+            </section>
+
+
+            <!-- =====================================
+                 SECTION 04 - COMMUNICATION FLOW
+            ====================================== -->
+
+            <section class="arch-section" id="communication-flow">
+
+                <div class="arch-section-header">
+
+                    <div class="arch-section-heading">
+
+                        <div class="arch-section-number">
+                            04
+                        </div>
+
+                        <div>
+
+                            <h2 class="arch-section-title">
+                                Security Monitoring Workflow
+                            </h2>
+
+                            <p class="arch-section-subtitle">
+                                How endpoint activity becomes security
+                                alerts in the SOC environment.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="arch-panel arch-flow-panel">
+
+                    <div class="arch-flow-list">
+
+                        <div class="arch-flow-step">
+
+                            <div class="arch-flow-marker">
+
+                                <div class="arch-flow-number">
+                                    01
+                                </div>
+
+                                <div class="arch-flow-line"></div>
+
+                            </div>
+
+                            <div class="arch-flow-content">
+
+                                <h3>
+                                    Endpoint Activity
+                                </h3>
+
+                                <p>
+                                    Windows and Linux endpoints generate
+                                    authentication events, process activity,
+                                    system logs, and other security-relevant
+                                    telemetry.
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="arch-flow-step">
+
+                            <div class="arch-flow-marker">
+
+                                <div class="arch-flow-number">
+                                    02
+                                </div>
+
+                                <div class="arch-flow-line"></div>
+
+                            </div>
+
+                            <div class="arch-flow-content">
+
+                                <h3>
+                                    Wazuh Agent Collection
+                                </h3>
+
+                                <p>
+                                    Wazuh agents collect configured endpoint
+                                    events and forward supported security
+                                    data to the Wazuh Manager.
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="arch-flow-step">
+
+                            <div class="arch-flow-marker">
+
+                                <div class="arch-flow-number">
+                                    03
+                                </div>
+
+                                <div class="arch-flow-line"></div>
+
+                            </div>
+
+                            <div class="arch-flow-content">
+
+                                <h3>
+                                    Wazuh Manager Analysis
+                                </h3>
+
+                                <p>
+                                    The Manager processes incoming events,
+                                    applies decoders and detection rules,
+                                    and generates alerts when configured
+                                    detection conditions are met.
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="arch-flow-step">
+
+                            <div class="arch-flow-marker">
+
+                                <div class="arch-flow-number">
+                                    04
+                                </div>
+
+                                <div class="arch-flow-line"></div>
+
+                            </div>
+
+                            <div class="arch-flow-content">
+
+                                <h3>
+                                    Indexing and Dashboard Visualization
+                                </h3>
+
+                                <p>
+                                    Alert data is indexed by the Wazuh
+                                    Indexer and presented through the
+                                    Wazuh Dashboard for searching,
+                                    monitoring, and investigation.
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="arch-flow-step">
+
+                            <div class="arch-flow-marker">
+
+                                <div class="arch-flow-number">
+                                    05
+                                </div>
+
+                                <div class="arch-flow-line"></div>
+
+                            </div>
+
+                            <div class="arch-flow-content">
+
+                                <h3>
+                                    SOC Investigation and Response
+                                </h3>
+
+                                <p>
+                                    The analyst reviews alert context,
+                                    correlates relevant events, documents
+                                    findings, and records appropriate
+                                    response actions and investigation
+                                    outcomes.
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =====================================
+                 SECTION 05 - TECHNICAL DOCUMENTATION
+            ====================================== -->
+
+            <section class="arch-section" id="architecture-docs">
+
+                <div class="arch-section-header">
+
+                    <div class="arch-section-heading">
+
+                        <div class="arch-section-number">
+                            05
+                        </div>
+
+                        <div>
+
+                            <h2 class="arch-section-title">
+                                Technical Documentation
+                            </h2>
+
+                            <p class="arch-section-subtitle">
+                                Continue exploring the configuration
+                                and infrastructure documentation.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="arch-docs-grid">
+
+                    <a
+                        href="../content/docs/lab-architecture.html"
+                        class="arch-doc-card"
+                        target="_blank"
+                        rel="noopener">
+
+                        <div class="arch-doc-icon">
+                            ◈
+                        </div>
+
+                        <h3>Lab Architecture</h3>
+
+                        <p>
+                            Read the complete architecture overview,
+                            components, system design, and monitoring
+                            workflow.
+                        </p>
+
+                        <div class="arch-doc-link">
+
+                            <span>Open Documentation</span>
+
+                            <span>↗</span>
+
+                        </div>
+
+                    </a>
+
+
+                    <a
+                        href="../content/docs/network-configuration.md"
+                        class="arch-doc-card"
+                        target="_blank"
+                        rel="noopener">
+
+                        <div class="arch-doc-icon">
+                            ⇄
+                        </div>
+
+                        <h3>Network Configuration</h3>
+
+                        <p>
+                            Review network addressing, VirtualBox adapters,
+                            connectivity, and network configuration notes.
+                        </p>
+
+                        <div class="arch-doc-link">
+
+                            <span>Open Documentation</span>
+
+                            <span>↗</span>
+
+                        </div>
+
+                    </a>
+
+
+                    <a
+                        href="../content/architecture/vm-inventory.md"
+                        class="arch-doc-card"
+                        target="_blank"
+                        rel="noopener">
+
+                        <div class="arch-doc-icon">
+                            ▦
+                        </div>
+
+                        <h3>VM Inventory</h3>
+
+                        <p>
+                            Document machine specifications, allocated
+                            resources, operating systems, and assigned roles.
+                        </p>
+
+                        <div class="arch-doc-link">
+
+                            <span>Open Documentation</span>
+
+                            <span>↗</span>
+
+                        </div>
+
+                    </a>
+
+                </div>
+
+            </section>
+
+
+            <!-- =====================================
+                 PAGE FOOTER
+            ====================================== -->
+
+            <footer class="arch-footer">
+
+                <div>
+
+                    Wazuh SOC Home Lab
+
+                    <span> | </span>
+
+                    Lab Architecture
+
+                </div>
+
+                <div>
+
+                    <a href="documentation.html">
+                        Documentation
+                    </a>
+
+                    <span> · </span>
+
+                    <a href="dashboards.html">
+                        Dashboards
+                    </a>
+
+                    <span> · </span>
+
+                    <a href="../index.html">
+                        Back to Home
+                    </a>
+
+                </div>
+
+            </footer>
+
+        </div>
+
+    </main>
+
+
+    <!-- =========================================
+         MOBILE SIDEBAR OVERLAY
+    ========================================== -->
+
+    <div
+        class="sidebar-overlay"
+        id="sidebarOverlay"
+        aria-hidden="true">
+    </div>
+
+
+    <!-- =========================================
+         SHARED JAVASCRIPT
+    ========================================== -->
+
+    <script src="../assets/js/navigation.js"></script>
+    <script src="../assets/js/main.js"></script>
+    <script src="../assets/js/search.js"></script>
+    <script src="../assets/js/viewer.js"></script>
+</body>
+</html>

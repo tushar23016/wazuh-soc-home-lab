@@ -1,0 +1,1745 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="description"
+        content="Threat detection scenarios, security monitoring, and threat investigation for the Wazuh SOC Home Lab.">
+
+    <meta name="theme-color" content="#080d18">
+
+    <title>Threat Detection | Wazuh SOC Home Lab</title>
+
+    <!-- Shared CSS -->
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/responsive.css">
+    <link rel="stylesheet" href="../assets/css/animations.css">
+
+    <!-- Page-specific CSS -->
+    <style>
+        /* =========================================
+           THREAT DETECTION PAGE
+        ========================================= */
+
+        .threat-page {
+            --threat-accent: #00e599;
+            --threat-accent-soft: rgba(0, 229, 153, 0.09);
+            --threat-border: rgba(148, 163, 184, 0.14);
+            --threat-muted: #8492a6;
+            --threat-panel: rgba(15, 23, 42, 0.78);
+
+            padding: 30px;
+            color: #e2e8f0;
+        }
+
+        .threat-page * {
+            box-sizing: border-box;
+        }
+
+        .threat-container {
+            max-width: 1500px;
+            margin: 0 auto;
+        }
+
+        /* Breadcrumb */
+
+        .threat-breadcrumb {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 9px;
+            margin-bottom: 25px;
+            color: var(--threat-muted);
+            font-size: 13px;
+        }
+
+        .threat-breadcrumb a {
+            color: var(--threat-muted);
+            text-decoration: none;
+        }
+
+        .threat-breadcrumb a:hover,
+        .threat-breadcrumb .current {
+            color: var(--threat-accent);
+        }
+
+        /* Header */
+
+        .threat-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .threat-header-content {
+            max-width: 800px;
+        }
+
+        .threat-eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+            padding: 7px 12px;
+            border: 1px solid rgba(0, 229, 153, 0.22);
+            border-radius: 30px;
+            background: var(--threat-accent-soft);
+            color: var(--threat-accent);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .threat-live-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--threat-accent);
+            box-shadow: 0 0 10px rgba(0, 229, 153, 0.6);
+        }
+
+        .threat-title {
+            margin: 0 0 16px;
+            color: #f8fafc;
+            font-size: clamp(30px, 4vw, 46px);
+            font-weight: 800;
+            line-height: 1.15;
+            letter-spacing: -1.4px;
+        }
+
+        .threat-title span {
+            color: var(--threat-accent);
+        }
+
+        .threat-description {
+            max-width: 760px;
+            margin: 0;
+            color: #94a3b8;
+            font-size: 15px;
+            line-height: 1.85;
+        }
+
+        .threat-header-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .threat-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 9px;
+            min-height: 43px;
+            padding: 11px 17px;
+            border: 1px solid var(--threat-border);
+            border-radius: 10px;
+            background: rgba(15, 23, 42, 0.75);
+            color: #cbd5e1;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .threat-btn:hover {
+            transform: translateY(-2px);
+            border-color: rgba(0, 229, 153, 0.4);
+            color: var(--threat-accent);
+        }
+
+        .threat-btn-primary {
+            border-color: rgba(0, 229, 153, 0.3);
+            background: var(--threat-accent-soft);
+            color: var(--threat-accent);
+        }
+
+        /* Sections */
+
+        .threat-section {
+            margin-bottom: 35px;
+            scroll-margin-top: 100px;
+        }
+
+        .threat-section-header {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 18px;
+            margin-bottom: 20px;
+        }
+
+        .threat-section-heading {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+        }
+
+        .threat-section-number {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            width: 39px;
+            height: 39px;
+            border: 1px solid rgba(0, 229, 153, 0.2);
+            border-radius: 11px;
+            background: var(--threat-accent-soft);
+            color: var(--threat-accent);
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .threat-section-title {
+            margin: 0 0 7px;
+            color: #f1f5f9;
+            font-size: 21px;
+            font-weight: 750;
+        }
+
+        .threat-section-subtitle {
+            margin: 0;
+            color: var(--threat-muted);
+            font-size: 13px;
+            line-height: 1.7;
+        }
+
+        .threat-panel {
+            padding: 25px;
+            border: 1px solid var(--threat-border);
+            border-radius: 16px;
+            background: var(--threat-panel);
+        }
+
+        /* Overview cards */
+
+        .threat-stats {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 18px;
+            margin-bottom: 35px;
+        }
+
+        .threat-stat {
+            position: relative;
+            overflow: hidden;
+            padding: 22px;
+            border: 1px solid var(--threat-border);
+            border-radius: 15px;
+            background: var(--threat-panel);
+            transition: transform 0.25s ease,
+                border-color 0.25s ease;
+        }
+
+        .threat-stat:hover {
+            transform: translateY(-4px);
+            border-color: rgba(0, 229, 153, 0.3);
+        }
+
+        .threat-stat-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .threat-stat-label {
+            color: var(--threat-muted);
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .threat-stat-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 43px;
+            height: 43px;
+            border: 1px solid rgba(0, 229, 153, 0.16);
+            border-radius: 12px;
+            background: var(--threat-accent-soft);
+            color: var(--threat-accent);
+            font-size: 20px;
+        }
+
+        .threat-stat-value {
+            margin-bottom: 7px;
+            color: #f8fafc;
+            font-size: 28px;
+            font-weight: 800;
+        }
+
+        .threat-stat-description {
+            color: #64748b;
+            font-size: 12px;
+            line-height: 1.7;
+        }
+
+        /* Detection cards */
+
+        .threat-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .threat-card {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            padding: 23px;
+            border: 1px solid var(--threat-border);
+            border-radius: 15px;
+            background: var(--threat-panel);
+            transition: transform 0.25s ease,
+                border-color 0.25s ease;
+        }
+
+        .threat-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(0, 229, 153, 0.32);
+        }
+
+        .threat-card-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 19px;
+        }
+
+        .threat-card-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 45px;
+            height: 45px;
+            flex-shrink: 0;
+            border: 1px solid rgba(0, 229, 153, 0.16);
+            border-radius: 12px;
+            background: var(--threat-accent-soft);
+            color: var(--threat-accent);
+            font-size: 21px;
+        }
+
+        .threat-severity {
+            padding: 6px 10px;
+            border: 1px solid var(--threat-border);
+            border-radius: 7px;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .threat-severity.high {
+            border-color: rgba(248, 113, 113, 0.25);
+            background: rgba(248, 113, 113, 0.08);
+            color: #f87171;
+        }
+
+        .threat-severity.medium {
+            border-color: rgba(251, 191, 36, 0.25);
+            background: rgba(251, 191, 36, 0.08);
+            color: #fbbf24;
+        }
+
+        .threat-severity.low {
+            border-color: rgba(96, 165, 250, 0.25);
+            background: rgba(96, 165, 250, 0.08);
+            color: #60a5fa;
+        }
+
+        .threat-category {
+            margin-bottom: 10px;
+            color: var(--threat-accent);
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .threat-card h3 {
+            margin: 0 0 10px;
+            color: #e2e8f0;
+            font-size: 16px;
+            font-weight: 750;
+        }
+
+        .threat-card-description {
+            flex: 1;
+            margin: 0 0 20px;
+            color: var(--threat-muted);
+            font-size: 13px;
+            line-height: 1.8;
+        }
+
+        .threat-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .threat-tag {
+            padding: 6px 9px;
+            border: 1px solid var(--threat-border);
+            border-radius: 6px;
+            color: #94a3b8;
+            font-size: 10px;
+        }
+
+        .threat-card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding-top: 16px;
+            border-top: 1px solid var(--threat-border);
+        }
+
+        .threat-mitre-id {
+            color: #64748b;
+            font-family: monospace;
+            font-size: 12px;
+        }
+
+        .threat-card-link {
+            color: var(--threat-accent);
+            font-size: 12px;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .threat-card-link:hover {
+            color: #6ee7b7;
+        }
+
+        /* Workflow */
+
+        .threat-workflow {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 15px;
+        }
+
+        .threat-workflow-card {
+            padding: 21px;
+            border: 1px solid var(--threat-border);
+            border-radius: 13px;
+            background: var(--threat-panel);
+        }
+
+        .threat-workflow-number {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 35px;
+            height: 35px;
+            margin-bottom: 17px;
+            border: 1px solid rgba(0, 229, 153, 0.2);
+            border-radius: 10px;
+            background: var(--threat-accent-soft);
+            color: var(--threat-accent);
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .threat-workflow-card h3 {
+            margin: 0 0 10px;
+            color: #e2e8f0;
+            font-size: 14px;
+        }
+
+        .threat-workflow-card p {
+            margin: 0;
+            color: var(--threat-muted);
+            font-size: 12px;
+            line-height: 1.8;
+        }
+
+        /* MITRE table */
+
+        .threat-table-wrapper {
+            overflow-x: auto;
+            width: 100%;
+        }
+
+        .threat-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        .threat-table th {
+            padding: 15px;
+            border-bottom: 1px solid var(--threat-border);
+            color: #64748b;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .threat-table td {
+            padding: 17px 15px;
+            border-bottom: 1px solid var(--threat-border);
+            color: #94a3b8;
+            font-size: 12px;
+            line-height: 1.7;
+        }
+
+        .threat-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .threat-table td:first-child {
+            color: #e2e8f0;
+            font-weight: 600;
+        }
+
+        .threat-technique {
+            color: var(--threat-accent);
+            font-family: monospace;
+            font-weight: 700;
+        }
+
+        .threat-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            color: #fbbf24;
+            font-size: 11px;
+            white-space: nowrap;
+        }
+
+        .threat-status::before {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #fbbf24;
+            content: "";
+        }
+
+        .threat-note {
+            margin-top: 20px;
+            padding: 16px;
+            border: 1px solid rgba(0, 229, 153, 0.16);
+            border-radius: 10px;
+            background: var(--threat-accent-soft);
+            color: #94a3b8;
+            font-size: 12px;
+            line-height: 1.8;
+        }
+
+        .threat-note strong {
+            color: var(--threat-accent);
+        }
+
+        /* Resource cards */
+
+        .threat-resources {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .threat-resource {
+            padding: 22px;
+            border: 1px solid var(--threat-border);
+            border-radius: 14px;
+            background: var(--threat-panel);
+            text-decoration: none;
+            transition: transform 0.25s ease,
+                border-color 0.25s ease;
+        }
+
+        .threat-resource:hover {
+            transform: translateY(-3px);
+            border-color: rgba(0, 229, 153, 0.3);
+        }
+
+        .threat-resource-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 42px;
+            height: 42px;
+            margin-bottom: 17px;
+            border: 1px solid rgba(0, 229, 153, 0.16);
+            border-radius: 11px;
+            background: var(--threat-accent-soft);
+            color: var(--threat-accent);
+        }
+
+        .threat-resource h3 {
+            margin: 0 0 10px;
+            color: #e2e8f0;
+            font-size: 15px;
+        }
+
+        .threat-resource p {
+            margin: 0 0 20px;
+            color: var(--threat-muted);
+            font-size: 12px;
+            line-height: 1.8;
+        }
+
+        .threat-resource span {
+            color: var(--threat-accent);
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        /* Footer */
+
+        .threat-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 45px;
+            padding: 25px 0 10px;
+            border-top: 1px solid var(--threat-border);
+            color: #64748b;
+            font-size: 12px;
+        }
+
+        /* Responsive */
+
+        @media (max-width: 1200px) {
+            .threat-stats {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .threat-workflow {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .threat-resources {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .threat-page {
+                padding: 22px 16px;
+            }
+
+            .threat-title {
+                font-size: 32px;
+                letter-spacing: -0.8px;
+            }
+
+            .threat-description {
+                font-size: 14px;
+            }
+
+            .threat-header-actions {
+                width: 100%;
+            }
+
+            .threat-header-actions .threat-btn {
+                flex: 1;
+            }
+
+            .threat-grid,
+            .threat-workflow,
+            .threat-resources {
+                grid-template-columns: 1fr;
+            }
+
+            .threat-panel {
+                padding: 18px;
+            }
+
+            .threat-section-title {
+                font-size: 19px;
+            }
+
+            .threat-footer {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .threat-stats {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .threat-stat {
+                padding: 19px;
+            }
+
+            .threat-stat-value {
+                font-size: 25px;
+            }
+
+            .threat-section-header {
+                align-items: flex-start;
+            }
+
+            .threat-table th,
+            .threat-table td {
+                padding: 13px 10px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- =========================================
+         NAVBAR — SAME AS DETECTION RULES
+    ========================================== -->
+
+    <header class="navbar" id="navbar">
+
+        <div class="navbar-left">
+
+            <button
+                class="menu-toggle"
+                id="menuToggle"
+                type="button"
+                aria-label="Toggle sidebar"
+                aria-expanded="false"
+                aria-controls="sidebar">
+
+                <span></span>
+                <span></span>
+                <span></span>
+
+            </button>
+
+            <a href="../index.html" class="navbar-brand">
+
+                <img
+                    src="../assets/images/logo.svg"
+                    alt="Wazuh SOC Lab Logo"
+                    class="navbar-logo">
+
+                <span class="brand-text">
+                    WAZUH <span class="brand-highlight">SOC LAB</span>
+                </span>
+
+            </a>
+
+        </div>
+
+        <div class="navbar-right">
+
+            <div class="navbar-status">
+                <span class="status-dot"></span>
+                <span>Home Lab</span>
+            </div>
+
+            <a href="../index.html"
+                class="navbar-home"
+                aria-label="Return to homepage">
+
+                <span>Home</span>
+
+            </a>
+
+        </div>
+
+    </header>
+
+
+    <!-- =========================================
+         SIDEBAR — SAME AS DETECTION RULES
+    ========================================== -->
+
+    <aside class="sidebar" id="sidebar">
+
+        <div class="sidebar-header">
+
+            <span class="sidebar-section-label">
+                MAIN MENU
+            </span>
+
+        </div>
+
+        <nav class="sidebar-nav" aria-label="Main navigation">
+
+            <a href="../index.html" class="nav-link">
+                <span class="nav-icon">⌂</span>
+                <span class="nav-text">Overview</span>
+            </a>
+
+            <div class="sidebar-divider"></div>
+
+            <span class="sidebar-section-label">
+                SOC LAB
+            </span>
+
+            <a href="architecture.html" class="nav-link">
+                <span class="nav-icon">⌘</span>
+                <span class="nav-text">Architecture</span>
+            </a>
+
+            <a href="documentation.html" class="nav-link">
+                <span class="nav-icon">▤</span>
+                <span class="nav-text">Documentation</span>
+            </a>
+
+            <a href="detection-rules.html" class="nav-link">
+                <span class="nav-icon">⚙</span>
+                <span class="nav-text">Detection Rules</span>
+            </a>
+
+            <a href="log-analysis.html" class="nav-link">
+                <span class="nav-icon">⌕</span>
+                <span class="nav-text">Log Analysis</span>
+            </a>
+
+            <a href="threat-detection.html"
+                class="nav-link active"
+                aria-current="page">
+
+                <span class="nav-icon">⚠</span>
+                <span class="nav-text">Threat Detection</span>
+
+            </a>
+
+            <a href="incident-response.html" class="nav-link">
+                <span class="nav-icon">◎</span>
+                <span class="nav-text">Incident Response</span>
+            </a>
+
+            <div class="sidebar-divider"></div>
+
+            <span class="sidebar-section-label">
+                RESOURCES
+            </span>
+
+            <a href="dashboards.html" class="nav-link">
+                <span class="nav-icon">▦</span>
+                <span class="nav-text">Dashboards</span>
+            </a>
+
+            <a href="scripts.html" class="nav-link">
+                <span class="nav-icon">⌘</span>
+                <span class="nav-text">Scripts</span>
+            </a>
+
+            <a href="reports.html" class="nav-link">
+                <span class="nav-icon">▧</span>
+                <span class="nav-text">Reports</span>
+            </a>
+
+        </nav>
+
+        <div class="sidebar-footer">
+
+            <div class="sidebar-footer-indicator">
+                <span class="status-dot"></span>
+                <span>Personal Lab Environment</span>
+            </div>
+
+            <p>Wazuh SOC Home Lab</p>
+
+        </div>
+
+    </aside>
+
+
+    <!-- =========================================
+         MAIN CONTENT
+    ========================================== -->
+
+    <main class="main-content threat-page">
+
+        <div class="threat-container">
+
+            <!-- Breadcrumb -->
+
+            <nav class="threat-breadcrumb" aria-label="Breadcrumb">
+
+                <a href="../index.html">Home</a>
+
+                <span>/</span>
+
+                <span class="current">Threat Detection</span>
+
+            </nav>
+
+
+            <!-- =====================================
+                 PAGE HEADER
+            ====================================== -->
+
+            <section class="threat-header">
+
+                <div class="threat-header-content">
+
+                    <div class="threat-eyebrow">
+                        <span class="threat-live-dot"></span>
+                        Security Monitoring &amp; Threat Detection
+                    </div>
+
+                    <h1 class="threat-title">
+                        Threat <span>Detection</span>
+                    </h1>
+
+                    <p class="threat-description">
+                        Centralized threat monitoring and investigation
+                        workspace for the Wazuh SOC Home Lab. Explore
+                        authentication attacks, suspicious processes,
+                        file integrity monitoring, network activity,
+                        and MITRE ATT&amp;CK technique mapping.
+                    </p>
+
+                </div>
+
+                <div class="threat-header-actions">
+
+                    <a href="../content/threat-detection/brute-force-detection.md"
+                        class="threat-btn threat-btn-primary"
+                        target="_blank"
+                        rel="noopener noreferrer">
+
+                        <span>⌘</span>
+                        Detection Scenarios
+
+                    </a>
+
+                    <a href="incident-response.html"
+                        class="threat-btn">
+
+                        <span>▤</span>
+                        Browse Incidents
+
+                    </a>
+
+                </div>
+
+            </section>
+
+
+            <!-- =====================================
+                 DETECTION OVERVIEW
+            ====================================== -->
+
+            <section class="threat-section">
+
+                <div class="threat-section-header">
+
+                    <div class="threat-section-heading">
+
+                        <div class="threat-section-number">01</div>
+
+                        <div>
+                            <h2 class="threat-section-title">
+                                Detection Overview
+                            </h2>
+
+                            <p class="threat-section-subtitle">
+                                Security monitoring scenarios documented
+                                for the home lab.
+                            </p>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="threat-stats">
+
+                    <div class="threat-stat">
+
+                        <div class="threat-stat-top">
+                            <span class="threat-stat-label">
+                                DETECTION SCENARIOS
+                            </span>
+
+                            <div class="threat-stat-icon">⚙</div>
+                        </div>
+
+                        <div class="threat-stat-value">05</div>
+
+                        <div class="threat-stat-description">
+                            Authentication, processes, FIM, and network
+                            monitoring.
+                        </div>
+
+                    </div>
+
+
+                    <div class="threat-stat">
+
+                        <div class="threat-stat-top">
+                            <span class="threat-stat-label">
+                                SIEM PLATFORM
+                            </span>
+
+                            <div class="threat-stat-icon">◈</div>
+                        </div>
+
+                        <div class="threat-stat-value">Wazuh</div>
+
+                        <div class="threat-stat-description">
+                            Centralized security event collection
+                            and alert analysis.
+                        </div>
+
+                    </div>
+
+
+                    <div class="threat-stat">
+
+                        <div class="threat-stat-top">
+                            <span class="threat-stat-label">
+                                DETECTION FRAMEWORK
+                            </span>
+
+                            <div class="threat-stat-icon">◎</div>
+                        </div>
+
+                        <div class="threat-stat-value">MITRE</div>
+
+                        <div class="threat-stat-description">
+                            ATT&amp;CK tactics and technique references.
+                        </div>
+
+                    </div>
+
+
+                    <div class="threat-stat">
+
+                        <div class="threat-stat-top">
+                            <span class="threat-stat-label">
+                                LOG SOURCES
+                            </span>
+
+                            <div class="threat-stat-icon">▤</div>
+                        </div>
+
+                        <div class="threat-stat-value">Multi-OS</div>
+
+                        <div class="threat-stat-description">
+                            Windows, Sysmon, and Linux security events.
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =====================================
+                 DETECTION SCENARIOS
+            ====================================== -->
+
+            <section class="threat-section" id="scenarios">
+
+                <div class="threat-section-header">
+
+                    <div class="threat-section-heading">
+
+                        <div class="threat-section-number">02</div>
+
+                        <div>
+                            <h2 class="threat-section-title">
+                                Threat Detection Scenarios
+                            </h2>
+
+                            <p class="threat-section-subtitle">
+                                Review detection objectives, relevant
+                                event sources, and investigation notes.
+                            </p>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="threat-grid">
+
+
+                    <!-- Brute Force -->
+
+                    <article class="threat-card">
+
+                        <div class="threat-card-top">
+
+                            <div class="threat-card-icon">
+                                ⚿
+                            </div>
+
+                            <span class="threat-severity high">
+                                High
+                            </span>
+
+                        </div>
+
+                        <div class="threat-category">
+                            Authentication Security
+                        </div>
+
+                        <h3>Brute Force Detection</h3>
+
+                        <p class="threat-card-description">
+                            Identify repeated failed authentication
+                            attempts against Windows or Linux accounts.
+                            Investigate source addresses, targeted
+                            accounts, and successful logins following
+                            repeated failures.
+                        </p>
+
+                        <div class="threat-tags">
+                            <span class="threat-tag">
+                                Windows Event ID 4625
+                            </span>
+
+                            <span class="threat-tag">
+                                Linux SSH
+                            </span>
+                        </div>
+
+                        <div class="threat-card-footer">
+
+                            <span class="threat-mitre-id">
+                                MITRE T1110
+                            </span>
+
+                            <a href="../content/threat-detection/brute-force-detection.md"
+                                class="threat-card-link"
+                                target="_blank"
+                                rel="noopener noreferrer">
+
+                                View Details →
+
+                            </a>
+
+                        </div>
+
+                    </article>
+
+
+                    <!-- Suspicious Login -->
+
+                    <article class="threat-card">
+
+                        <div class="threat-card-top">
+
+                            <div class="threat-card-icon">
+                                ◎
+                            </div>
+
+                            <span class="threat-severity medium">
+                                Medium
+                            </span>
+
+                        </div>
+
+                        <div class="threat-category">
+                            Account Security
+                        </div>
+
+                        <h3>Suspicious Login Activity</h3>
+
+                        <p class="threat-card-description">
+                            Investigate unexpected account access,
+                            unusual authentication patterns, and
+                            successful logins following multiple
+                            failed authentication events.
+                        </p>
+
+                        <div class="threat-tags">
+                            <span class="threat-tag">
+                                Event ID 4624
+                            </span>
+
+                            <span class="threat-tag">
+                                Event ID 4625
+                            </span>
+                        </div>
+
+                        <div class="threat-card-footer">
+
+                            <span class="threat-mitre-id">
+                                MITRE T1078
+                            </span>
+
+                            <a href="../content/threat-detection/suspicious-login.md"
+                                class="threat-card-link"
+                                target="_blank"
+                                rel="noopener noreferrer">
+
+                                View Details →
+
+                            </a>
+
+                        </div>
+
+                    </article>
+
+
+                    <!-- Suspicious Processes -->
+
+                    <article class="threat-card">
+
+                        <div class="threat-card-top">
+
+                            <div class="threat-card-icon">
+                                ⌘
+                            </div>
+
+                            <span class="threat-severity high">
+                                High
+                            </span>
+
+                        </div>
+
+                        <div class="threat-category">
+                            Process Monitoring
+                        </div>
+
+                        <h3>Suspicious Process Execution</h3>
+
+                        <p class="threat-card-description">
+                            Examine unusual process creation, suspicious
+                            command-line arguments, parent-child
+                            relationships, and potentially unauthorized
+                            administrative utilities.
+                        </p>
+
+                        <div class="threat-tags">
+                            <span class="threat-tag">
+                                Sysmon Event ID 1
+                            </span>
+
+                            <span class="threat-tag">
+                                Process Creation
+                            </span>
+                        </div>
+
+                        <div class="threat-card-footer">
+
+                            <span class="threat-mitre-id">
+                                MITRE T1059
+                            </span>
+
+                            <a href="../content/threat-detection/suspicious-processes.md"
+                                class="threat-card-link"
+                                target="_blank"
+                                rel="noopener noreferrer">
+
+                                View Details →
+
+                            </a>
+
+                        </div>
+
+                    </article>
+
+
+                    <!-- File Integrity -->
+
+                    <article class="threat-card">
+
+                        <div class="threat-card-top">
+
+                            <div class="threat-card-icon">
+                                ▤
+                            </div>
+
+                            <span class="threat-severity medium">
+                                Medium
+                            </span>
+
+                        </div>
+
+                        <div class="threat-category">
+                            File Monitoring
+                        </div>
+
+                        <h3>File Integrity Monitoring</h3>
+
+                        <p class="threat-card-description">
+                            Monitor configured files and critical
+                            directories for unexpected modifications,
+                            file creation, deletion, and changes
+                            to file attributes.
+                        </p>
+
+                        <div class="threat-tags">
+                            <span class="threat-tag">
+                                Wazuh FIM
+                            </span>
+
+                            <span class="threat-tag">
+                                Syscheck
+                            </span>
+                        </div>
+
+                        <div class="threat-card-footer">
+
+                            <span class="threat-mitre-id">
+                                MITRE T1565
+                            </span>
+
+                            <a href="../content/threat-detection/file-integrity-monitoring.md"
+                                class="threat-card-link"
+                                target="_blank"
+                                rel="noopener noreferrer">
+
+                                View Details →
+
+                            </a>
+
+                        </div>
+
+                    </article>
+
+
+                    <!-- Network Activity -->
+
+                    <article class="threat-card">
+
+                        <div class="threat-card-top">
+
+                            <div class="threat-card-icon">
+                                ⌘
+                            </div>
+
+                            <span class="threat-severity medium">
+                                Medium
+                            </span>
+
+                        </div>
+
+                        <div class="threat-category">
+                            Network Monitoring
+                        </div>
+
+                        <h3>Suspicious Network Activity</h3>
+
+                        <p class="threat-card-description">
+                            Investigate unexpected network connections,
+                            unusual outbound communication, and
+                            potentially suspicious connections
+                            between lab endpoints.
+                        </p>
+
+                        <div class="threat-tags">
+                            <span class="threat-tag">
+                                Sysmon Event ID 3
+                            </span>
+
+                            <span class="threat-tag">
+                                Network Events
+                            </span>
+                        </div>
+
+                        <div class="threat-card-footer">
+
+                            <span class="threat-mitre-id">
+                                MITRE T1071
+                            </span>
+
+                            <a href="../content/threat-detection/network-activity.md"
+                                class="threat-card-link"
+                                target="_blank"
+                                rel="noopener noreferrer">
+
+                                View Details →
+
+                            </a>
+
+                        </div>
+
+                    </article>
+
+                </div>
+
+            </section>
+
+
+            <!-- =====================================
+                 DETECTION WORKFLOW
+            ====================================== -->
+
+            <section class="threat-section">
+
+                <div class="threat-section-header">
+
+                    <div class="threat-section-heading">
+
+                        <div class="threat-section-number">03</div>
+
+                        <div>
+                            <h2 class="threat-section-title">
+                                Detection Workflow
+                            </h2>
+
+                            <p class="threat-section-subtitle">
+                                Security event collection and analysis
+                                across the SOC infrastructure.
+                            </p>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="threat-workflow">
+
+                    <div class="threat-workflow-card">
+
+                        <div class="threat-workflow-number">01</div>
+
+                        <h3>Endpoint Event Generation</h3>
+
+                        <p>
+                            Windows, Sysmon, and Linux generate
+                            authentication, process, and system events.
+                        </p>
+
+                    </div>
+
+
+                    <div class="threat-workflow-card">
+
+                        <div class="threat-workflow-number">02</div>
+
+                        <h3>Wazuh Agent Collection</h3>
+
+                        <p>
+                            Installed agents collect configured
+                            security events and forward them
+                            to the Wazuh Manager.
+                        </p>
+
+                    </div>
+
+
+                    <div class="threat-workflow-card">
+
+                        <div class="threat-workflow-number">03</div>
+
+                        <h3>Manager Rule Evaluation</h3>
+
+                        <p>
+                            Wazuh decodes collected events and
+                            evaluates them against configured
+                            detection rules.
+                        </p>
+
+                    </div>
+
+
+                    <div class="threat-workflow-card">
+
+                        <div class="threat-workflow-number">04</div>
+
+                        <h3>Analyst Investigation</h3>
+
+                        <p>
+                            Review alerts, correlate evidence,
+                            investigate suspicious activity,
+                            and document findings.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =====================================
+                 MITRE ATT&CK MAPPING
+            ====================================== -->
+
+            <section class="threat-section" id="mitre">
+
+                <div class="threat-section-header">
+
+                    <div class="threat-section-heading">
+
+                        <div class="threat-section-number">04</div>
+
+                        <div>
+                            <h2 class="threat-section-title">
+                                MITRE ATT&amp;CK Mapping
+                            </h2>
+
+                            <p class="threat-section-subtitle">
+                                Reference techniques associated
+                                with documented detection scenarios.
+                            </p>
+                        </div>
+
+                    </div>
+
+                    <a href="https://attack.mitre.org/"
+                        class="threat-btn"
+                        target="_blank"
+                        rel="noopener noreferrer">
+
+                        ATT&amp;CK Framework ↗
+
+                    </a>
+
+                </div>
+
+
+                <div class="threat-panel">
+
+                    <div class="threat-table-wrapper">
+
+                        <table class="threat-table">
+
+                            <thead>
+                                <tr>
+                                    <th>Detection Scenario</th>
+                                    <th>Technique ID</th>
+                                    <th>Technique</th>
+                                    <th>Data Source</th>
+                                    <th>Validation</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+
+                                <tr>
+                                    <td>Brute Force</td>
+                                    <td>
+                                        <span class="threat-technique">
+                                            T1110
+                                        </span>
+                                    </td>
+                                    <td>Brute Force</td>
+                                    <td>Windows / Linux Authentication</td>
+                                    <td>
+                                        <span class="threat-status">
+                                            To Validate
+                                        </span>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td>Suspicious Login</td>
+                                    <td>
+                                        <span class="threat-technique">
+                                            T1078
+                                        </span>
+                                    </td>
+                                    <td>Valid Accounts</td>
+                                    <td>Windows Security Logs</td>
+                                    <td>
+                                        <span class="threat-status">
+                                            To Validate
+                                        </span>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td>Suspicious Processes</td>
+                                    <td>
+                                        <span class="threat-technique">
+                                            T1059
+                                        </span>
+                                    </td>
+                                    <td>Command and Scripting Interpreter</td>
+                                    <td>Sysmon / Process Logs</td>
+                                    <td>
+                                        <span class="threat-status">
+                                            To Validate
+                                        </span>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td>File Integrity</td>
+                                    <td>
+                                        <span class="threat-technique">
+                                            T1565
+                                        </span>
+                                    </td>
+                                    <td>Data Manipulation</td>
+                                    <td>Wazuh FIM</td>
+                                    <td>
+                                        <span class="threat-status">
+                                            To Validate
+                                        </span>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td>Network Activity</td>
+                                    <td>
+                                        <span class="threat-technique">
+                                            T1071
+                                        </span>
+                                    </td>
+                                    <td>Application Layer Protocol</td>
+                                    <td>Network / Sysmon Logs</td>
+                                    <td>
+                                        <span class="threat-status">
+                                            To Validate
+                                        </span>
+                                    </td>
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                    <div class="threat-note">
+
+                        <strong>Analyst Note:</strong>
+
+                        Technique mappings are investigative
+                        references. Validate the observed behavior,
+                        applicable sub-technique, and collected
+                        evidence before documenting a confirmed
+                        detection.
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =====================================
+                 RELATED RESOURCES
+            ====================================== -->
+
+            <section class="threat-section">
+
+                <div class="threat-section-header">
+
+                    <div class="threat-section-heading">
+
+                        <div class="threat-section-number">05</div>
+
+                        <div>
+                            <h2 class="threat-section-title">
+                                Related Resources
+                            </h2>
+
+                            <p class="threat-section-subtitle">
+                                Continue with detection engineering,
+                                log analysis, and incident investigation.
+                            </p>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="threat-resources">
+
+                    <a href="detection-rules.html"
+                        class="threat-resource">
+
+                        <div class="threat-resource-icon">⌘</div>
+
+                        <h3>Detection Rules</h3>
+
+                        <p>
+                            Review custom Wazuh XML rules,
+                            rule IDs, severity, and validation.
+                        </p>
+
+                        <span>Explore Rules →</span>
+
+                    </a>
+
+
+                    <a href="log-analysis.html"
+                        class="threat-resource">
+
+                        <div class="threat-resource-icon">⌕</div>
+
+                        <h3>Log Analysis</h3>
+
+                        <p>
+                            Analyze Windows authentication,
+                            Sysmon, and Linux security events.
+                        </p>
+
+                        <span>Analyze Logs →</span>
+
+                    </a>
+
+
+                    <a href="incident-response.html"
+                        class="threat-resource">
+
+                        <div class="threat-resource-icon">◎</div>
+
+                        <h3>Incident Response</h3>
+
+                        <p>
+                            Review incident records, investigation
+                            evidence, containment, and remediation.
+                        </p>
+
+                        <span>View Incidents →</span>
+
+                    </a>
+
+                </div>
+
+            </section>
+
+
+            <!-- =====================================
+                 FOOTER
+            ====================================== -->
+
+            <footer class="threat-footer">
+
+                <div>
+                    Wazuh SOC Home Lab
+                </div>
+
+                <div>
+                    Threat Detection &amp; Security Monitoring
+                </div>
+
+            </footer>
+
+        </div>
+
+    </main>
+
+
+    <!-- =========================================
+         JAVASCRIPT — SAME AS EXISTING PROJECT
+    ========================================== -->
+
+    <script src="../assets/js/main.js"></script>
+    <script src="../assets/js/navigation.js"></script>
+    <script src="../assets/js/search.js"></script>
+    <script src="../assets/js/viewer.js"></script>
+
+</body>
+
+</html>

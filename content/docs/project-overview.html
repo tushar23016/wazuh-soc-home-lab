@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#07111f">
+<meta name="description" content="Wazuh SOC Home Lab — project overview presented as a paginated, PDF-style reading document.">
+<title>Project Overview | Wazuh SOC Home Lab</title>
+<style>
+:root{--bg:#080f1b;--paper:#101c2c;--paper2:#132238;--line:#2a3b52;--ink:#eaf2fc;--muted:#a6b5c9;--green:#63f0aa;--cyan:#6bdcff;--page-width:850px}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:90px}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.8 Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
+body:before{content:"";position:fixed;inset:0;z-index:-1;background:radial-gradient(ellipse at 12% 0%,#18727425,transparent 42%),radial-gradient(ellipse at 90% 20%,#205ba025,transparent 38%),#080f1b}
+a{color:var(--green);text-decoration:none}a:hover{text-decoration:underline}
+.topbar{position:sticky;top:0;z-index:50;background:#060c16e8;backdrop-filter:blur(16px);border-bottom:1px solid #ffffff16}
+.nav{max-width:1100px;margin:auto;padding:12px 22px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.brand{display:flex;align-items:center;gap:11px;color:var(--ink);font-weight:850;letter-spacing:-.03em}.brandmark{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;color:#04140c;background:var(--green);font-size:21px}.brand small{display:block;color:var(--muted);font-size:10px;letter-spacing:.12em;text-transform:uppercase}
+.navright{display:flex;align-items:center;gap:10px}.navbtn{border:1px solid var(--line);background:#ffffff08;color:var(--ink);padding:8px 12px;border-radius:10px;font:inherit;font-size:13px;cursor:pointer}.navbtn:hover{border-color:var(--green);color:var(--green)}
+.progress-wrap{height:3px;background:#ffffff0a}.progress{height:100%;width:0;background:var(--green);transition:width .1s}
+.layout{max-width:1100px;margin:34px auto 70px;padding:0 22px;display:grid;grid-template-columns:210px minmax(0,1fr);gap:25px;align-items:start}
+.toc{position:sticky;top:88px;border:1px solid var(--line);border-radius:16px;background:#0d1725d9;padding:18px;max-height:calc(100vh - 110px);overflow:auto}
+.toc h2{font-size:12px;text-transform:uppercase;letter-spacing:.13em;color:var(--muted);margin:0 0 12px}.toc a{display:block;padding:8px 10px;border-radius:8px;color:#b9c8da;font-size:13px;line-height:1.45}.toc a.active,.toc a:hover{background:#63f0aa12;color:var(--green);text-decoration:none}.toc-note{border-top:1px solid var(--line);margin-top:15px;padding-top:13px;color:#8295ad;font-size:11px;line-height:1.6}
+.document{min-width:0}.doc-heading{margin:0 auto 22px;max-width:var(--page-width);display:flex;justify-content:space-between;align-items:center;gap:12px;color:#8194ac;font-size:12px}
+.page{position:relative;width:100%;max-width:var(--page-width);min-height:980px;margin:0 auto 26px;padding:64px 70px 66px;background:linear-gradient(145deg,#122035,#0f1a2a 72%);border:1px solid #ffffff1b;border-radius:5px;box-shadow:0 24px 80px #0006;overflow:hidden;display:flex;flex-direction:column}
+.page:before{content:"";position:absolute;left:0;top:0;width:4px;height:100%;background:linear-gradient(var(--green),#6bdcff55 70%,transparent)}
+.page-content{flex:1}.page-header{display:flex;justify-content:space-between;align-items:center;gap:15px;padding-bottom:15px;border-bottom:1px solid var(--line);margin-bottom:40px;color:#879bb4;font-size:11px;font-weight:750;letter-spacing:.13em;text-transform:uppercase}
+.page-footer{display:flex;justify-content:space-between;gap:15px;border-top:1px solid var(--line);padding-top:16px;margin-top:45px;color:#7589a2;font-size:11px}
+.cover{justify-content:space-between;background:radial-gradient(ellipse at 90% 5%,#57f2a51a,transparent 42%),linear-gradient(145deg,#14253b,#0b1524)}
+.cover .page-content{display:flex;flex-direction:column;justify-content:center;padding:55px 0}
+.badge{display:inline-flex;align-items:center;gap:9px;border:1px solid #63f0aa55;border-radius:99px;padding:7px 12px;color:var(--green);background:#63f0aa0c;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;width:max-content}
+h1{font-size:clamp(44px,6vw,70px);line-height:1.05;letter-spacing:-.06em;margin:30px 0 20px}h1 span{color:var(--green)}.cover-lead{max-width:590px;color:#aabbd0;font-size:19px;line-height:1.8}.cover-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:30px}.chip{border:1px solid var(--line);border-radius:8px;padding:5px 10px;color:#b8c8db;font-size:12px;background:#ffffff05}
+h2{font-size:31px;line-height:1.25;letter-spacing:-.04em;margin:0 0 18px}h3{font-size:19px;line-height:1.4;margin:25px 0 9px;color:#f1f7ff}p{margin:0 0 16px;color:#c1cede}.eyebrow{color:var(--green);font-size:11px;font-weight:850;letter-spacing:.15em;text-transform:uppercase;margin-bottom:12px}
+.lead{font-size:17px;color:#b4c4d8}.callout{border:1px solid #63f0aa38;background:#63f0aa0c;border-radius:12px;padding:18px 20px;margin:22px 0;color:#c9d7e7}.callout strong{color:var(--green)}
+.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin:22px 0}.card{border:1px solid var(--line);background:#ffffff04;border-radius:12px;padding:17px}.card strong{display:block;color:var(--green);font-size:14px;margin-bottom:5px}.card span{display:block;color:var(--muted);font-size:13px;line-height:1.65}
+ul,ol{padding-left:23px;color:#c1cede;margin:12px 0 20px}li{padding-left:4px;margin:7px 0}.architecture{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;align-items:stretch;gap:10px;margin:30px 0}.node{border:1px solid #6bdcff40;border-radius:12px;padding:17px 10px;text-align:center;background:#6bdcff08;display:flex;flex-direction:column;justify-content:center;align-items:center}.node b{font-size:14px}.node small{color:var(--muted);font-size:11px;line-height:1.5;margin-top:8px}.node-icon{width:38px;height:38px;display:grid;place-items:center;border-radius:11px;background:#6bdcff16;color:var(--cyan);font-size:20px;margin-bottom:12px}.arrow{align-self:center;color:var(--green);font-size:22px}
+.table{width:100%;border-collapse:collapse;margin:20px 0;font-size:13px}.table th,.table td{border:1px solid var(--line);padding:11px 12px;text-align:left;vertical-align:top}.table th{color:var(--green);background:#63f0aa0b;font-weight:800}.table td{color:#c1cede}
+.step{display:grid;grid-template-columns:42px 1fr;gap:14px;margin:22px 0}.stepnum{width:38px;height:38px;border:1px solid #63f0aa55;border-radius:12px;display:grid;place-items:center;color:var(--green);font-weight:850;background:#63f0aa0b}.step h3{margin:0 0 6px}.step p{font-size:14px;margin:0}
+.endnote{font-size:12px;color:#8295ad}
+@media(max-width:850px){.layout{grid-template-columns:1fr;margin-top:18px}.toc{position:relative;top:auto;max-height:none;display:flex;flex-wrap:wrap;align-items:center;gap:4px}.toc h2{width:100%}.toc-note{display:none}.page{min-height:0;padding:42px 38px}.architecture{grid-template-columns:1fr}.arrow{transform:rotate(90deg);justify-self:center}.doc-heading{padding:0 2px}}
+@media(max-width:560px){.nav{padding:10px 13px}.brand{font-size:12px}.brand small{font-size:9px}.brandmark{width:32px;height:32px}.navbtn{font-size:11px;padding:7px 9px}.layout{padding:0 12px;gap:14px}.page{padding:29px 23px 30px;margin-bottom:16px}.page-header{margin-bottom:26px;font-size:9px}.page-footer{margin-top:30px}.cover .page-content{padding:35px 0}.cover-lead{font-size:16px}h2{font-size:26px}.cards{grid-template-columns:1fr}.doc-heading{font-size:10px}.toc a{font-size:12px}}
+@media print{
+ @page{size:A4;margin:0}
+ body{background:#fff;color:#111;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+ body:before{display:none}.topbar,.toc,.doc-heading{display:none!important}.layout{display:block;max-width:none;margin:0;padding:0}.page{width:210mm;height:297mm;min-height:297mm;max-width:none;margin:0;border:0;border-radius:0;box-shadow:none;padding:18mm 19mm 17mm;page-break-after:always;break-after:page;overflow:hidden}.page:last-child{page-break-after:auto;break-after:auto}.page:before{width:1.5mm}.page-header,.page-footer{color:#8290a0}.page p,.page li,.page td{color:#d4dce6}.page h2,.page h3{color:#f3f7fb}
+}
+</style>
+</head>
+<body>
+<header class="topbar">
+ <nav class="nav">
+  <a class="brand" href="../../index.html"><span class="brandmark">⌁</span><span>WAZUH SOC LAB<small>Project field guide</small></span></a>
+  <div class="navright"><button class="navbtn" onclick="window.print()">Print / Save PDF ↗</button><a class="navbtn" href="../../index.html">Home</a></div>
+ </nav><div class="progress-wrap"><div class="progress" id="progress"></div></div>
+</header>
+<div class="layout">
+ <aside class="toc" aria-label="Document contents">
+  <h2>In this document</h2>
+  <a href="#page1">Cover</a><a href="#page2">01 · Project overview</a><a href="#page3">02 · Lab architecture</a><a href="#page4">03 · Capabilities</a><a href="#page5">04 · SOC workflow</a><a href="#page6">05 · Documentation map</a>
+  <div class="toc-note">Reading view is arranged into page-like sections. Use “Print / Save PDF” to export as an A4 PDF from your browser.</div>
+ </aside>
+ <main class="document">
+  <div class="doc-heading"><span>PROJECT DOCUMENTATION / OVERVIEW</span><span>6 PAGES · READING MODE</span></div>
+
+  <article class="page cover" id="page1">
+   <div class="page-header"><span>Wazuh SOC Home Lab</span><span>Project Overview</span></div>
+   <div class="page-content">
+    <div class="badge">● Blue Team · Detection · Investigation</div>
+    <h1>Wazuh SOC<br><span>Home Lab</span></h1>
+    <p class="cover-lead">A practical, virtualized Security Operations Center environment for learning endpoint visibility, centralized log collection, security alerting, and incident investigation with Wazuh.</p>
+    <div class="cover-meta"><span class="chip">Wazuh SIEM / XDR</span><span class="chip">Ubuntu Server</span><span class="chip">Windows Endpoint</span><span class="chip">Kali Linux</span><span class="chip">VirtualBox</span></div>
+   </div>
+   <div class="page-footer"><span>Prepared by Tushar Mondal</span><span>01 / 06</span></div>
+  </article>
+
+  <article class="page" id="page2">
+   <div class="page-header"><span>01 / Project Overview</span><span>Foundation</span></div>
+   <div class="page-content">
+    <div class="eyebrow">Purpose & scope</div><h2>Security monitoring, built hands-on.</h2>
+    <p class="lead">The project builds and documents a small SOC-style environment where endpoint events can be collected centrally, reviewed through Wazuh, and used as the basis for detection and incident-response exercises.</p>
+    <h3>Project objectives</h3>
+    <ul><li>Collect and centralize security events from enrolled endpoints.</li><li>Review alerts and investigate suspicious activity in a controlled lab.</li><li>Document configurations, detection logic, evidence, and lessons learned.</li></ul>
+    <h3>Learning outcomes</h3>
+    <div class="cards">
+     <div class="card"><strong>Endpoint Visibility</strong><span>Understand agent onboarding and agent-to-manager communication.</span></div>
+     <div class="card"><strong>Alert Triage</strong><span>Review events, interpret alert details, and prioritize investigation steps.</span></div>
+     <div class="card"><strong>Detection Fundamentals</strong><span>Learn how rules, event fields, and test cases support detection validation.</span></div>
+     <div class="card"><strong>Technical Reporting</strong><span>Maintain clear investigation notes and repeatable documentation.</span></div>
+    </div>
+    <div class="callout"><strong>Scope note:</strong> This is an educational home lab, not a claim of production-scale enterprise deployment. Document actual configurations and results as they are verified in your environment.</div>
+   </div>
+   <div class="page-footer"><span>Wazuh SOC Home Lab · Project Overview</span><span>02 / 06</span></div>
+  </article>
+
+  <article class="page" id="page3">
+   <div class="page-header"><span>02 / Lab Architecture</span><span>Telemetry flow</span></div>
+   <div class="page-content">
+    <div class="eyebrow">Conceptual design</div><h2>From endpoint telemetry to investigation.</h2>
+    <p>The diagram below illustrates the high-level monitoring flow. Update it if your final VM inventory or network topology differs.</p>
+    <div class="architecture">
+     <div class="node"><div class="node-icon">▣</div><b>Windows Endpoint</b><small>Endpoint events<br>Wazuh agent</small></div><div class="arrow">→</div>
+     <div class="node"><div class="node-icon">⌘</div><b>Wazuh Server</b><small>Manager<br>Indexer · Dashboard</small></div><div class="arrow">→</div>
+     <div class="node"><div class="node-icon">◈</div><b>SOC Analyst</b><small>Alert review<br>Triage · Reporting</small></div>
+    </div>
+    <h3>Lab components</h3>
+    <table class="table"><thead><tr><th>Component</th><th>Role in the lab</th></tr></thead><tbody>
+    <tr><td>Ubuntu Server</td><td>Hosts the Wazuh monitoring stack, according to the deployed configuration.</td></tr>
+    <tr><td>Wazuh agent endpoints</td><td>Forward configured endpoint telemetry for centralized review.</td></tr>
+    <tr><td>Windows / Windows Server</td><td>Provide Windows event sources for monitoring and investigation practice.</td></tr>
+    <tr><td>Kali Linux</td><td>May be used for authorized, controlled test activity and validation.</td></tr>
+    </tbody></table>
+    <div class="callout"><strong>Safety:</strong> Generate test activity only on systems and networks you own or are explicitly authorized to assess. Keep the lab isolated from production and third-party systems.</div>
+   </div>
+   <div class="page-footer"><span>Architecture is conceptual; verify against your actual deployment.</span><span>03 / 06</span></div>
+  </article>
+
+  <article class="page" id="page4">
+   <div class="page-header"><span>03 / Core Capabilities</span><span>Project modules</span></div>
+   <div class="page-content">
+    <div class="eyebrow">Technical coverage</div><h2>What this lab covers.</h2>
+    <p class="lead">The project is organized into focused modules for hands-on practice, evidence capture, and technical presentation.</p>
+    <h3>01 · Log analysis</h3><p>Review Windows, Windows Server, and Linux events. Identify notable activity and record the evidence supporting the analysis.</p>
+    <h3>02 · Detection rules</h3><p>Maintain custom Wazuh rules and document rule logic, matching conditions, test cases, and expected alert behavior. Validate rules against observed lab events.</p>
+    <h3>03 · Threat detection</h3><p>Run controlled simulations and check whether relevant endpoint telemetry and detections are generated. Record test conditions and outcomes.</p>
+    <h3>04 · Incident response</h3><p>Follow a repeatable process: validate the alert, scope affected assets, collect evidence, document response actions, and record closure findings.</p>
+    <h3>05 · Dashboards and evidence</h3><p>Capture dashboard views and investigation screenshots to make the work easier to review, demonstrate, and reproduce.</p>
+    <h3>06 · Scripts and reports</h3><p>Organize helper scripts, configuration notes, lab reports, and supporting artifacts alongside the technical documentation.</p>
+   </div>
+   <div class="page-footer"><span>Keep examples and screenshots tied to real lab observations.</span><span>04 / 06</span></div>
+  </article>
+
+  <article class="page" id="page5">
+   <div class="page-header"><span>04 / Operational Workflow</span><span>SOC practice cycle</span></div>
+   <div class="page-content">
+    <div class="eyebrow">Repeatable process</div><h2>A structured SOC practice cycle.</h2>
+    <p>Use the same sequence for each lab exercise. A consistent workflow makes results easier to verify and report.</p>
+    <div class="step"><div class="stepnum">01</div><div><h3>Deploy & connect</h3><p>Prepare the virtual environment, configure the Wazuh server, enroll agents, and confirm that endpoint events are arriving.</p><ul><li>Check agent status and connectivity.</li><li>Confirm expected event sources are enabled.</li><li>Record relevant versions and configuration changes.</li></ul></div></div>
+    <div class="step"><div class="stepnum">02</div><div><h3>Generate & detect</h3><p>Perform an authorized test action and inspect the telemetry and alerts produced by the lab.</p><ul><li>Record the test time and endpoint.</li><li>Review alert details, rule IDs, and event fields.</li><li>Compare observed behavior with expected detection behavior.</li></ul></div></div>
+    <div class="step"><div class="stepnum">03</div><div><h3>Investigate & report</h3><p>Turn the alert into a concise investigation record supported by evidence.</p><ul><li>Build a timeline and identify affected assets.</li><li>Capture relevant logs and dashboard screenshots.</li><li>Document findings, response actions, limitations, and lessons learned.</li></ul></div></div>
+    <div class="callout"><strong>Investigation principle:</strong> Separate observed facts from hypotheses. Include timestamps, host identifiers, relevant event fields, and the evidence used to support each conclusion.</div>
+   </div>
+   <div class="page-footer"><span>Workflow for controlled lab exercises</span><span>05 / 06</span></div>
+  </article>
+
+  <article class="page" id="page6">
+   <div class="page-header"><span>05 / Documentation Map</span><span>Continue reading</span></div>
+   <div class="page-content">
+    <div class="eyebrow">Repository guide</div><h2>Explore the project documentation.</h2>
+    <p class="lead">Use the project’s individual pages and supporting artifacts to explore each area in more depth.</p>
+    <table class="table"><thead><tr><th>Section</th><th>What to find there</th></tr></thead><tbody>
+    <tr><td>Architecture</td><td>VM roles, network layout, and architecture notes.</td></tr>
+    <tr><td>Documentation / Setup</td><td>Installation and configuration notes for Ubuntu Server, Wazuh, agents, Windows, Windows Server, and Kali Linux.</td></tr>
+    <tr><td>Detection Rules</td><td>Custom rule files, rule explanations, and validation notes.</td></tr>
+    <tr><td>Log Analysis</td><td>Windows, Windows Server, and Linux event-analysis walkthroughs.</td></tr>
+    <tr><td>Threat Detection</td><td>Controlled test scenarios and detection validation records.</td></tr>
+    <tr><td>Incident Response</td><td>Investigation workflow, case notes, and response documentation.</td></tr>
+    <tr><td>Dashboards</td><td>Dashboard screenshots and visual evidence.</td></tr>
+    <tr><td>Scripts & Reports</td><td>Supporting scripts, project reports, and related artifacts.</td></tr>
+    </tbody></table>
+    <h3>Closing note</h3><p>This home lab is a continuing practical-learning project. Keep the repository accurate by updating setup details, screenshots, test results, and reports as the environment changes.</p>
+    <div class="callout"><strong>Next step:</strong> Return to the project homepage and open the relevant module to continue exploring the lab.</div>
+    <p><a href="../../index.html">← Back to Wazuh SOC Home Lab homepage</a></p>
+    <p class="endnote">Educational use only. All security testing must remain within explicitly authorized environments.</p>
+   </div>
+   <div class="page-footer"><span>Prepared by Tushar Mondal · Wazuh SOC Home Lab</span><span>06 / 06</span></div>
+  </article>
+ </main>
+</div>
+<script>
+const progress=document.getElementById('progress');
+function updateProgress(){const max=document.documentElement.scrollHeight-innerHeight;progress.style.width=(max>0?(scrollY/max)*100:0)+'%'}
+addEventListener('scroll',updateProgress,{passive:true});updateProgress();
+const sections=[...document.querySelectorAll('.page')],links=[...document.querySelectorAll('.toc a')];
+if('IntersectionObserver'in window){const io=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting){links.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+e.target.id))}}),{threshold:.25});sections.forEach(s=>io.observe(s))}
+</script>
+</body>
+</html>
